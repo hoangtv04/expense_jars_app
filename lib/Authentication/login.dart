@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  // can 2 text de chinh sua controller
+
+  final email = TextEditingController();
+  final password = TextEditingController();
+
+  //1 bien de kiem tra hien thi va an mat khau
+  bool isVisible = false;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children: [
+                //Email field
+
+                //hien thi anh
+                Image.asset('lib/assets/login.png', width: 250),
+                const SizedBox(height: 15),
+                Container(
+                  margin: EdgeInsets.all(8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.blueAccent.withOpacity(.2),
+                  ),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      icon: Icon(Icons.email),
+                      border: InputBorder.none,
+                      hintText: "Email",
+                    ),
+                  ),
+                ),
+
+                //Password field
+                Container(
+                  margin: EdgeInsets.all(8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.blueAccent.withOpacity(.2),
+                  ),
+                  child: TextFormField(
+                    obscureText: !isVisible,
+                    decoration: InputDecoration(
+                      icon: Icon(Icons.lock),
+                      border: InputBorder.none,
+                      hintText: "Password",
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          //In here we will add functionality to show/hide password
+                          setState(() {
+                            // nut bam
+                            isVisible = !isVisible;
+                          });
+                        },
+                        icon: Icon(
+                          isVisible ? Icons.visibility : Icons.visibility_off,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+                // nut login
+                Container(
+                  height: 55,
+                  width: MediaQuery.of(context).size.width * .9,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.blueAccent,
+                  ),
+                  child: TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      "LOGIN",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
