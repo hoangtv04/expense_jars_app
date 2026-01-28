@@ -129,7 +129,7 @@ class _SignupState extends State<Signup> {
                       decoration: InputDecoration(
                         icon: Icon(Icons.lock),
                         border: InputBorder.none,
-                        hintText: "Password",
+                        hintText: "ConfirmPassword",
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
