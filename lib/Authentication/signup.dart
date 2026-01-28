@@ -164,6 +164,8 @@ class _SignupState extends State<Signup> {
                             ),
                           );
 
+                          await db.debugUsers();
+
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

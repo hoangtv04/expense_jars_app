@@ -18,6 +18,10 @@ void main() async {
   // await db.clearUsers();
   // await db.debugUsers();
 
+  // final db = DatabaseHelper();
+  // await db.clearUsersAndResetId();
+  // await db.debugUsers();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

@@ -44,12 +44,12 @@ class DatabaseHelper {
     return null;
   }
 
-  // Future<void> debugUsers() async {
-  //   final db = await initDB();
-  //   final result = await db.rawQuery('SELECT * FROM users');
-  //   print('===== USERS TABLE =====');
-  //   print(result);
-  // }
+  Future<void> debugUsers() async {
+    final db = await initDB();
+    final result = await db.rawQuery('SELECT * FROM users');
+    print('===== USERS TABLE =====');
+    print(result);
+  }
 
   // Future<void> debugUsers() async {
   //   final db = await initDB();
@@ -66,5 +66,17 @@ class DatabaseHelper {
   //   final db = await initDB();
   //   await db.delete('users');
   //   print('===== USERS CLEARED =====');
+  // }
+
+  // Future<void> clearUsersAndResetId() async {
+  //   final db = await initDB();
+
+  //   // 1️⃣ Xóa toàn bộ user
+  //   await db.delete('users');
+
+  //   // 2️⃣ Reset bộ đếm AUTOINCREMENT
+  //   await db.rawQuery("DELETE FROM sqlite_sequence WHERE name = 'users'");
+
+  //   print('USERS CLEARED + ID RESET');
   // }
 }
