@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_expense/Authentication/login.dart';
+import 'package:flutter_application_expense/SQLite/sqlite.dart';
+import 'package:flutter_application_expense/models/user.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -64,7 +66,7 @@ class _SignupState extends State<Signup> {
                     ),
                   ),
 
-                  //Password field
+                  // Password
                   Container(
                     margin: EdgeInsets.all(8),
                     padding: const EdgeInsets.symmetric(
@@ -90,9 +92,7 @@ class _SignupState extends State<Signup> {
                         hintText: "Password",
                         suffixIcon: IconButton(
                           onPressed: () {
-                            //In here we will add functionality to show/hide password
                             setState(() {
-                              // nut bam
                               isVisible = !isVisible;
                             });
                           },
@@ -104,7 +104,7 @@ class _SignupState extends State<Signup> {
                     ),
                   ),
 
-                  //Confirm Password field
+                  // Confirm password
                   Container(
                     margin: EdgeInsets.all(8),
                     padding: const EdgeInsets.symmetric(
@@ -132,9 +132,7 @@ class _SignupState extends State<Signup> {
                         hintText: "Password",
                         suffixIcon: IconButton(
                           onPressed: () {
-                            //In here we will add functionality to show/hide password
                             setState(() {
-                              // nut bam
                               isVisible = !isVisible;
                             });
                           },
@@ -147,7 +145,7 @@ class _SignupState extends State<Signup> {
                   ),
 
                   const SizedBox(height: 10),
-                  // nut login
+
                   Container(
                     height: 55,
                     width: MediaQuery.of(context).size.width * .9,
@@ -156,9 +154,22 @@ class _SignupState extends State<Signup> {
                       color: Colors.blueAccent,
                     ),
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (formkey.currentState!.validate()) {
-                          //nếu đúng thì làm gì đó
+                          final db = DatabaseHelper();
+                          await db.signup(
+                            Users(
+                              email: email.text.trim(),
+                              password: password.text.trim(),
+                            ),
+                          );
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
                         }
                       },
                       child: const Text(
@@ -168,7 +179,6 @@ class _SignupState extends State<Signup> {
                     ),
                   ),
 
-                  // nut dang ky
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -182,7 +192,6 @@ class _SignupState extends State<Signup> {
                             ),
                           );
                         },
-                        // thanh dang ky
                         child: const Text("Login"),
                       ),
                     ],

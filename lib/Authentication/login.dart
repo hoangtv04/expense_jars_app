@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_expense/Authentication/signup.dart';
+import 'package:flutter_application_expense/SQLite/sqlite.dart';
+import 'package:flutter_application_expense/models/user.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,14 +11,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // can 2 text de chinh sua controller
-
   final email = TextEditingController();
   final password = TextEditingController();
 
-  //1 bien de kiem tra hien thi va an mat khau
   bool isVisible = false;
   final formkey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,11 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
               key: formkey,
               child: Column(
                 children: [
-                  //Email field
-
-                  //hien thi anh
                   Image.asset('lib/assets/login.png', width: 250),
                   const SizedBox(height: 15),
+
+                  // Email
                   Container(
                     margin: const EdgeInsets.all(8),
                     padding: const EdgeInsets.symmetric(
@@ -59,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  //Password field
+                  // Password
                   Container(
                     margin: EdgeInsets.all(8),
                     padding: const EdgeInsets.symmetric(
@@ -85,9 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: "Password",
                         suffixIcon: IconButton(
                           onPressed: () {
-                            //In here we will add functionality to show/hide password
                             setState(() {
-                              // nut bam
                               isVisible = !isVisible;
                             });
                           },
@@ -100,7 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   const SizedBox(height: 10),
-                  // nut login
+
+                  // LOGIN BUTTON
                   Container(
                     height: 55,
                     width: MediaQuery.of(context).size.width * .9,
@@ -109,9 +107,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.blueAccent,
                     ),
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (formkey.currentState!.validate()) {
-                          //nếu đúng thì làm gì đó
+                          // ====== PHẦN ĐƯỢC CHÈN ======
+                          final db = DatabaseHelper();
+                          final user = await db.login(
+                            email.text.trim(),
+                            password.text.trim(),
+                          );
+                          // ====== HẾT PHẦN CHÈN ======
+
+                          if (user != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Login success")),
+                            );
+
+                            print("USER LOGIN: ${user.email}");
+
+                            // TODO: chuyển sang Home
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Wrong email or password"),
+                              ),
+                            );
+                          }
                         }
                       },
                       child: const Text(
@@ -121,7 +141,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // nut dang ky
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -135,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           );
                         },
-                        // thanh dang ky
                         child: const Text("Sign Up"),
                       ),
                     ],
