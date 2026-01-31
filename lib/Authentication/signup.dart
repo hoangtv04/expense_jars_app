@@ -35,7 +35,7 @@ class _SignupState extends State<Signup> {
                     title: Text(
                       'Register New Account',
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
