@@ -4,6 +4,8 @@ import 'package:flutter_application_expense/demo/DemoColRow.dart';
 import 'package:flutter_application_expense/demo/DemoContainer.dart';
 import 'package:flutter_application_expense/demo/DemoScaffold.dart';
 import 'package:flutter_application_expense/demo/DemoText.dart';
+import 'package:flutter_application_expense/presentation/screens/Jar/JarAddPage.dart';
+import 'package:flutter_application_expense/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_expense/presentation/screens/member/AddMemberPage.dart';
 import 'package:flutter_application_expense/presentation/screens/member/MemberListPage.dart';
 
@@ -18,6 +20,10 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,20 +35,20 @@ class MainApp extends StatelessWidget {
             body: ListView(
               children: [
                 ListTile(
-                  title: const Text('add member'),
+                  title: const Text('Add Jar'),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const AddMemberPage()),
+                      MaterialPageRoute(builder: (_) => const JarAddPage()),
                     );
                   },
                 ),
                 ListTile(
-                  title: const Text('view member'),
+                  title: const Text('View Jar'),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const Memberlistpage()),
+                      MaterialPageRoute(builder: (_) => const JarListPage()),
                     );
                   },
                 ),
