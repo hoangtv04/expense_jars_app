@@ -29,8 +29,6 @@ class _AddMemberPageState extends State<JarAddPage> {
   void _save() async {
     try {
       // bảng family đề phòng trường hợp gia đình tách riêng ra
-
-
       AddJarRespone addJarRespone = new AddJarRespone(
           user_id: 1,
           name: _selectedName!.name,
