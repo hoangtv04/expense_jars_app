@@ -78,9 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text(
                           'Forgot password?',
                           style: TextStyle(
-                            fontSize: 15, // 👈 to hơn
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black, // 👈 màu đen
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -96,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text("Don't have an account?"),
                         TextButton(
                           onPressed: () {
-                            // 🔥 KHÔNG NHÁY MÀN HÌNH
                             Navigator.pushReplacement(
                               context,
                               PageRouteBuilder(

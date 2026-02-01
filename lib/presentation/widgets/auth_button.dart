@@ -9,12 +9,11 @@ class AuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 🔥 GIỐNG HỆT Ô INPUT
       margin: const EdgeInsets.all(8),
       height: 55,
-      width: double.infinity, // 👈 full width giống TextField
+      width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8), // 👈 giống input
+        borderRadius: BorderRadius.circular(8),
         color: Colors.orange,
       ),
       child: TextButton(

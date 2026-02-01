@@ -138,8 +138,6 @@ void _showLogoutDialog(BuildContext context) {
         TextButton(
           onPressed: () {
             Navigator.pop(context);
-
-            // 🔥 QUAY VỀ LOGIN – KHÔNG NHÁY
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(

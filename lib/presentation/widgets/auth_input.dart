@@ -7,7 +7,7 @@ class AuthInput extends StatelessWidget {
   final bool obscure;
   final Widget? suffix;
   final String? Function(String?)? validator;
-  final String? errorText; // 🔥 THÊM
+  final String? errorText;
 
   const AuthInput({
     super.key,
@@ -38,7 +38,7 @@ class AuthInput extends StatelessWidget {
           border: InputBorder.none,
           hintText: hint,
           suffixIcon: suffix,
-          errorText: errorText, // 🔥 QUAN TRỌNG
+          errorText: errorText,
         ),
       ),
     );
