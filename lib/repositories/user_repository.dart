@@ -37,4 +37,16 @@ class UserRepository {
     final result = await _db.getAllUsers();
     return result.map((e) => User.fromMap(e)).toList();
   }
+
+  Future<bool> isEmailExists(String email) {
+    return _db.isEmailExists(email);
+  }
+
+  Future<bool> resetPassword(String email, String newPassword) async {
+    final exists = await _db.isEmailExists(email);
+    if (!exists) return false;
+
+    await _db.updatePasswordByEmail(email, newPassword);
+    return true;
+  }
 }

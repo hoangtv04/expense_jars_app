@@ -177,4 +177,14 @@ class AppDatabase {
     final db = await database;
     return await db.query('users', orderBy: 'id ASC');
   }
+
+  Future<void> updatePasswordByEmail(String email, String newPassword) async {
+    final db = await database;
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
 }
