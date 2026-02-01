@@ -5,6 +5,7 @@ import 'package:flutter_application_jars/presentation/screens/signup.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
+import 'package:flutter_application_jars/presentation/screens/forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,6 +61,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {
                           setState(() => isVisible = !isVisible);
                         },
+                      ),
+                    ),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Forgot password?',
+                          style: TextStyle(
+                            fontSize: 15, // 👈 to hơn
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black, // 👈 màu đen
+                          ),
+                        ),
                       ),
                     ),
 
