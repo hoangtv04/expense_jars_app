@@ -4,6 +4,7 @@ import 'package:flutter_application_jars/models/user.dart';
 import 'package:flutter_application_jars/presentation/screens/signup.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
+import 'package:flutter_application_jars/presentation/screens/home.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -99,18 +100,30 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (!formkey.currentState!.validate()) return;
 
-    final User? user = await _userController.login(
+    final user = await _userController.login(
       email.text.trim(),
       password.text.trim(),
     );
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          user != null ? 'Login success' : 'Wrong email or password',
-        ),
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Wrong email or password')));
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Login success')));
+
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const HomeScreen(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
       ),
     );
   }
