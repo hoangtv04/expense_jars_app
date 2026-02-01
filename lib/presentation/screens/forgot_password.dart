@@ -12,6 +12,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailCtrl = TextEditingController();
   final _otpCtrl = TextEditingController();
   final _newPassCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   final UserController _controller = UserController();
@@ -24,6 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     _emailCtrl.dispose();
     _otpCtrl.dispose();
     _newPassCtrl.dispose();
+    _confirmPassCtrl.dispose();
     super.dispose();
   }
 
@@ -125,10 +127,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       Column(
         children: [
           const Text(
-            'New Password',
+            'Create New Password',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
+
+          // New password
           TextFormField(
             controller: _newPassCtrl,
             obscureText: true,
@@ -143,12 +147,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               return null;
             },
           ),
+
+          const SizedBox(height: 12),
+
+          TextFormField(
+            controller: _confirmPassCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(
+              hintText: 'Confirm password',
+              prefixIcon: Icon(Icons.lock),
+              border: InputBorder.none,
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) {
+                return 'Please confirm password';
+              }
+              if (v != _newPassCtrl.text) {
+                return 'Passwords do not match';
+              }
+              return null;
+            },
+          ),
+
           const SizedBox(height: 16),
           _button('Update Password', _updatePassword),
           _back(() {
             setState(() {
               _step = 2;
               _newPassCtrl.clear();
+              _confirmPassCtrl.clear();
             });
           }),
         ],
