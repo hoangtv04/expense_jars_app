@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_jars/controllers/auth_controller.dart';
+import 'package:flutter_application_jars/controllers/user_controller.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -10,10 +10,22 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailCtrl = TextEditingController();
+  final _otpCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final AuthController _authController = AuthController();
 
+  final UserController _controller = UserController();
+
+  int _step = 1;
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _otpCtrl.dispose();
+    _newPassCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +37,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           Center(
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      Image.asset('lib/assets/login.png', width: 220),
-                      const SizedBox(height: 20),
-                      _card(),
-                    ],
-                  ),
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Image.asset('lib/assets/login.png', width: 220),
+                    const SizedBox(height: 20),
+                    if (_step == 1) _emailStep(context),
+                    if (_step == 2) _otpStep(context),
+                    if (_step == 3) _newPasswordStep(context),
+                  ],
                 ),
               ),
             ),
@@ -45,15 +57,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _card() {
-    return Container(
-      width: MediaQuery.of(context).size.width * .9,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.85),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
+  Widget _emailStep(BuildContext context) {
+    return _card(
+      context,
+      Column(
         children: [
           const Text(
             'Forgot Password',
@@ -71,45 +78,177 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 v == null || v.isEmpty ? 'Email is required' : null,
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _sendResetEmail,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Send reset email'),
-            ),
-          ),
+          _button('Send OTP', _sendOtp),
           const SizedBox(height: 12),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Back to Login',
-              style: TextStyle(color: Colors.black87),
-            ),
-          ),
+          _backToLogin(),
         ],
       ),
     );
   }
 
-  Future<void> _sendResetEmail() async {
+  Widget _otpStep(BuildContext context) {
+    return _card(
+      context,
+      Column(
+        children: [
+          const Text(
+            'Enter OTP',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _otpCtrl,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              hintText: 'OTP',
+              prefixIcon: Icon(Icons.lock),
+              border: InputBorder.none,
+            ),
+            validator: (v) => v == null || v.length != 6 ? 'Invalid OTP' : null,
+          ),
+          const SizedBox(height: 16),
+          _button('Verify OTP', _verifyOtp),
+          _back(() {
+            setState(() {
+              _step = 1;
+              _otpCtrl.clear();
+            });
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _newPasswordStep(BuildContext context) {
+    return _card(
+      context,
+      Column(
+        children: [
+          const Text(
+            'New Password',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _newPassCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(
+              hintText: 'New password',
+              prefixIcon: Icon(Icons.lock_outline),
+              border: InputBorder.none,
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Password is required';
+              if (v.length < 6) return 'At least 6 characters';
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          _button('Update Password', _updatePassword),
+          _back(() {
+            setState(() {
+              _step = 2;
+              _newPassCtrl.clear();
+            });
+          }),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    try {
-      await _authController.sendResetPasswordEmail(_emailCtrl.text.trim());
+    final ok = await _controller.sendOtpToEmail(_emailCtrl.text.trim());
 
-      _toast('Reset email sent. Please check your Gmail.');
-      Navigator.pop(context);
-    } catch (e) {
-      _toast('Failed to send reset email');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    setState(() => _isLoading = false);
+
+    if (!ok) {
+      _toast('Email does not exist');
+      return;
     }
+
+    _toast('OTP sent');
+    setState(() => _step = 2);
+  }
+
+  void _verifyOtp() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final ok = _controller.verifyOtp(_otpCtrl.text.trim());
+    if (!ok) {
+      _toast('Wrong OTP');
+      return;
+    }
+
+    _toast('OTP verified');
+    setState(() => _step = 3);
+  }
+
+  Future<void> _updatePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final ok = await _controller.resetPassword(_newPassCtrl.text.trim());
+
+    setState(() => _isLoading = false);
+
+    if (!ok) {
+      _toast('Update failed');
+      return;
+    }
+
+    _toast('Password updated');
+    Navigator.pop(context);
+  }
+
+  Widget _card(BuildContext context, Widget child) {
+    return Container(
+      width: MediaQuery.of(context).size.width * .9,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.85),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _button(String text, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(text),
+      ),
+    );
+  }
+
+  Widget _back(VoidCallback onTap) {
+    return TextButton(
+      onPressed: onTap,
+      child: const Text('Back', style: TextStyle(color: Colors.black87)),
+    );
+  }
+
+  Widget _backToLogin() {
+    return TextButton(
+      onPressed: () => Navigator.pop(context),
+      child: const Text(
+        'Back to Login',
+        style: TextStyle(color: Colors.black87),
+      ),
+    );
   }
 
   void _toast(String msg) {
