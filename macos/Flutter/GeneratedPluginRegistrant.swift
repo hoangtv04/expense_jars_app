@@ -5,5 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-  SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin")) {
+import sqflite_darwin
+
+func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
 }
