@@ -14,20 +14,90 @@ class AppDatabase {
     return _database!;
   }
 
+
+  Future<void> _seedData(Database db) async {
+    // ===== USER =====
+    final userId = await db.insert('users', {
+      'email': 'demo@gmail.com',
+      'password': '123456',
+    });
+
+    // ===== JAR =====
+    final jarId = await db.insert('jars', {
+      'user_id': userId,
+      'name': 'cash', // JarType.cash.name
+      'balance': 1000000.0,
+      'description': 'Ví chính',
+      'is_deleted': 0,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+
+    // ===== CATEGORY =====
+    final foodCategoryId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Ăn uống',
+      'type': 'expense',
+    });
+
+    final salaryCategoryId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Lương',
+      'type': 'income',
+    });
+
+    // ===== TRANSACTIONS =====
+    await db.insert('transactions', {
+      'user_id': userId,
+      'jar_id': jarId,
+      'category_id': salaryCategoryId,
+      'amount': 12000000.0,
+      'note': 'Lương tháng',
+      'date': '2026-02-01',
+      'status': 'completed',
+    });
+
+    await db.insert('transactions', {
+      'user_id': userId,
+      'jar_id': jarId,
+      'category_id': foodCategoryId,
+      'amount': 50000.0,
+      'note': 'Ăn trưa',
+      'date': '2026-02-01',
+      'status': 'completed',
+    });
+
+    // ===== JAR LOG =====
+    await db.insert('jar_logs', {
+      'jar_id': jarId,
+      'change_amount': 12000000.0,
+    });
+
+    await db.insert('jar_logs', {
+      'jar_id': jarId,
+      'change_amount': -50000.0,
+    });
+
+    print('🌱 Seed data inserted');
+  }
+
+
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
 
-    final db = await openDatabase(path, version: 1, onCreate: _createDB);
+    final db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
 
     final tables = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type='table'",
+        "SELECT name FROM sqlite_master WHERE type='table'"
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
-
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
@@ -101,90 +171,15 @@ class AppDatabase {
   ''');
 
     await db.execute(
-      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
-    );
+        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
-      'CREATE INDEX idx_transactions_date ON transactions(date)',
-    );
+        'CREATE INDEX idx_transactions_date ON transactions(date)');
     await db.execute(
-      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
-    );
+        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
     await db.execute(
-      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
-    );
-
+        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
+    await   _seedData(db);
     print('Database created successfully');
   }
 
-  Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
-    final db = await database;
-
-    final result = await db.query(
-      'users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return result.first;
-    }
-    return null;
-  }
-
-  Future<int> registerRaw(String email, String password) async {
-    final db = await database;
-
-    return await db.insert('users', {'email': email, 'password': password});
-  }
-
-  Future<Map<String, dynamic>?> getUserById(int id) async {
-    final db = await database;
-
-    final result = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return result.first;
-    }
-    return null;
-  }
-
-  Future<bool> isEmailExists(String email) async {
-    final db = await database;
-
-    final result = await db.query(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
-      limit: 1,
-    );
-
-    return result.isNotEmpty;
-  }
-
-  Future<void> resetUsersTable() async {
-    final db = await database;
-    await db.delete('users');
-    await db.rawDelete("DELETE FROM sqlite_sequence WHERE name = 'users'");
-  }
-
-  Future<List<Map<String, dynamic>>> getAllUsers() async {
-    final db = await database;
-    return await db.query('users', orderBy: 'id ASC');
-  }
-
-  Future<void> updatePasswordByEmail(String email, String newPassword) async {
-    final db = await database;
-    await db.update(
-      'users',
-      {'password': newPassword},
-      where: 'email = ?',
-      whereArgs: [email],
-    );
-  }
 }
