@@ -26,15 +26,28 @@ class  JarController{
       created_at: res.created_at
     );
 
-
+    print("insert");
     await _repo.insertJar(jar);
   }
 
+  Future<void> deleteJar(int id) async {
 
+
+
+
+    // await _repo.;
+  }
 
   Future<List<Jar>> getJar() async {
-    return _repo.getAll();
+    final list = await _repo.getAll();
+    print('Jar count: ${list.length}');
+    return list;
   }
+
+  double calTotalMoney(List<Jar> jars) {
+    return jars.fold(0, (sum, jar) => sum + jar.balance);
+  }
+
 
 
 }
