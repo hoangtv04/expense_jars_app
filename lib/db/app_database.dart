@@ -182,4 +182,77 @@ class AppDatabase {
     print('Database created successfully');
   }
 
+
+  Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
+    final db = await database;
+
+    final result = await db.query(
+      'users',
+      where: 'email = ? AND password = ?',
+      whereArgs: [email, password],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
+
+  Future<int> registerRaw(String email, String password) async {
+    final db = await database;
+
+    return await db.insert('users', {'email': email, 'password': password});
+  }
+
+  Future<Map<String, dynamic>?> getUserById(int id) async {
+    final db = await database;
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
+
+  Future<bool> isEmailExists(String email) async {
+    final db = await database;
+
+    final result = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
+
+    return result.isNotEmpty;
+  }
+
+  Future<void> resetUsersTable() async {
+    final db = await database;
+    await db.delete('users');
+    await db.rawDelete("DELETE FROM sqlite_sequence WHERE name = 'users'");
+  }
+
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final db = await database;
+    return await db.query('users', orderBy: 'id ASC');
+  }
+
+  Future<void> updatePasswordByEmail(String email, String newPassword) async {
+    final db = await database;
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
+
 }

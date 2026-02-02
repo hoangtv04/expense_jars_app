@@ -1,10 +1,9 @@
 
 
 
-import 'package:flutter_application_expense/models/Member.dart';
-import 'package:flutter_application_expense/models/Transaction.dart';
 
 import '../models/Jar.dart';
+import '../models/Transaction.dart';
 import '../repositories/TransactionRepository.dart';
 
 class TransactionController {
@@ -26,7 +25,7 @@ class TransactionController {
   // }
 
 
-  Future<List<Transaction>> getTransactionListById(int id) async {
+    Future<List<Transaction>> getTransactionListById(int id) async {
     final list = await _repo.getAllTransactionById(id);
     print('Jar count: ${list.length}');
     return list;

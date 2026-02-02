@@ -5,8 +5,10 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_expense/presentation/screens/Jar/JarListPage.dart';
-import 'package:flutter_application_expense/presentation/screens/Jar/JarLogPage.dart';
+
+import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
+import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
+import 'package:flutter_application_jars/presentation/screens/home.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -24,7 +26,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      JarLogPage(onChanged: refresh),
+      HomeScreen(),
       JarListPage(onChanged: refresh),
       Container(color: Colors.yellow),
     ];

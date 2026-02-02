@@ -1,8 +1,9 @@
 
-import 'package:flutter_application_expense/db/app_database.dart';
-import 'package:flutter_application_expense/models/Transaction.dart';
 
+
+import '../db/app_database.dart';
 import '../models/Jar.dart';
+import '../models/Transaction.dart';
 
 class TransactionRepository {
 

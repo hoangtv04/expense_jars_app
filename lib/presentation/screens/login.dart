@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/controllers/user_controller.dart';
 import 'package:flutter_application_jars/models/user.dart';
+import 'package:flutter_application_jars/presentation/MainPage.dart';
 import 'package:flutter_application_jars/presentation/screens/signup.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
@@ -143,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const HomeScreen(),
+        pageBuilder: (_, __, ___) => const MainPage(),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
