@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
+import 'package:flutter_application_jars/presentation/screens/Category/CategoryListPage.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -28,7 +29,7 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       HomeScreen(),
       JarListPage(onChanged: refresh),
-      Container(color: Colors.yellow),
+      Container(color: Colors.purple),
     ];
   }
   void refresh() {
@@ -43,10 +44,24 @@ class _MainPageState extends State<MainPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          if (index == 2) {
+            // Navigate to CategoryListPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CategoryListPage()),
+            );
+          } else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
         items: const [
           BottomNavigationBarItem(
@@ -56,6 +71,10 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
             label: 'Hũ tiền',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Hạng mục',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.more_horiz),

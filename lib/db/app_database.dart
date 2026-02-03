@@ -39,6 +39,190 @@ class AppDatabase {
       'type': 'expense',
     });
 
+    // Subcategories for Ăn uống
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn vặt',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn tối',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn trưa',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn sáng',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Cafe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn tiệm',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Đi chợ/siêu thị',
+      'type': 'expense',
+    });
+
+    final serviceId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Dịch vụ sinh hoạt',
+      'type': 'expense',
+    });
+
+    // Subcategories for Dịch vụ sinh hoạt
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Thuê người giúp việc',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện thoại cố định',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Truyền hình',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Gas',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện thoại di động',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Internet',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Nước',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện',
+      'type': 'expense',
+    });
+
+    final travelId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Đi lại',
+      'type': 'expense',
+    });
+
+    // Subcategories for Đi lại
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Taxi/thuê xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Rửa xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Gửi xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Sửa chữa, bảo dưỡng xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Con cái',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Trang phục',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Hiếu hỉ',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Sức khỏe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Nhà cửa',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Hưởng thụ',
+      'type': 'expense',
+    });
+
     final salaryCategoryId = await db.insert('categories', {
       'user_id': userId,
       'name': 'Lương',
