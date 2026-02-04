@@ -9,20 +9,20 @@ import '../repositories/TransactionRepository.dart';
 class TransactionController {
   final TransactionRepository _repo = TransactionRepository();
 
-  // Future<void> addTrasction(String name, String role) async {
-  //   final transaction = Transaction(
-  //
-  //   );
-  //
-  //
-  //   await _repo.insertTransaction(member);
-  // }
-  //
-  //
-  //
-  // Future<List<Member>> getMember() async {
-  //   return _repo.getAll();
-  // }
+  Future<List<Transaction>> getAll() async {
+    return await _repo.getAllTransactions();
+  }
+
+  Future<void> delete(int id) async {
+    await _repo.deleteTransactions(id);
+  }
+
+  Future<void> add(Transaction transaction) async {
+    if (transaction.amount <= 0) {
+      throw Exception("Amount không hợp lệ");
+    }
+    await _repo.insertTransactions(transaction);
+  }
 
 
     Future<List<Transaction>> getTransactionListById(int id) async {

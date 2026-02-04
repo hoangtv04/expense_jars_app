@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
+import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -28,7 +29,7 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       HomeScreen(),
       JarListPage(onChanged: refresh),
-      Container(color: Colors.yellow),
+      TransactionListPage(onChanged: refresh),
     ];
   }
   void refresh() {
@@ -58,8 +59,8 @@ class _MainPageState extends State<MainPage> {
             label: 'Hũ tiền',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Khác',
+              icon: Icon(Icons.swap_horiz),
+              label: 'Giao dịch',
           ),
         ],
       ),
