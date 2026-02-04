@@ -5,8 +5,8 @@ class Transaction {
   final int categoryId;
   final double amount;
   final String? note;
-  final String date;
-  final String status;
+  final String? date;
+  final String? status;
   final int isDeleted;
   final String? createdAt;
 
@@ -17,7 +17,7 @@ class Transaction {
     required this.categoryId,
     required this.amount,
     this.note,
-    required this.date,
+    this.date,
     this.status = 'completed',
     this.isDeleted = 0,
     this.createdAt,

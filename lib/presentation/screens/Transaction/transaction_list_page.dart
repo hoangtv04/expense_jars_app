@@ -28,7 +28,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Transactions')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: HeroMode(
+          enabled: false,
+          child: AppBar(
+            title: const Text('Transactions'),
+          ),
+        ),
+      ),
       body: FutureBuilder<List<Transaction>>(
         future: _futureTransactions,
         builder: (context, snapshot) {
@@ -52,7 +60,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
               final t = transactions[index];
               return ListTile(
                 title: Text('Số tiền: ${t.amount}'),
-                subtitle: Text(t.date),
+                subtitle: Text(t.date!),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete),
                   onPressed: () async {

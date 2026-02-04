@@ -3,6 +3,7 @@
 
 
 import '../models/Jar.dart';
+import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
 import '../repositories/TransactionRepository.dart';
 
@@ -26,8 +27,35 @@ class TransactionController {
 
 
     Future<List<Transaction>> getTransactionListById(int id) async {
-    final list = await _repo.getAllTransactionById(id);
+    final list = await _repo.getAllTransactionByJarId(id);
     print('Jar count: ${list.length}');
+    return list;
+  }
+
+
+
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
+    print('===== TransactionController =====');
+    print('jarId nhận được: $jarId');
+
+    final list = await _repo.getAllTransactionAndCategoryName(jarId);
+
+    print('KẾT QUẢ TỪ REPO');
+    print('Số lượng record: ${list.length}');
+
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      print(
+          '[$i] '
+              'id=${item.id}, '
+              'categoryId=${item.categoryId}, '
+              'categoryName=${item.categoryName}, '
+              'amount=${item.amount}'
+      );
+    }
+
+    print('===== END TransactionController =====');
+
     return list;
   }
 

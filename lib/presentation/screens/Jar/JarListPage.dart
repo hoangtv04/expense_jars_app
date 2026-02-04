@@ -46,7 +46,15 @@ class _JarListPageState extends State<JarListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Hũ của bạn')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: HeroMode(
+          enabled: false,
+          child: AppBar(
+            title: const Text('View Jar'),
+          ),
+        ),
+      ),
       body: FutureBuilder<List<Jar>>(
         future: _futureJars,
         builder: (context, snapshot) {

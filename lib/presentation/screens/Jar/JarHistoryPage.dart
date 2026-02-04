@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../controllers/JarController.dart';
 import '../../../controllers/TransactionController.dart';
+import '../../../models/Reponse/TransactionWithCategory.dart';
 import '../../../models/Transaction.dart';
 
 
@@ -107,9 +108,14 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
           ),
 // ===== DANH SÁCH GIAO DỊCH =====
           Expanded(
-            child: FutureBuilder<List<Transaction>>(
-              future: _controller.getTransactionListById(widget.jarId!),
+            child: FutureBuilder<List<TransactionWithCategory>>(
+              future: _controller.getTransactionWithCategory(widget.jarId!),
               builder: (context, snapshot) {
+                print('===== FUTURE BUILDER =====');
+                print('connectionState: ${snapshot.connectionState}');
+                print('hasData: ${snapshot.hasData}');
+                print('error: ${snapshot.error}');
+                print('data length: ${snapshot.data?.length}');
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -159,6 +165,13 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text(
+                                  item.categoryName ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 Text(
                                   item.note ?? '',
                                   style: const TextStyle(

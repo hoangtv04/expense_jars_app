@@ -44,6 +44,8 @@ class CategoryController {
     return await _repo.getAll();
   }
 
+
+
   Future<Category?> getCategoryById(int id) async {
     return await _repo.getCategoryById(id);
   }
@@ -53,4 +55,8 @@ class CategoryController {
       (e) => e.name == value,
     );
   }
+
+
+
+
 }

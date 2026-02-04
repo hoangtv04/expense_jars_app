@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/controllers/CategoryController.dart';
+import 'package:flutter_application_jars/controllers/JarController.dart';
 import 'package:flutter_application_jars/presentation/screens/login.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+import '../../models/Category.dart';
 
+
+
+
+class home extends StatefulWidget {
+
+  final VoidCallback onChanged;
+  const home({
+    super.key,
+    required this.onChanged,
+  });
+  @override
+  State<home> createState() => _homeState();
+}
+
+
+
+class _homeState extends State<home> {
+  final _controller = JarController();
+
+final _controllerCategory = CategoryController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,34 +47,43 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== TỔNG SỐ TIỀN =====
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade400,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tổng số dư',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '10.000.000 ₫',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
+          FutureBuilder<double>(
+            future: _controller.calTotalMoney2(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Text('...');
+              }
+
+              double? money = snapshot.data;
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade400,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tổng số dư',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${money} ₫',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
             const SizedBox(height: 24),
 
             // ===== TIÊU ĐỀ =====
@@ -64,53 +94,36 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // ===== GRID HŨ =====
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: const [
-                _JarItem(
-                  title: 'Thiết yếu',
-                  amount: '5.500.000 ₫',
-                  icon: Icons.home,
-                  color: Colors.blue,
-                ),
-                _JarItem(
-                  title: 'Giáo dục',
-                  amount: '1.200.000 ₫',
-                  icon: Icons.school,
-                  color: Colors.green,
-                ),
-                _JarItem(
-                  title: 'Tiết kiệm',
-                  amount: '2.000.000 ₫',
-                  icon: Icons.savings,
-                  color: Colors.orange,
-                ),
-                _JarItem(
-                  title: 'Hưởng thụ',
-                  amount: '800.000 ₫',
-                  icon: Icons.celebration,
-                  color: Colors.purple,
-                ),
-                _JarItem(
-                  title: 'Đầu tư',
-                  amount: '300.000 ₫',
-                  icon: Icons.trending_up,
-                  color: Colors.red,
-                ),
-                _JarItem(
-                  title: 'Thiện tâm',
-                  amount: '200.000 ₫',
-                  icon: Icons.volunteer_activism,
-                  color: Colors.teal,
-                ),
-              ],
-            ),
+            FutureBuilder(future: _controllerCategory.getAllCategories(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text('...');
+                }
+
+                List<Category> c  =snapshot.data!;
+              return  GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.1,
+                  children: c.map((category) {
+                    return _JarItem(
+                      title: category.name,
+                      amount: '0 ₫',
+                      icon: Icons.category,
+                      color: Colors.blue,
+                    );
+
+                  }).toList()
+                );
+
+            },)
+
+
+
+
           ],
         ),
       ),

@@ -2,6 +2,7 @@
 
 import '../db/app_database.dart';
 import '../models/Jar.dart';
+import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
 
 class TransactionRepository {
@@ -17,11 +18,11 @@ class TransactionRepository {
     return await db.insert("transactions", transaction.toMap());
   }
 
-  Future<List<Transaction>> getAllTransactionById(int id) async {
+  Future<List<Transaction>> getAllTransactionByJarId(int jar_id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query('transactions',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'jar_id = ?',
+      whereArgs: [jar_id],
     );
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
@@ -31,6 +32,40 @@ class TransactionRepository {
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
+
+  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
+    final db = await AppDatabase.instance.database;
+
+    print('===== REPO START =====');
+    print('jarId = $jarId');
+
+    final result = await db.rawQuery(
+      '''
+    SELECT 
+      t.*,
+      c.name AS category_name
+    FROM transactions t
+    LEFT JOIN categories c
+      ON t.category_id = c.id
+      AND c.is_deleted = 0
+    WHERE (t.is_deleted = 0 OR t.is_deleted IS NULL)
+      AND t.jar_id = ?
+    ORDER BY t.created_at DESC
+    ''',
+      [jarId],
+    );
+
+    print('REPO result count = ${result.length}');
+    for (final row in result) {
+      print(row);
+    }
+
+    print('===== REPO END =====');
+
+    return result
+        .map((e) => TransactionWithCategory.fromMap(e))
+        .toList();
+  }
   // belong to Demons
 
   Future<int> insertTransactions(Transaction transaction) async {

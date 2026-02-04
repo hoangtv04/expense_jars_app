@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
+import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
 import 'package:flutter_application_jars/presentation/screens/Category/CategoryListPage.dart';
 
@@ -27,9 +28,10 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      HomeScreen(),
+      home(onChanged: refresh),
       JarListPage(onChanged: refresh),
-      Container(color: Colors.purple),
+      CategoryListPage(),
+      TransactionListPage(onChanged: refresh)
     ];
   }
   void refresh() {
@@ -38,9 +40,12 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
+      body: HeroMode(
+        enabled: false,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -51,17 +56,10 @@ class _MainPageState extends State<MainPage> {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         onTap: (index) {
-          if (index == 2) {
-            // Navigate to CategoryListPage
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CategoryListPage()),
-            );
-          } else {
             setState(() {
               _currentIndex = index;
             });
-          }
+
         },
         items: const [
           BottomNavigationBarItem(

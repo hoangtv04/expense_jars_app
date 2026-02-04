@@ -1,6 +1,8 @@
 
 
 
+import 'package:flutter_application_jars/models/Reponse/JarOption.dart';
+
 import '../models/Jar.dart';
 import '../models/Reponse/AddJarRespone.dart';
 import '../repositories/JarRepository.dart';
@@ -48,6 +50,24 @@ class  JarController{
     return jars.fold(0, (sum, jar) => sum + jar.balance);
   }
 
+  Future<double> calTotalMoney2() async {
+    final jars = await _repo.getAll();
+    return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
+  }
 
+  Future<List<JarOption>> getListJarIdAndName() async{
+
+
+    final jars = await _repo.getAll();
+
+    List<JarOption> jarList = [];
+    for(int i=0 ;i<jars.length;i++){
+      JarOption option = new JarOption(id: jars[i].id!, name: jars[i].name.toString()!);
+      jarList.add(option);
+    }
+
+
+    return  jarList;
+  }
 
 }

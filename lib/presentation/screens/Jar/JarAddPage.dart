@@ -54,7 +54,15 @@ class _AddMemberPageState extends State<JarAddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thêm thành viên')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: HeroMode(
+          enabled: false,
+          child: AppBar(
+            title: const Text('Add Jar'),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
