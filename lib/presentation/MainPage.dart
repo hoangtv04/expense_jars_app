@@ -40,6 +40,16 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Expense Jars'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload dữ liệu',
+            onPressed: refresh,
+          ),
+        ],
+      ),
       body: HeroMode(
         enabled: false,
         child: IndexedStack(

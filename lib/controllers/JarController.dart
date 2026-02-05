@@ -46,6 +46,18 @@ class  JarController{
     return list;
   }
 
+
+  Future<void> updateJarAmount(int id, double amount) async {
+    final jar = await _repo.getJarById(id);
+
+    if (jar == null) {
+      throw Exception('Jar not found');
+    }
+
+    double updatedJar = jar.balance + amount;
+
+    await _repo.updateJar(id,updatedJar);
+  }
   double calTotalMoney(List<Jar> jars) {
     return jars.fold(0, (sum, jar) => sum + jar.balance);
   }
@@ -54,6 +66,8 @@ class  JarController{
     final jars = await _repo.getAll();
     return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
   }
+
+
 
   Future<List<JarOption>> getListJarIdAndName() async{
 
