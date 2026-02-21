@@ -30,7 +30,7 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       home(onChanged: refresh),
       JarListPage(onChanged: refresh),
-      CategoryListPage(),
+      Container(), // Placeholder for CategoryListPage - will be navigated separately
       TransactionListPage(onChanged: refresh)
     ];
   }
@@ -47,7 +47,7 @@ class _MainPageState extends State<MainPage> {
           children: _pages,
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: _currentIndex == 2 ? null : BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
@@ -56,10 +56,17 @@ class _MainPageState extends State<MainPage> {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         onTap: (index) {
+          if (index == 2) {
+            // Navigate to CategoryListPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CategoryListPage()),
+            );
+          } else {
             setState(() {
               _currentIndex = index;
             });
-
+          }
         },
         items: const [
           BottomNavigationBarItem(
