@@ -10,6 +10,32 @@ class JarRepository {
     return await db.insert("jars", jar.toMap());
   }
 
+  Future<void> updateJar(int id,double amount) async{
+    final db = await AppDatabase.instance.database;
+
+    await db.update(
+      'jars',
+      {'balance': amount},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<Jar?> getJarById(int id) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.query(
+      'jars',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1, // đảm bảo chỉ lấy 1 record
+    );
+
+    if (result.isEmpty) return null;
+
+    return Jar.fromMap(result.first);
+  }
+
   Future<int> deleteJar(int id) async{
     final db = await AppDatabase.instance.database;
     return await db.update(

@@ -2,13 +2,17 @@
 
 
 
+import 'package:flutter_application_jars/repositories/JarRepository.dart';
+
 import '../models/Jar.dart';
 import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
 import '../repositories/TransactionRepository.dart';
 
+
 class TransactionController {
   final TransactionRepository _repo = TransactionRepository();
+  final JarRepository _jarRepo = JarRepository();
 
   Future<List<Transaction>> getAll() async {
     return await _repo.getAllTransactions();
@@ -21,6 +25,13 @@ class TransactionController {
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {
       throw Exception("Amount không hợp lệ");
+    }
+    final jar = await _jarRepo.getJarById(transaction.jarId);
+    if(jar == null) {
+      throw Exception("Hũ không tồn tại");
+    }
+    if(transaction.amount > jar.balance) {
+      throw Exception("Số tiền vượt quá số dư của hũ");
     }
     await _repo.insertTransactions(transaction);
   }

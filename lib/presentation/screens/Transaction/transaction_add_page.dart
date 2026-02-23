@@ -150,7 +150,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
-                    final transaction = Transaction(
+                    final transaction  = Transaction(
                       userId: 1,
                       jarId: _selectedJar!,
                       categoryId: _selectedCategory!,
@@ -162,6 +162,8 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                     );
 
                     await _controller.add(transaction);
+
+                    _controllerJar.updateJarAmount(_selectedJar!, -double.parse(_amountController.text));
                     Navigator.pop(context, true);
                   },
                   child: const Text(

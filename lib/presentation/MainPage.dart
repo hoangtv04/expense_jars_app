@@ -75,8 +75,8 @@ class _MainPageState extends State<MainPage> {
             label: 'Hạng mục',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Khác',
+            icon: Icon(Icons.swap_horiz),
+            label: 'Giao dịch',
           ),
         ],
       ),
