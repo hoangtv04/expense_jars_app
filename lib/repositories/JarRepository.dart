@@ -20,6 +20,7 @@ class JarRepository {
       whereArgs: [id],
     );
   }
+
   Future<Jar?> getJarById(int id) async {
     final db = await AppDatabase.instance.database;
 

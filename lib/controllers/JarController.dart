@@ -46,6 +46,16 @@ class  JarController{
     return list;
   }
 
+  double calTotalMoney(List<Jar> jars) {
+    return jars.fold(0, (sum, jar) => sum + jar.balance);
+  }
+
+  Future<double> calTotalMoney2() async {
+    final jars = await _repo.getAll();
+    return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
+  }
+
+
 
   Future<void> updateJarAmount(int id, double amount) async {
     final jar = await _repo.getJarById(id);
@@ -58,16 +68,6 @@ class  JarController{
 
     await _repo.updateJar(id,updatedJar);
   }
-  double calTotalMoney(List<Jar> jars) {
-    return jars.fold(0, (sum, jar) => sum + jar.balance);
-  }
-
-  Future<double> calTotalMoney2() async {
-    final jars = await _repo.getAll();
-    return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
-  }
-
-
 
   Future<List<JarOption>> getListJarIdAndName() async{
 
