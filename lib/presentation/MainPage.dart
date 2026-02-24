@@ -30,8 +30,9 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       home(onChanged: refresh),
       JarListPage(onChanged: refresh),
-      CategoryListPage(),
-      TransactionListPage(onChanged: refresh)
+      TransactionListPage(onChanged: refresh),
+      Container(), // Placeholder for CategoryListPage - will be navigated separately
+      Container(color: Colors.purple) // Placeholder for "Khác"
     ];
   }
   void refresh() {
@@ -57,38 +58,76 @@ class _MainPageState extends State<MainPage> {
           children: _pages,
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: EdgeInsets.only(top: 8, bottom: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home, 'Trang chủ', 0),
+            _buildNavItem(Icons.account_balance_wallet, 'Hũ tiền', 1),
+            _buildNavItem(Icons.add, 'Ghi chép', 2),
+            _buildNavItem(Icons.category, 'Hạng mục', 3),
+            _buildNavItem(Icons.more_horiz, 'Khác', 4),
+          ],
+        ),
+      ),
+    );
+  }
 
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Hũ tiền',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Hạng mục',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Khác',
-          ),
-        ],
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    bool isSelected = _currentIndex == index;
+    bool isCenter = index == 2; // "Ghi chép" button
+    
+    return GestureDetector(
+      onTap: () {
+        if (index == 3) {
+          // Navigate to CategoryListPage as separate screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CategoryListPage(),
+            ),
+          );
+        } else {
+          setState(() {
+            _currentIndex = index;
+          });
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: isCenter ? 40 : null,
+              height: isCenter ? 40 : null,
+              decoration: isCenter
+                  ? BoxDecoration(
+                      color: isSelected ? Colors.blue : Colors.grey.shade400,
+                      shape: BoxShape.circle,
+                    )
+                  : null,
+              child: Icon(
+                icon,
+                size: 24,
+                color: isCenter
+                    ? (isSelected ? Colors.white : Colors.grey.shade700)
+                    : (isSelected ? Colors.blue : Colors.grey),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected ? Colors.blue : Colors.grey,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
