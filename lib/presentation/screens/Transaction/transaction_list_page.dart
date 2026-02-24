@@ -83,6 +83,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
             MaterialPageRoute(builder: (context) => TransactionAddPage()),
           );
           if (result == true) {
+            widget.onChanged();
             setState(() {
               _futureTransactions = _controller.getAll();
             });

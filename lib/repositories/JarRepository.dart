@@ -1,5 +1,7 @@
 
 
+import 'package:flutter_application_jars/models/Reponse/UpdateJarSetting.dart';
+
 import '../db/app_database.dart';
 import '../models/Jar.dart';
 
@@ -20,6 +22,38 @@ class JarRepository {
       whereArgs: [id],
     );
   }
+
+
+  Future<void> updateJarName(int id,String name) async{
+    final db = await AppDatabase.instance.database;
+
+    await db.update(
+      'jars',
+      {'nameJar': name},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+
+  }
+
+  Future<void> updateJarSetting(UpdateJarSetting updateJarSetting) async{
+    final db = await AppDatabase.instance.database;
+
+    await db.update(
+      'jars',
+      {'nameJar': updateJarSetting.nameJar,
+        'name': updateJarSetting.name,
+        'balance': updateJarSetting.balance,
+        'description': updateJarSetting.description,
+      },
+      where: 'id = ?',
+      whereArgs: [updateJarSetting.id],
+    );
+
+
+  }
+
 
   Future<Jar?> getJarById(int id) async {
     final db = await AppDatabase.instance.database;
@@ -54,12 +88,23 @@ class JarRepository {
   //
   //   return maps.map((e) => Jar.fromMap(e)).toList();
   // }
+
+
   Future<List<Jar>> getAll() async {
     final db = await AppDatabase.instance.database;
-    final maps = await db.query('jars');
+    final maps = await db.query(
+      'jars',
+      where: 'is_deleted = ?',
+      whereArgs: [0],
+    );
 
     return maps.map((e) => Jar.fromMap(e)).toList();
   }
+
+
+
+
+
 
 
 

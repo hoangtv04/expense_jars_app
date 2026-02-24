@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../models/Jar.dart';
+
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
@@ -22,10 +24,10 @@ class AppDatabase {
       'password': '123456',
     });
 
-    // ===== JAR =====
     final jarId = await db.insert('jars', {
       'user_id': userId,
-      'name': 'cash', // JarType.cash.name
+      'nameJar': 'Ví chính',
+      'name': JarType.cash.name,
       'balance': 1000000.0,
       'description': 'Ví chính',
       'is_deleted': 0,
@@ -298,6 +300,7 @@ class AppDatabase {
   CREATE TABLE jars (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    nameJar TEXT NOT NULL,
     name TEXT NOT NULL,
     balance REAL DEFAULT 0,
     description TEXT,

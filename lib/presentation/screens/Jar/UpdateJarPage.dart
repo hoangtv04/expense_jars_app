@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../controllers/JarController.dart';
 import '../../../models/Jar.dart';
-import '../../../models/Reponse/AddJarRespone.dart';
+import '../../../models/Reponse/UpdateJarSetting.dart';
 
-class JarAddPage extends StatefulWidget {
-  const JarAddPage({super.key});
+class UpdateJarPage extends StatefulWidget {
+  final Jar jar;
 
+
+  const UpdateJarPage({super.key,required this.jar,});
   @override
-  State<JarAddPage> createState() => _AddMemberPageState();
+  State<UpdateJarPage> createState() => _UpdateJarPage();
 }
 
-class _AddMemberPageState extends State<JarAddPage> {
+class _UpdateJarPage extends State<UpdateJarPage> {
   final _controller = JarController();
   final _formKey = GlobalKey<FormState>();
 
@@ -18,27 +20,46 @@ class _AddMemberPageState extends State<JarAddPage> {
   final _description = TextEditingController();
 
   final _nameJar = TextEditingController();
+    JarType? _selectedName;
 
-  DateTime today = DateTime.now();
+    late final int _idJar;
+  @override
+  void initState() {
+    super.initState();
+    _idJar = widget.jar.id!;
+    _nameJar.text = widget.jar.nameJar;
+    _money.text = widget.jar.balance.toString();
+    _description.text = widget.jar.description;
+  }
 
-  JarType? _selectedName;
+  @override
+  void dispose() {
+    _money.dispose();
+    _description.dispose();
+    _nameJar.dispose();
+    super.dispose();
+  }
+
+
+
+
+
+
 
   void _save() async {
     try {
-      AddJarRespone addJarRespone = AddJarRespone(
-        user_id: 1,
+      UpdateJarSetting updateJarSetting = UpdateJarSetting(
+        id: _idJar,
         name: _selectedName!.name,
         nameJar: _nameJar.text,
         balance: double.parse(_money.text),
         description: _description.text,
-        is_deleted: 0,
-        created_at: today,
-      );
+      ) ;
 
-      await _controller.addJar(addJarRespone);
+      await _controller.updateJarSetting(updateJarSetting);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thêm thành công')),
+        const SnackBar(content: Text('update thành công')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

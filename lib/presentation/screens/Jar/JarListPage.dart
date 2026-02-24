@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/presentation/screens/Jar/UpdateJarPage.dart';
 
 import '../../../controllers/JarController.dart';
 import '../../../models/Jar.dart';
@@ -41,6 +42,111 @@ class _JarListPageState extends State<JarListPage> {
     setState(() {
       _futureJars = _controller.getJar();
     });
+  }
+
+  void _showJarOptions(BuildContext context, Jar jar) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              // Thanh nhỏ phía trên (đẹp hơn)
+              Container(
+                width: 40,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              ListTile(
+                leading: Icon(Icons.edit),
+                title: Text("Sửa tên hũ"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => UpdateJarPage(jar: jar),
+                    ),
+                  ).then((_) {
+                    // 🔥 Khi quay lại → reload DB
+                    _reload();
+                    widget.onChanged(); // báo MainPage nếu cần
+                  });
+
+
+                },
+              ),
+
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text(
+                  "Xóa hũ",
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+
+                  if (jar.id != null) {
+                    _controller.deleteJar(jar.id!);
+                  }
+
+                  _reload();
+                  Navigator.pop(context);
+                  // xử lý xóa
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditNameDialog(Jar jar) {
+    TextEditingController controller =
+    TextEditingController(text: jar.nameJar);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Sửa tên hũ"),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: "Nhập tên mới",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Hủy"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+
+
+                print(controller.text);
+                _reload();
+                Navigator.pop(context);
+              },
+              child: Text("Lưu"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -155,11 +261,19 @@ class _JarListPageState extends State<JarListPage> {
                       child: ListTile(
                         leading: const Icon(Icons.account_balance_wallet),
                         title: Text(
-                          jar.name.toString(),
+                          jar.nameJar,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle:
                         Text('${jar.balance.toStringAsFixed(0)} đ'),
+
+
+                        trailing: IconButton(
+                          icon: const Icon(Icons.more_vert),
+                          onPressed: () {
+                            _showJarOptions(context, jar);
+                          },
+                        ),
 
                         onTap: () {
                           Navigator.push(
@@ -170,8 +284,12 @@ class _JarListPageState extends State<JarListPage> {
                           );
                         },
 
+
+
                       )
+
                     );
+
                   },
                   childCount: jars.length,
                 ),

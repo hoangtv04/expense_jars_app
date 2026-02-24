@@ -2,6 +2,7 @@
 
 
 import 'package:flutter_application_jars/models/Reponse/JarOption.dart';
+import 'package:flutter_application_jars/models/Reponse/UpdateJarSetting.dart';
 
 import '../models/Jar.dart';
 import '../models/Reponse/AddJarRespone.dart';
@@ -22,6 +23,7 @@ class  JarController{
     final jar = Jar(
       user_id: 1,
       name: jarName,
+      nameJar: res.nameJar,
       balance: res.balance,
       description: res.description,
       is_deleted: res.is_deleted,
@@ -31,17 +33,26 @@ class  JarController{
     print("insert");
     await _repo.insertJar(jar);
   }
+  Future<void> updateJarSetting(UpdateJarSetting res) async {
+
+
+    print("Update Full setting jar");
+    await _repo.updateJarSetting(res);
+  }
+
+
+
 
   Future<void> deleteJar(int id) async {
 
+    await  _repo.deleteJar(id);
+    print("Đã xóa thành công");
 
-
-
-    // await _repo.;
   }
 
   Future<List<Jar>> getJar() async {
     final list = await _repo.getAll();
+
     print('Jar count: ${list.length}');
     return list;
   }
@@ -56,7 +67,17 @@ class  JarController{
   }
 
 
+  Future<void> settingJar(int id, double amount) async {
+    final jar = await _repo.getJarById(id);
 
+    if (jar == null) {
+      throw Exception('Jar not found');
+    }
+
+    double updatedJar = jar.balance + amount;
+
+    await _repo.updateJar(id,updatedJar);
+  }
   Future<void> updateJarAmount(int id, double amount) async {
     final jar = await _repo.getJarById(id);
 
@@ -83,5 +104,10 @@ class  JarController{
 
     return  jarList;
   }
+
+
+
+
+
 
 }
