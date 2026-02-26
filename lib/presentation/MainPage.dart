@@ -67,7 +67,7 @@ class _MainPageState extends State<MainPage> {
             _buildNavItem(Icons.home, 'Trang chủ', 0),
             _buildNavItem(Icons.account_balance_wallet, 'Hũ tiền', 1),
             _buildNavItem(Icons.add, 'Ghi chép', 2),
-            _buildNavItem(Icons.category, 'Hạng mục', 3),
+            _buildNavItem(Icons.bar_chart, 'Thống kê', 3),
             _buildNavItem(Icons.more_horiz, 'Khác', 4),
           ],
         ),
@@ -81,19 +81,9 @@ class _MainPageState extends State<MainPage> {
     
     return GestureDetector(
       onTap: () {
-        if (index == 3) {
-          // Navigate to CategoryListPage as separate screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CategoryListPage(),
-            ),
-          );
-        } else {
-          setState(() {
-            _currentIndex = index;
-          });
-        }
+        setState(() {
+          _currentIndex = index;
+        });
       },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 4),

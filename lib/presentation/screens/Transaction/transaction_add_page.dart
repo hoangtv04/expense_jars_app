@@ -3,6 +3,8 @@ import '../../../controllers/TransactionController.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../controllers/JarController.dart';
 import '../../../models/Transaction.dart';
+import '../../../models/Category.dart';
+import '../Category/CategoryListPage.dart';
 
 class TransactionAddPage extends StatefulWidget {
   const TransactionAddPage({super.key});
@@ -22,6 +24,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
 
   int? _selectedJar;
   int? _selectedCategory;
+  Category? _selectedCategoryObject;
 
   @override
   Widget build(BuildContext context) {
@@ -86,38 +89,46 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              const Text(
-                'Danh mục',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-
-              FutureBuilder(
-                future: _controllerCategory.getAllCategories(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const SizedBox();
-
-                  final categories = snapshot.data!;
-                  return Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: categories.map((c) {
-                      final selected = _selectedCategory == c.id;
-                      return ChoiceChip(
-                        label: Text(c.name),
-                        selected: selected,
-                        onSelected: (_) =>
-                            setState(() => _selectedCategory = c.id),
-                        selectedColor: Colors.blue.shade100,
-                      );
-                    }).toList(),
+              // Category Selection Field
+              InkWell(
+                onTap: () async {
+                  final result = await Navigator.push<Category>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CategoryListPage(
+                        isSelectionMode: true,
+                      ),
+                    ),
                   );
+
+                  if (result != null) {
+                    setState(() {
+                      _selectedCategoryObject = result;
+                      _selectedCategory = result.id;
+                    });
+                  }
                 },
+                child: IgnorePointer(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Chọn hạng mục',
+                      hintText: _selectedCategoryObject?.name,
+                      prefixIcon: const Icon(Icons.category),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      suffixIcon: const Icon(Icons.arrow_drop_down),
+                    ),
+                    controller: TextEditingController(
+                      text: _selectedCategoryObject?.name ?? '',
+                    ),
+                  ),
+                ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               TextFormField(
                 controller: _noteController,

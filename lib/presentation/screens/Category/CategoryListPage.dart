@@ -4,7 +4,12 @@ import '../../../models/Category.dart';
 import 'EditCategoryPage.dart';
 
 class CategoryListPage extends StatefulWidget {
-  const CategoryListPage({super.key});
+  final bool isSelectionMode; // Thêm tham số để biết có phải chế độ chọn không
+  
+  const CategoryListPage({
+    super.key,
+    this.isSelectionMode = false,
+  });
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -123,19 +128,21 @@ class _CategoryListPageState extends State<CategoryListPage>
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EditCategoryPage(),
+        actions: widget.isSelectionMode
+            ? null // Ẩn nút edit khi ở chế độ chọn
+            : [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditCategoryPage(),
+                      ),
+                    ).then((_) => _loadCategories());
+                  },
                 ),
-              ).then((_) => _loadCategories());
-            },
-          ),
-        ],
+              ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.blue,
@@ -264,12 +271,18 @@ class _CategoryListPageState extends State<CategoryListPage>
   Widget _buildSubcategoryItem(Category subcategory) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã chọn: ${subcategory.name}'),
-            duration: const Duration(seconds: 1),
-          ),
-        );
+        if (widget.isSelectionMode) {
+          // Nếu ở chế độ chọn, trả về category đã chọn
+          Navigator.pop(context, subcategory);
+        } else {
+          // Nếu không, hiển thị snackbar như cũ
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã chọn: ${subcategory.name}'),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(8),
@@ -331,10 +344,13 @@ class _CategoryListPageState extends State<CategoryListPage>
           vertical: 8,
         ),
         leading: hasSubcategories
-            ? Icon(
-                isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                size: 24,
-                color: Colors.grey[600],
+            ? IconButton(
+                icon: Icon(
+                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  size: 24,
+                  color: Colors.grey[600],
+                ),
+                onPressed: () => _toggleCategory(category.id!),
               )
             : const SizedBox(width: 24),
         title: Text(
@@ -344,16 +360,20 @@ class _CategoryListPageState extends State<CategoryListPage>
             fontWeight: FontWeight.w500,
           ),
         ),
-        onTap: hasSubcategories
-            ? () => _toggleCategory(category.id!)
-            : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Đã chọn: ${category.name}'),
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
-              },
+        onTap: () {
+          if (widget.isSelectionMode) {
+            // Ở chế độ chọn: chọn hạng mục (cha hoặc không có con)
+            Navigator.pop(context, category);
+          } else {
+            // Không ở chế độ chọn: hiển thị snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã chọn: ${category.name}'),
+                duration: const Duration(seconds: 1),
+              ),
+            );
+          }
+        },
       ),
     );
   }
