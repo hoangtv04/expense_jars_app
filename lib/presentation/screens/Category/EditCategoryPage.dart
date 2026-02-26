@@ -322,10 +322,13 @@ class _EditCategoryPageState extends State<EditCategoryPage>
           vertical: 8,
         ),
         leading: hasSubcategories
-            ? Icon(
-                isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                size: 24,
-                color: Colors.grey[600],
+            ? IconButton(
+                icon: Icon(
+                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  size: 24,
+                  color: Colors.grey[600],
+                ),
+                onPressed: () => _toggleCategory(category.id!),
               )
             : const SizedBox(width: 24),
         title: Text(
@@ -335,49 +338,24 @@ class _EditCategoryPageState extends State<EditCategoryPage>
             fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (category.name == 'Cho vay')
-              Icon(Icons.lock_outline, color: Colors.grey[400])
-            else if (hasSubcategories)
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.grey[600], size: 20),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditCategoryDetailPage(
-                        category: category,
-                        isSubcategory: false,
-                      ),
-                    ),
-                  );
-                  
-                  if (result == true) {
-                    _loadCategories();
-                  }
-                },
+        trailing: category.name == 'Cho vay'
+            ? Icon(Icons.lock_outline, color: Colors.grey[400])
+            : null,
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EditCategoryDetailPage(
+                category: category,
+                isSubcategory: false,
               ),
-          ],
-        ),
-        onTap: hasSubcategories
-            ? () => _toggleCategory(category.id!)
-            : () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditCategoryDetailPage(
-                      category: category,
-                      isSubcategory: false,
-                    ),
-                  ),
-                );
-                
-                if (result == true) {
-                  _loadCategories();
-                }
-              },
+            ),
+          );
+          
+          if (result == true) {
+            _loadCategories();
+          }
+        },
       ),
     );
   }

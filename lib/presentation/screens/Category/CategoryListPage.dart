@@ -128,21 +128,19 @@ class _CategoryListPageState extends State<CategoryListPage>
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-        actions: widget.isSelectionMode
-            ? null // Ẩn nút edit khi ở chế độ chọn
-            : [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditCategoryPage(),
-                      ),
-                    ).then((_) => _loadCategories());
-                  },
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditCategoryPage(),
                 ),
-              ],
+              ).then((_) => _loadCategories());
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.blue,
