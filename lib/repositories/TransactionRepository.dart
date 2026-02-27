@@ -1,6 +1,7 @@
 
 
 import '../db/app_database.dart';
+import '../models/Category.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
@@ -36,14 +37,12 @@ class TransactionRepository {
   Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
     final db = await AppDatabase.instance.database;
 
-    print('===== REPO START =====');
-    print('jarId = $jarId');
-
     final result = await db.rawQuery(
       '''
     SELECT 
       t.*,
-      c.name AS category_name
+      c.name AS category_name,
+      c.type AS category_type
     FROM transactions t
     LEFT JOIN categories c
       ON t.category_id = c.id
@@ -54,13 +53,6 @@ class TransactionRepository {
     ''',
       [jarId],
     );
-
-    print('REPO result count = ${result.length}');
-    for (final row in result) {
-      print(row);
-    }
-
-    print('===== REPO END =====');
 
     return result
         .map((e) => TransactionWithCategory.fromMap(e))
@@ -101,6 +93,42 @@ class TransactionRepository {
     final db = await AppDatabase.instance.database;
     final maps = await db.query('transactions');
     return maps.map((e) => Transaction.fromMap(e)).toList();
+  }
+
+
+
+  Future<double> getTotalIncome(int jarId) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.rawQuery('''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.jar_id = ?
+      AND t.is_deleted = 0
+      AND c.type = ?
+  ''', [jarId, CategoryType.income.name]);
+
+    final total = result.first['total'];
+
+    return total == null ? 0.0 : (total as num).toDouble();
+  }
+
+  Future<double> getTotalExpense(int jarId) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.rawQuery('''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.jar_id = ?
+      AND t.is_deleted = 0
+      AND c.type = ?
+  ''', [jarId, CategoryType.expense.name]);
+
+    final total = result.first['total'];
+
+    return total == null ? 0.0 : (total as num).toDouble();
   }
 
 }

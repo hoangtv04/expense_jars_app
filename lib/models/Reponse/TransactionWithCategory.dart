@@ -1,7 +1,9 @@
+import '../Category.dart';
 import '../Transaction.dart';
 
 class TransactionWithCategory extends Transaction {
   final String? categoryName;
+  final CategoryType type; // 🔥 THÊM DÒNG NÀY
 
   TransactionWithCategory({
     int? id,
@@ -15,6 +17,7 @@ class TransactionWithCategory extends Transaction {
     required int isDeleted,
     required String createdAt,
     this.categoryName,
+    required this.type, // 🔥 THÊM
   }) : super(
     id: id,
     userId: userId,
@@ -40,7 +43,12 @@ class TransactionWithCategory extends Transaction {
       status: map['status'],
       isDeleted: map['is_deleted'],
       createdAt: map['created_at'],
-      categoryName: map['category_name'] as String?, // 👈 QUAN TRỌNG
+      categoryName: map['category_name'] as String?,
+
+      type: CategoryType.values.firstWhere(
+            (e) => e.name == map['category_type'],
+        orElse: () => CategoryType.expense, // fallback an toàn
+      ),
     );
   }
 }

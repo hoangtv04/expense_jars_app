@@ -4,6 +4,7 @@
 import 'package:flutter_application_jars/models/Reponse/JarOption.dart';
 import 'package:flutter_application_jars/models/Reponse/UpdateJarSetting.dart';
 
+import '../db/app_state.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/AddJarRespone.dart';
 import '../repositories/JarRepository.dart';
@@ -38,6 +39,8 @@ class  JarController{
 
     print("Update Full setting jar");
     await _repo.updateJarSetting(res);
+    AppState.jarChanged.value++;
+
   }
 
 
@@ -46,6 +49,9 @@ class  JarController{
   Future<void> deleteJar(int id) async {
 
     await  _repo.deleteJar(id);
+
+    AppState.jarChanged.value++;
+
     print("Đã xóa thành công");
 
   }
@@ -97,7 +103,7 @@ class  JarController{
 
     List<JarOption> jarList = [];
     for(int i=0 ;i<jars.length;i++){
-      JarOption option = new JarOption(id: jars[i].id!, name: jars[i].name.toString()!);
+      JarOption option = new JarOption(id: jars[i].id!, name: jars[i].nameJar!);
       jarList.add(option);
     }
 

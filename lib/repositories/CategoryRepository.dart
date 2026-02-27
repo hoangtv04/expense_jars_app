@@ -1,5 +1,7 @@
 import '../db/app_database.dart';
 import '../models/Category.dart';
+import '../models/Reponse/TransactionWithCategory.dart';
+import '../models/Reponse/TransactionjoinCategory.dart';
 
 class CategoryRepository {
   
@@ -61,11 +63,23 @@ class CategoryRepository {
     );
 
 
-
-
-
-
     return maps.map((e) => Category.fromMap(e)).toList();
+  }
+
+  Future<List<TransactionWithCategory>> getType(int id) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.rawQuery('''
+    SELECT t.*, c.name as category_name, c.type
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.is_deleted = 0
+    ORDER BY t.created_at DESC
+  ''');
+
+    return result
+        .map((e) => TransactionWithCategory.fromMap(e))
+        .toList();
   }
 
   Future<Category?> getCategoryById(int id) async {

@@ -2,8 +2,11 @@
 
 
 
+import 'package:flutter_application_jars/repositories/CategoryRepository.dart';
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
 
+import '../db/app_state.dart';
+import '../models/Category.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
@@ -12,6 +15,7 @@ import '../repositories/TransactionRepository.dart';
 
 class TransactionController {
   final TransactionRepository _repo = TransactionRepository();
+  final CategoryRepository _cateRepo = CategoryRepository();
   final JarRepository _jarRepo = JarRepository();
 
   Future<List<Transaction>> getAll() async {
@@ -34,7 +38,17 @@ class TransactionController {
       throw Exception("Số tiền vượt quá số dư của hũ");
     }
     await _repo.insertTransactions(transaction);
+    AppState.jarChanged.value++;
   }
+
+
+  Future<List<TransactionWithCategory>> getTransactionsWithCategory(int id) async {
+
+
+    return await _cateRepo.getType(id);
+
+  }
+
 
 
     Future<List<Transaction>> getTransactionListById(int id) async {
@@ -45,7 +59,7 @@ class TransactionController {
 
 
 
-  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionsByJar(int jarId) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -68,6 +82,19 @@ class TransactionController {
     print('===== END TransactionController =====');
 
     return list;
+  }
+
+
+  Future<double> getTransactionsTotalIncome(int jarId) async {
+
+
+    return _repo.getTotalIncome(jarId);
+  }
+
+  Future<double> getTransactionsTotalExpense(int jarId) async {
+
+
+    return _repo.getTotalExpense(jarId);
   }
 
 }

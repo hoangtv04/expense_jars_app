@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
+import 'package:flutter_application_jars/presentation/screens/Setting/SettingPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
 import 'package:flutter_application_jars/presentation/screens/Category/CategoryListPage.dart';
@@ -32,7 +33,7 @@ class _MainPageState extends State<MainPage> {
       JarListPage(onChanged: refresh),
       TransactionListPage(onChanged: refresh),
       Container(), // Placeholder for CategoryListPage - will be navigated separately
-      Container(color: Colors.purple) // Placeholder for "Khác"
+      SettingPage() // Placeholder for "Khác"
     ];
   }
   void refresh() {

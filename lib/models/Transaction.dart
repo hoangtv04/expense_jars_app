@@ -1,4 +1,6 @@
-class Transaction {
+import 'Category.dart';
+
+class   Transaction {
   final int? id;
   final int userId;
   final int jarId;
@@ -9,6 +11,9 @@ class Transaction {
   final String? status;
   final int isDeleted;
   final String? createdAt;
+
+  /// 🔥 THÊM DÒNG NÀY
+  final CategoryType? type;
 
   Transaction({
     this.id,
@@ -21,9 +26,10 @@ class Transaction {
     this.status = 'completed',
     this.isDeleted = 0,
     this.createdAt,
+    this.type, // 🔥 THÊM
   });
 
-  // ===== FROM DB MAP =====
+
   factory Transaction.fromMap(Map<String, dynamic> map) {
     return Transaction(
       id: map['id'],
@@ -36,10 +42,16 @@ class Transaction {
       status: map['status'],
       isDeleted: map['is_deleted'],
       createdAt: map['created_at'],
+
+      /// 🔥 CONVERT STRING → ENUM
+      type: map['type'] != null
+          ? CategoryType.values.firstWhere(
+            (e) => e.name == map['type'],
+      )
+          : null,
     );
   }
 
-  // ===== TO DB MAP =====
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -54,4 +66,5 @@ class Transaction {
       'created_at': createdAt,
     };
   }
+
 }

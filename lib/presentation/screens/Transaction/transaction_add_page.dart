@@ -67,7 +67,6 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                 future: _controllerJar.getListJarIdAndName(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return const SizedBox();
-
                   return DropdownButtonFormField<int>(
                     value: _selectedJar,
                     decoration: InputDecoration(

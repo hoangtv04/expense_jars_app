@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/UpdateJarPage.dart';
 
 import '../../../controllers/JarController.dart';
+import '../../../db/app_state.dart';
 import '../../../models/Jar.dart';
 import 'JarAddPage.dart';
 import 'JarHistoryPage.dart';
@@ -30,19 +31,7 @@ class _JarListPageState extends State<JarListPage> {
   // 🔹 Lưu Future để FutureBuilder theo dõi
   late Future<List<Jar>> _futureJars;
 
-  @override
-  void initState() {
-    super.initState();
-    // 🔹 Chỉ gọi DB 1 lần khi page được tạo
-    _futureJars = _controller.getJar();
-  }
 
-  // 🔹 Reload dữ liệu khi có thay đổi
-  void _reload() {
-    setState(() {
-      _futureJars = _controller.getJar();
-    });
-  }
 
   void _showJarOptions(BuildContext context, Jar jar) {
     showModalBottomSheet(
@@ -81,7 +70,6 @@ class _JarListPageState extends State<JarListPage> {
                     ),
                   ).then((_) {
                     // 🔥 Khi quay lại → reload DB
-                    _reload();
                     widget.onChanged(); // báo MainPage nếu cần
                   });
 
@@ -101,7 +89,6 @@ class _JarListPageState extends State<JarListPage> {
                     _controller.deleteJar(jar.id!);
                   }
 
-                  _reload();
                   Navigator.pop(context);
                   // xử lý xóa
                 },
@@ -138,7 +125,6 @@ class _JarListPageState extends State<JarListPage> {
 
 
                 print(controller.text);
-                _reload();
                 Navigator.pop(context);
               },
               child: Text("Lưu"),
@@ -151,154 +137,203 @@ class _JarListPageState extends State<JarListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: HeroMode(
-          enabled: false,
-          child: AppBar(
-            title: const Text('View Jar'),
-          ),
-        ),
-      ),
-      body: FutureBuilder<List<Jar>>(
-        future: _futureJars,
-        builder: (context, snapshot) {
-          // ⏳ Đang load
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: Colors.grey[100],
 
-          // ❌ Không có dữ liệu
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text('Không có dữ liệu'),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const JarAddPage(),
-                        ),
-                      ).then((_) {
-                        // 🔥 Khi quay lại → reload DB
-                        _reload();
-                        widget.onChanged(); // báo MainPage nếu cần
-                      });
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Thêm hũ mới'),
-                  ),
-                ],
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const JarAddPage(),
               ),
             );
-          }
+          },
+          child: const Icon(Icons.add),
+        ),
 
-          // ✅ Có dữ liệu
-          final jars = snapshot.data!;
-          final totalMoney = _controller.calTotalMoney(jars);
+        body: ValueListenableBuilder(
+          valueListenable: AppState.jarChanged,
+          builder: (context, value, child) {
+            return FutureBuilder<List<Jar>>(
+              future: _controller.getJar(),
+              builder: (context, snapshot) {
 
-          return CustomScrollView(
-            slivers: [
-              // ===== TỔNG TIỀN =====
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    'Tổng số tiền ${totalMoney.toStringAsFixed(0)} đ',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+
+                final jars = snapshot.data!;
+                final totalMoney = _controller.calTotalMoney(jars);
+
+                return Column(
+                  children: [
+
+                    /// ===== HEADER TRẮNG =====
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
+                      child: Column(
+                        children: [
+
+                          /// Title + icon
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              SizedBox(width: 24),
+                              Text(
+                                "Tài khoản",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.search),
+                                  SizedBox(width: 16),
+                                  Icon(Icons.tune),
+                                ],
+                              )
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          /// TAB BAR
+                          const TabBar(
+                            labelColor: Colors.blue,
+                            unselectedLabelColor: Colors.black54,
+                            indicatorColor: Colors.blue,
+                            tabs: [
+                              Tab(text: "Tài khoản"),
+                              Tab(text: "Sổ tiết kiệm"),
+                              Tab(text: "Tích lũy"),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
 
-              // ===== NÚT THÊM =====
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const JarAddPage(),
+                    /// ===== PHẦN NỀN VÀNG =====
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFFFFE7B0),
+                            Color(0xFFFFD580),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ).then((_) {
-                        _reload(); // 🔥 reload sau khi thêm
-                        widget.onChanged();
-                      });
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Thêm hũ mới'),
-                  ),
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
-
-              // ===== DANH SÁCH HŨ =====
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final jar = jars[index];
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.account_balance_wallet),
-                        title: Text(
-                          jar.nameJar,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle:
-                        Text('${jar.balance.toStringAsFixed(0)} đ'),
-
-
-                        trailing: IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () {
-                            _showJarOptions(context, jar);
-                          },
-                        ),
-
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => JarHistoryPage(jarId: jar.id),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Tổng tiền",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            "${totalMoney.toStringAsFixed(0)} đ",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    /// ===== ĐANG SỬ DỤNG =====
+                    Container(
+                      width: double.infinity,
+                      color: Colors.white,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Đang sử dụng (${totalMoney.toStringAsFixed(0)} đ)",
+                            style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Icon(Icons.keyboard_arrow_up),
+                        ],
+                      ),
+                    ),
+
+                    /// ===== LIST =====
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: jars.length,
+                        itemBuilder: (context, index) {
+                          final jar = jars[index];
+
+                          return Column(
+                            children: [
+                              ListTile(
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[100],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.account_balance_wallet,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                title: Text(
+                                  jar.nameJar,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "${jar.balance.toStringAsFixed(0)} đ",
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.more_vert),
+                                  onPressed: () {
+                                    _showJarOptions(context, jar);
+                                  },
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          JarHistoryPage(jarId: jar.id),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const Divider(height: 1),
+                            ],
                           );
                         },
-
-
-
-                      )
-
-                    );
-
-                  },
-                  childCount: jars.length,
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            ],
-          );
-        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
