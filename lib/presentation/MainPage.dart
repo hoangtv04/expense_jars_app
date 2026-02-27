@@ -28,7 +28,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      home(onChanged: refresh),
+      HomeScreen(onChanged: refresh),
       JarListPage(onChanged: refresh),
       TransactionListPage(onChanged: refresh),
       Container(), // Placeholder for CategoryListPage - will be navigated separately
@@ -41,16 +41,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expense Jars'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Reload dữ liệu',
-            onPressed: refresh,
-          ),
-        ],
-      ),
+
       body: HeroMode(
         enabled: false,
         child: IndexedStack(

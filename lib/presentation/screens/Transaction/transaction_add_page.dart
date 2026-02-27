@@ -161,6 +161,9 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
+
+
+
                     final transaction  = Transaction(
                       userId: 1,
                       jarId: _selectedJar!,
@@ -171,11 +174,14 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       createdAt: DateTime.now().toIso8601String(),
                       isDeleted: 0,
                     );
-// sau cải thiện chỗ này nghiệp vụ chưa rõ hết
+
+
+
+
                     _controllerJar.updateJarAmount(_selectedJar!, -double.parse(_amountController.text));
                     await _controller.add(transaction);
 
-                    _controllerJar.updateJarAmount(_selectedJar!, -double.parse(_amountController.text));
+
                     Navigator.pop(context, true);
                   },
                   child: const Text(
