@@ -1,6 +1,7 @@
 class Jar {
   final int? id;
   final int user_id;
+  final String nameJar;
   final JarType name;
   final double balance;
   final String description;
@@ -9,6 +10,7 @@ class Jar {
 
   Jar({
     this.id,
+    required this.nameJar,
     required this.user_id,
     required this.name,
     required this.balance,
@@ -21,20 +23,22 @@ class Jar {
     return Jar(
       id: map['id'],
       user_id: map['user_id'],
+      nameJar: map['nameJar'] ?? '',
       name: JarType.values.firstWhere(
             (e) => e.name == map['name'],
+        orElse: () => JarType.cash,
       ),
-      balance: map['balance'],
+      balance: (map['balance'] as num).toDouble(),
       description: map['description'] ?? '',
-      is_deleted: map['is_deleted'],
+      is_deleted: map['is_deleted'] ?? 0,
       created_at: DateTime.parse(map['created_at']),
     );
   }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'user_id': user_id,
+      'nameJar': nameJar,
       'name': name.name, // enum → string
       'balance': balance,
       'description': description,

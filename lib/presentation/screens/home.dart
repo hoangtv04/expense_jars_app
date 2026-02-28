@@ -1,200 +1,340 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_jars/presentation/screens/login.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  HomeScreen({super.key, required void Function() onChanged});
+
+  final formatter = NumberFormat('#,###', 'vi_VN');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quản lý chi tiêu'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          ),
-        ],
-      ),
-
+      backgroundColor: const Color(0xfff4f6f9),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== TỔNG SỐ TIỀN =====
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade400,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tổng số dư',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '10.000.000 ₫',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ===== TIÊU ĐỀ =====
-            const Text(
-              'Các hũ chi tiêu',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ===== GRID HŨ =====
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: const [
-                _JarItem(
-                  title: 'Thiết yếu',
-                  amount: '5.500.000 ₫',
-                  icon: Icons.home,
-                  color: Colors.blue,
-                ),
-                _JarItem(
-                  title: 'Giáo dục',
-                  amount: '1.200.000 ₫',
-                  icon: Icons.school,
-                  color: Colors.green,
-                ),
-                _JarItem(
-                  title: 'Tiết kiệm',
-                  amount: '2.000.000 ₫',
-                  icon: Icons.savings,
-                  color: Colors.orange,
-                ),
-                _JarItem(
-                  title: 'Hưởng thụ',
-                  amount: '800.000 ₫',
-                  icon: Icons.celebration,
-                  color: Colors.purple,
-                ),
-                _JarItem(
-                  title: 'Đầu tư',
-                  amount: '300.000 ₫',
-                  icon: Icons.trending_up,
-                  color: Colors.red,
-                ),
-                _JarItem(
-                  title: 'Thiện tâm',
-                  amount: '200.000 ₫',
-                  icon: Icons.volunteer_activism,
-                  color: Colors.teal,
-                ),
-              ],
+            _buildHeader(),
+            Transform.translate(
+              offset: const Offset(0, -30),
+              child: _buildOverviewCard(),
             ),
           ],
         ),
       ),
-
-      // ===== FLOAT BUTTON =====
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
-      ),
     );
   }
-}
 
-void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Đăng xuất'),
-      content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Huỷ'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (_, __, ___) => const LoginScreen(),
-                transitionDuration: Duration.zero,
-                reverseTransitionDuration: Duration.zero,
-              ),
-            );
-          },
-          child: const Text('Đăng xuất', style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-}
-
-// ================= WIDGET HŨ =================
-class _JarItem extends StatelessWidget {
-  final String title;
-  final String amount;
-  final IconData icon;
-  final Color color;
-
-  const _JarItem({
-    required this.title,
-    required this.amount,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  // ================= HEADER =================
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
+      width: double.infinity,
+      padding: const EdgeInsets.only(
+        top: 50,
+        left: 20,
+        right: 20,
+        bottom: 25,
+      ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF3FA9F5),
+            Color(0xFF2B7CD3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            backgroundColor: color,
-            child: Icon(icon, color: Colors.white),
+
+          /// ===== TOP ROW =====
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+
+              /// Avatar + Name
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      "DC",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "Xin chào!",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "duc cuong",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              /// Icons bên phải
+              Row(
+                children: [
+                  Stack(
+                    children: [
+                      const Icon(
+                        Icons.refresh,
+                        color: Colors.white,
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text(
+                            "3",
+                            style: TextStyle(
+                              fontSize: 8,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  const Icon(
+                    Icons.notifications_none,
+                    color: Colors.white,
+                  ),
+                ],
+              )
+            ],
           ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+
+          const SizedBox(height: 25),
+
+          /// ===== BALANCE =====
+          const Text(
+            "Tổng số dư",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            amount,
-            style: TextStyle(color: color, fontWeight: FontWeight.w600),
+
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              const Text(
+                "1.009.477 đ",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.visibility_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  // ================= CARD =================
+  Widget _buildOverviewCard() {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // HEADER ROW
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Tình hình thu chi",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.settings_outlined,
+                      color: Colors.grey),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.grey.shade400),
+                    ),
+                    child: const Row(
+                      children: [
+                        Text("Tuần này"),
+                        Icon(Icons.keyboard_arrow_down),
+                      ],
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
+
+          const SizedBox(height: 25),
+
+          // BAR + TEXT
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 120,
+                width: 80,
+                child: BarChart(
+                  BarChartData(
+                    maxY: 600,
+                    gridData: FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(show: false),
+                    barGroups: [
+                      BarChartGroupData(
+                        x: 0,
+                        barRods: [
+                          BarChartRodData(
+                            toY: 522,
+                            width: 20,
+                            color: Colors.red,
+                            borderRadius:
+                            BorderRadius.circular(6),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+
+              Expanded(
+                child: Column(
+                  children: [
+                    _moneyRow("Thu", 0, Colors.green),
+                    const SizedBox(height: 15),
+                    _moneyRow("Chi", 522, Colors.red),
+                    const Divider(),
+                    _moneyRow("Chênh lệch", -522, Colors.black),
+                  ],
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 30),
+
+          // DONUT CHART
+          Row(
+            children: [
+              SizedBox(
+                height: 160,
+                width: 160,
+                child: PieChart(
+                  PieChartData(
+                    sectionsSpace: 0,
+                    centerSpaceRadius: 50,
+                    sections: [
+                      PieChartSectionData(
+                        value: 100,
+                        color: Colors.orange,
+                        showTitle: false,
+                        radius: 40,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 6,
+                        backgroundColor: Colors.orange,
+                      ),
+                      SizedBox(width: 8),
+                      Text("Con cái"),
+                      SizedBox(width: 30),
+                      Text("100%",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  )
+                ],
+              )
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Center(
+            child: OutlinedButton(
+              onPressed: () {},
+              child: const Text("Lịch sử ghi chép"),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _moneyRow(String title, int value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 16)),
+        Text(
+          "${formatter.format(value)} đ",
+          style: TextStyle(
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
+        )
+      ],
     );
   }
 }

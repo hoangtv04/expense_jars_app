@@ -2,8 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:flutter_application_jars/presentation/MainPage.dart';
 import 'package:flutter_application_jars/presentation/screens/login.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+//
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +43,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const LoginScreen(),
+      home: const MainPage(),
     );
   }
 }
+
+
+

@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../models/Jar.dart';
+
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
@@ -14,20 +16,274 @@ class AppDatabase {
     return _database!;
   }
 
+
+  Future<void> _seedData(Database db) async {
+    // ===== USER =====
+    final userId = await db.insert('users', {
+      'email': 'demo@gmail.com',
+      'password': '123456',
+    });
+
+    final jarId = await db.insert('jars', {
+      'user_id': userId,
+      'nameJar': 'Ví chính',
+      'name': JarType.cash.name,
+      'balance': 1000000.0,
+      'description': 'Ví chính',
+      'is_deleted': 0,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+
+    // ===== CATEGORY =====
+    final foodCategoryId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Ăn uống',
+      'type': 'expense',
+    });
+
+    // Subcategories for Ăn uống
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn vặt',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn tối',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn trưa',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn sáng',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Cafe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Ăn tiệm',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': foodCategoryId,
+      'name': 'Đi chợ/siêu thị',
+      'type': 'expense',
+    });
+
+    final serviceId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Dịch vụ sinh hoạt',
+      'type': 'expense',
+    });
+
+    // Subcategories for Dịch vụ sinh hoạt
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Thuê người giúp việc',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện thoại cố định',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Truyền hình',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Gas',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện thoại di động',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Internet',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Nước',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': serviceId,
+      'name': 'Điện',
+      'type': 'expense',
+    });
+
+    final travelId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Đi lại',
+      'type': 'expense',
+    });
+
+    // Subcategories for Đi lại
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Taxi/thuê xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Rửa xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Gửi xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'parent_id': travelId,
+      'name': 'Sửa chữa, bảo dưỡng xe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Con cái',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Trang phục',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Hiếu hỉ',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Sức khỏe',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Nhà cửa',
+      'type': 'expense',
+    });
+
+    await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Hưởng thụ',
+      'type': 'expense',
+    });
+
+    final salaryCategoryId = await db.insert('categories', {
+      'user_id': userId,
+      'name': 'Lương',
+      'type': 'income',
+    });
+
+    // ===== TRANSACTIONS =====
+    await db.insert('transactions', {
+      'user_id': userId,
+      'jar_id': jarId,
+      'category_id': salaryCategoryId,
+      'amount': 12000000.0,
+      'note': 'Lương tháng',
+      'date': '2026-02-01',
+      'status': 'completed',
+    });
+
+    await db.insert('transactions', {
+      'user_id': userId,
+      'jar_id': jarId,
+      'category_id': foodCategoryId,
+      'amount': 50000.0,
+      'note': 'Ăn trưa',
+      'date': '2026-02-01',
+      'status': 'completed',
+    });
+
+    // ===== JAR LOG =====
+    await db.insert('jar_logs', {
+      'jar_id': jarId,
+      'change_amount': 12000000.0,
+    });
+
+    await db.insert('jar_logs', {
+      'jar_id': jarId,
+      'change_amount': -50000.0,
+    });
+
+    print('🌱 Seed data inserted');
+  }
+
+
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
 
-    final db = await openDatabase(path, version: 1, onCreate: _createDB);
+    final db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
 
     final tables = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type='table'",
+        "SELECT name FROM sqlite_master WHERE type='table'"
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
-
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
@@ -44,6 +300,7 @@ class AppDatabase {
   CREATE TABLE jars (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    nameJar TEXT NOT NULL,
     name TEXT NOT NULL,
     balance REAL DEFAULT 0,
     description TEXT,
@@ -101,20 +358,17 @@ class AppDatabase {
   ''');
 
     await db.execute(
-      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
-    );
+        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
-      'CREATE INDEX idx_transactions_date ON transactions(date)',
-    );
+        'CREATE INDEX idx_transactions_date ON transactions(date)');
     await db.execute(
-      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
-    );
+        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
     await db.execute(
-      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
-    );
-
+        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
+    await   _seedData(db);
     print('Database created successfully');
   }
+
 
   Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
     final db = await database;
@@ -187,4 +441,5 @@ class AppDatabase {
       whereArgs: [email],
     );
   }
+
 }

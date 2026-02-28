@@ -2,6 +2,7 @@ import 'package:flutter_application_jars/models/Jar.dart';
 
 class AddJarRespone {
   final int user_id;
+  final String nameJar;
   final String name;
   final double balance;
   final String description;
@@ -11,6 +12,7 @@ class AddJarRespone {
 
   AddJarRespone({
     required this.user_id,
+    required this.nameJar,
     required this.name,
     required this.balance,
     this.description = '',
