@@ -1,16 +1,8 @@
-
-
-
-
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
-import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
-import 'package:flutter_application_jars/presentation/screens/Category/CategoryListPage.dart';
+import 'package:flutter_application_jars/presentation/screens/Report/Thongke.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -22,22 +14,18 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      home(onChanged: refresh),
-      JarListPage(onChanged: refresh),
-      TransactionListPage(onChanged: refresh),
-      Container(), // Placeholder for CategoryListPage - will be navigated separately
-      Container(color: Colors.purple) // Placeholder for "Khác"
-    ];
-  }
   void refresh() {
     setState(() {});
   }
+
+  late final List<Widget> _pages = [
+    home(onChanged: refresh), // CHỮ H PHẢI HOA
+    JarListPage(onChanged: refresh),
+    TransactionListPage(onChanged: refresh),
+    const Thongke(),
+    const Center(child: Text("Khác")),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,21 +34,16 @@ class _MainPageState extends State<MainPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Reload dữ liệu',
             onPressed: refresh,
           ),
         ],
       ),
-      body: HeroMode(
-        enabled: false,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: _pages,
-        ),
-      ),
+
+
+      body: _pages[_currentIndex],
+
       bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: EdgeInsets.only(top: 8, bottom: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -76,48 +59,46 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
-    bool isSelected = _currentIndex == index;
-    bool isCenter = index == 2; // "Ghi chép" button
-    
+    final isSelected = _currentIndex == index;
+    final isCenter = index == 2;
+
     return GestureDetector(
       onTap: () {
         setState(() {
           _currentIndex = index;
+          debugPrint("Current Index: $_currentIndex");
         });
       },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: isCenter ? 40 : null,
-              height: isCenter ? 40 : null,
-              decoration: isCenter
-                  ? BoxDecoration(
-                      color: isSelected ? Colors.blue : Colors.grey.shade400,
-                      shape: BoxShape.circle,
-                    )
-                  : null,
-              child: Icon(
-                icon,
-                size: 24,
-                color: isCenter
-                    ? (isSelected ? Colors.white : Colors.grey.shade700)
-                    : (isSelected ? Colors.blue : Colors.grey),
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: isCenter ? 42 : null,
+            height: isCenter ? 42 : null,
+            decoration: isCenter
+                ? BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? Colors.blue : Colors.grey.shade400,
+                  )
+                : null,
+            child: Icon(
+              icon,
+              color: isCenter
+                  ? Colors.white
+                  : (isSelected ? Colors.blue : Colors.grey),
             ),
-            SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: isSelected ? Colors.blue : Colors.grey,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isSelected ? Colors.blue : Colors.grey,
+              fontWeight:
+                  isSelected ? FontWeight.bold : FontWeight.normal,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
