@@ -5,10 +5,7 @@ import '../../../models/Category.dart';
 class SelectCategoryPage extends StatefulWidget {
   final int? selectedCategoryId;
 
-  const SelectCategoryPage({
-    super.key,
-    this.selectedCategoryId,
-  });
+  const SelectCategoryPage({super.key, this.selectedCategoryId});
 
   @override
   State<SelectCategoryPage> createState() => _SelectCategoryPageState();
@@ -25,6 +22,41 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _selectedCategoryId = widget.selectedCategoryId;
+  }
+
+  String? _categoryIconPath(Category category) {
+    final iconId = category.icon_id;
+    return iconId != null ? 'lib/assets/category_icon/$iconId.png' : null;
+  }
+
+  Widget _buildCategoryIcon(Category category, {double size = 40}) {
+    final iconPath = _categoryIconPath(category);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: iconPath != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                iconPath,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.category,
+                    size: size * 0.6,
+                    color: Colors.grey,
+                  );
+                },
+              ),
+            )
+          : Icon(Icons.category, size: size * 0.6, color: Colors.grey),
+    );
   }
 
   @override
@@ -70,13 +102,12 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
         }
 
         final categories = snapshot.data ?? [];
-        final parentCategories =
-            categories.where((c) => c.parent_id == null).toList();
+        final parentCategories = categories
+            .where((c) => c.parent_id == null)
+            .toList();
 
         if (parentCategories.isEmpty) {
-          return const Center(
-            child: Text('Chưa có hạng mục nào'),
-          );
+          return const Center(child: Text('Chưa có hạng mục nào'));
         }
 
         return ListView.builder(
@@ -102,16 +133,26 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
   }
 
   Widget _buildExpandableCategory(
-      Category parent, List<Category> subcategories) {
+    Category parent,
+    List<Category> subcategories,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
-        title: Text(
-          parent.name,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          children: [
+            _buildCategoryIcon(parent, size: 36),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                parent.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
         trailing: Icon(
           _selectedCategoryId == parent.id
@@ -159,7 +200,9 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade50 : Colors.grey.shade100,
+                      color: isSelected
+                          ? Colors.blue.shade50
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.transparent,
@@ -169,17 +212,18 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (isSelected)
-                          const Icon(Icons.check_circle, color: Colors.blue, size: 20),
-                        if (isSelected) const SizedBox(height: 4),
+                        _buildCategoryIcon(subcategory, size: 32),
+                        const SizedBox(height: 4),
                         Text(
                           subcategory.name,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 11,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: isSelected ? Colors.blue : Colors.black87,
                           ),
                         ),
@@ -201,12 +245,10 @@ class _SelectCategoryPageState extends State<SelectCategoryPage>
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        leading: _buildCategoryIcon(category, size: 44),
         title: Text(
           category.name,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         trailing: isSelected
             ? const Icon(Icons.check_circle, color: Colors.blue)

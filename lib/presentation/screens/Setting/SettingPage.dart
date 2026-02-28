@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'SpendingLimitPage.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -181,12 +182,6 @@ class _SettingPageState extends State<SettingPage> {
             _buildSectionTitle("Tính năng"),
             _buildGrid(),
 
-            const SizedBox(height: 20),
-
-            /// ===== TIỆN ÍCH =====
-            _buildSectionTitle("Tiện ích"),
-            _buildGrid(),
-
             const SizedBox(height: 30),
           ],
         ),
@@ -211,10 +206,19 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildGrid() {
-    final List<String> items = [
-      "aa","bb","cc","dd",
-      "ee","ff","gg","hh",
-      "ii","jj","kk","ll"
+    final List<Map<String, dynamic>> items = [
+      {"label": "aa", "icon": Icons.star, "color": Colors.blue},
+      {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
+      {"label": "cc", "icon": Icons.star, "color": Colors.blue},
+      {"label": "dd", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ee", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ff", "icon": Icons.star, "color": Colors.blue},
+      {"label": "gg", "icon": Icons.star, "color": Colors.blue},
+      {"label": "hh", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ii", "icon": Icons.star, "color": Colors.blue},
+      {"label": "jj", "icon": Icons.star, "color": Colors.blue},
+      {"label": "kk", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ll", "icon": Icons.star, "color": Colors.blue},
     ];
 
     return Padding(
@@ -230,28 +234,60 @@ class _SettingPageState extends State<SettingPage> {
           childAspectRatio: 0.8,
         ),
         itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Container(
-                width: 55,
-                height: 55,
-                decoration: BoxDecoration(
-                  color: Colors.blue[100],
-                  borderRadius: BorderRadius.circular(16),
+          final item = items[index];
+          final isCustomIcon = item["isCustom"] == true;
+          
+          return GestureDetector(
+            onTap: () {
+              if (item["label"] == "Hạn mức chi") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SpendingLimitPage(),
+                  ),
+                );
+              }
+            },
+            child: Column(
+              children: [
+                Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: item["color"].withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: isCustomIcon 
+                      ? _buildHandMoneyIcon()
+                      : Icon(
+                          item["icon"],
+                          color: item["color"],
+                        ),
                 ),
-                child: const Icon(
-                  Icons.star,
-                  color: Colors.blue,
+                const SizedBox(height: 8),
+                Text(
+                  item["label"],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                items[index],
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHandMoneyIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Image.asset(
+        'lib/assets/income.png',
+        width: 40,
+        height: 40,
+        fit: BoxFit.contain,
       ),
     );
   }

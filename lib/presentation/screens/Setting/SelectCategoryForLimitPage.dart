@@ -5,10 +5,7 @@ import '../../../models/Category.dart';
 class SelectCategoryForLimitPage extends StatefulWidget {
   final String selectedCategory;
 
-  const SelectCategoryForLimitPage({
-    super.key,
-    required this.selectedCategory,
-  });
+  const SelectCategoryForLimitPage({super.key, required this.selectedCategory});
 
   @override
   State<SelectCategoryForLimitPage> createState() =>
@@ -33,11 +30,70 @@ class _SelectCategoryForLimitPageState
     _loadCategories();
   }
 
+  // Fallback icon mapping by category name
+  int _fallbackIconIdByName(String categoryName) {
+    final mapping = {
+      'Ăn uống': 2,
+      'Cafe': 6,
+      'Di chuyển': 10,
+      'Giải trí': 15,
+      'Mua sắm': 20,
+      'Sức khỏe': 25,
+      'Giáo dục': 30,
+      'Gia đình': 35,
+      'Quà tặng': 40,
+      'Khác': 45,
+      'Lương': 50,
+      'Thưởng': 51,
+      'Đầu tư': 52,
+      'Bán đồ': 53,
+      'Thu nhập khác': 54,
+    };
+    return mapping[categoryName] ?? 1;
+  }
+
+  String? _categoryIconPath(Category category) {
+    final iconId =
+        category.icon_id ?? _fallbackIconIdByName(category.name ?? '');
+    return 'lib/assets/category_icon/$iconId.png';
+  }
+
+  Widget _buildCategoryIcon(Category category, {double size = 40}) {
+    final iconPath = _categoryIconPath(category);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: iconPath != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                iconPath,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.category,
+                    size: size * 0.6,
+                    color: Colors.grey,
+                  );
+                },
+              ),
+            )
+          : Icon(Icons.category, size: size * 0.6, color: Colors.grey),
+    );
+  }
+
   Future<void> _loadCategories() async {
     try {
       // Sử dụng getCategoriesByType để giữ nguyên thứ tự như CategoryListPage
-      final expenseCategories =
-          await _categoryController.getCategoriesByType(CategoryType.expense);
+      final expenseCategories = await _categoryController.getCategoriesByType(
+        CategoryType.expense,
+      );
 
       setState(() {
         _allCategories = expenseCategories;
@@ -46,7 +102,9 @@ class _SelectCategoryForLimitPageState
 
       // Mặc định chọn tất cả hạng mục (cha + con)
       final Set<String> allCategoryNames = {};
-      for (var parent in expenseCategories.where((cat) => cat.parent_id == null)) {
+      for (var parent in expenseCategories.where(
+        (cat) => cat.parent_id == null,
+      )) {
         allCategoryNames.add(parent.name ?? '');
         final children = await _getSubcategoriesForParent(parent.id ?? 0);
         allCategoryNames.addAll(children.map((c) => c.name ?? ''));
@@ -72,8 +130,11 @@ class _SelectCategoryForLimitPageState
     } else {
       setState(() {
         _filteredCategories = _allCategories
-            .where((category) =>
-                (category.name ?? '').toLowerCase().contains(query.toLowerCase()))
+            .where(
+              (category) => (category.name ?? '').toLowerCase().contains(
+                query.toLowerCase(),
+              ),
+            )
             .toList();
       });
     }
@@ -212,30 +273,40 @@ class _SelectCategoryForLimitPageState
               horizontal: 16,
               vertical: 8,
             ),
-            leading: FutureBuilder<bool>(
-              future: _hasSubcategories(category.id ?? 0),
-              builder: (context, snapshot) {
-                if (snapshot.data == true) {
-                  return IconButton(
-                    icon: Icon(
-                      isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: Colors.grey,
-                      size: 24,
-                    ),
-                    onPressed: () => _toggleExpanded(category.id ?? 0),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  );
-                }
-                return SizedBox(width: 40);
-              },
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FutureBuilder<bool>(
+                  future: _hasSubcategories(category.id ?? 0),
+                  builder: (context, snapshot) {
+                    if (snapshot.data == true) {
+                      return IconButton(
+                        icon: Icon(
+                          isExpanded ? Icons.expand_less : Icons.expand_more,
+                          color: Colors.grey,
+                          size: 24,
+                        ),
+                        onPressed: () => _toggleExpanded(category.id ?? 0),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      );
+                    }
+                    return const SizedBox(width: 40);
+                  },
+                ),
+                const SizedBox(width: 8),
+                _buildCategoryIcon(category, size: 40),
+              ],
             ),
-            title: Text(
-              categoryName,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
+            title: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text(
+                categoryName,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
               ),
             ),
             trailing: Checkbox(
@@ -306,10 +377,8 @@ class _SelectCategoryForLimitPageState
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: _buildCategoryIcon(category, size: 36),
         title: Text(
           categoryName,
           style: const TextStyle(
@@ -321,21 +390,13 @@ class _SelectCategoryForLimitPageState
         trailing: Checkbox(
           value: isSelected,
           onChanged: (value) {
-            _toggleCategory(
-              categoryName,
-              value ?? false,
-            );
+            _toggleCategory(categoryName, value ?? false);
           },
           activeColor: const Color(0xFF0288D1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         onTap: () {
-          _toggleCategory(
-            categoryName,
-            !isSelected,
-          );
+          _toggleCategory(categoryName, !isSelected);
         },
       ),
     );
@@ -358,10 +419,7 @@ class _SelectCategoryForLimitPageState
         ),
         title: const Text(
           'Chọn hạng mục chi',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE3F2FD),
         foregroundColor: Colors.black,
@@ -386,8 +444,10 @@ class _SelectCategoryForLimitPageState
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
@@ -443,10 +503,7 @@ class _SelectCategoryForLimitPageState
                 ? Center(
                     child: Text(
                       'Không tìm thấy hạng mục',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   )
                 : ListView.builder(
@@ -476,20 +533,25 @@ class _SelectCategoryForLimitPageState
             onPressed: () {
               // Xây dựng danh sách hiển thị
               final displayList = <String>[];
-              
+
               // Kiểm tra từng hạng mục cha
-              for (var parent in _filteredCategories.where((cat) => cat.parent_id == null)) {
+              for (var parent in _filteredCategories.where(
+                (cat) => cat.parent_id == null,
+              )) {
                 final parentName = parent.name ?? '';
                 final parentId = parent.id ?? 0;
-                
+
                 // Lấy danh sách hạng mục con của cha này
                 final children = _getChildCategories(parentId);
                 final childNames = children.map((c) => c.name ?? '').toSet();
-                
+
                 // Kiểm tra xem tất cả con có được chọn không
-                final allChildrenSelected = childNames.isNotEmpty &&
-                    childNames.every((name) => _selectedCategories.contains(name));
-                
+                final allChildrenSelected =
+                    childNames.isNotEmpty &&
+                    childNames.every(
+                      (name) => _selectedCategories.contains(name),
+                    );
+
                 if (_selectedCategories.contains(parentName)) {
                   // Nếu chọn cha, kiểm tra xem tất cả con có chọn không
                   if (allChildrenSelected && childNames.isNotEmpty) {
@@ -507,7 +569,7 @@ class _SelectCategoryForLimitPageState
                       displayList.add(childName);
                     }
                   }
-                  
+
                   // Nếu chọn tất cả con mà không chọn cha, thì hiển thị tên cha
                   if (allChildrenSelected && childNames.isNotEmpty) {
                     displayList.clear();
@@ -515,8 +577,11 @@ class _SelectCategoryForLimitPageState
                   }
                 }
               }
-              
-              Navigator.pop(context, displayList.isNotEmpty ? displayList : ['Tất cả hạng mục chi']);
+
+              Navigator.pop(
+                context,
+                displayList.isNotEmpty ? displayList : ['Tất cả hạng mục chi'],
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0288D1),
@@ -539,6 +604,4 @@ class _SelectCategoryForLimitPageState
       ),
     );
   }
-
-
 }

@@ -1,5 +1,6 @@
 class Category {
   final int? id;
+  final int? icon_id;
   final int user_id;
   final int? parent_id;
   final String name;
@@ -11,6 +12,7 @@ class Category {
 
   Category({
     this.id,
+    this.icon_id,
     required this.user_id,
     this.parent_id,
     required this.name,
@@ -24,6 +26,7 @@ class Category {
   factory Category.fromMap(Map<String, dynamic> map) {
     return Category(
       id: map['id'],
+      icon_id: map['icon_id'],
       user_id: map['user_id'],
       parent_id: map['parent_id'],
       name: map['name'],
@@ -40,6 +43,7 @@ class Category {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'icon_id': icon_id,
       'user_id': user_id,
       'parent_id': parent_id,
       'name': name,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'SelectParentCategoryPage.dart';
+import 'SelectCategoryIconPage.dart';
 
 class EditCategoryDetailPage extends StatefulWidget {
   final Category category;
@@ -20,6 +21,7 @@ class EditCategoryDetailPage extends StatefulWidget {
 class _EditCategoryDetailPageState extends State<EditCategoryDetailPage> {
   late TextEditingController _nameController;
   Category? _selectedParentCategory;
+  int? _selectedIconId;
   final CategoryController _controller = CategoryController();
   List<Category> _parentCategories = [];
   bool _isLoadingParents = false;
@@ -28,7 +30,30 @@ class _EditCategoryDetailPageState extends State<EditCategoryDetailPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.category.name);
+    _selectedIconId = widget.category.icon_id;
     _loadParentCategories();
+  }
+
+  String? _selectedIconPath() {
+    if (_selectedIconId == null) return null;
+    return 'lib/assets/category_icon/${_selectedIconId!}.png';
+  }
+
+  Future<void> _showIconSelector() async {
+    final result = await Navigator.push<int?>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectCategoryIconPage(
+          selectedIconId: _selectedIconId,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedIconId = result;
+      });
+    }
   }
 
   Future<void> _loadParentCategories() async {
@@ -209,6 +234,7 @@ class _EditCategoryDetailPageState extends State<EditCategoryDetailPage> {
 
     final updatedCategory = Category(
       id: widget.category.id,
+      icon_id: _selectedIconId,
       user_id: widget.category.user_id,
       parent_id: _selectedParentCategory?.id,
       name: newName,
@@ -257,44 +283,88 @@ class _EditCategoryDetailPageState extends State<EditCategoryDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Icon section (placeholder - you mentioned to exclude this)
-                  // Container(
-                  //   width: 64,
-                  //   height: 64,
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.pink[100],
-                  //     borderRadius: BorderRadius.circular(12),
-                  //   ),
-                  //   child: const Center(
-                  //     child: Text('🍩', style: TextStyle(fontSize: 32)),
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 8),
-                  // const Text(
-                  //   'Chọn icon',
-                  //   style: TextStyle(
-                  //     color: Colors.blue,
-                  //     fontSize: 14,
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 24),
-
-                  // Name input
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _showIconSelector,
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: _selectedIconPath() == null
+                                  ? Icon(
+                                      Icons.image_outlined,
+                                      color: Colors.blue[300],
+                                      size: 30,
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Image.asset(
+                                        _selectedIconPath()!,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) => Icon(
+                                          Icons.image_not_supported_outlined,
+                                          color: Colors.blue[300],
+                                          size: 30,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: _showIconSelector,
+                            child: const Text(
+                              'Chọn icon',
+                              style: TextStyle(
+                                color: Colors.lightBlue,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _nameController,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _nameController.clear();
+                                  setState(() {});
+                                },
+                                child: Icon(
+                                  Icons.cancel,
+                                  color: Colors.grey[500],
+                                  size: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    style: const TextStyle(fontSize: 16),
+                    ],
                   ),
                   
                   // Only show parent category selection if this is a subcategory

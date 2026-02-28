@@ -12,13 +12,69 @@ class AddSpendingLimitPage extends StatefulWidget {
 class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  
+
   String _selectedCategory = 'Tất cả hạng mục chi';
   String _selectedAccount = 'Tất cả tài khoản';
   String _repeatFrequency = 'Hàng tháng';
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   bool _carryForward = false;
+
+  // Fallback icon mapping by category name
+  int _fallbackIconIdByName(String categoryName) {
+    final mapping = {
+      'Ăn uống': 2,
+      'Cafe': 6,
+      'Di chuyển': 10,
+      'Giải trí': 15,
+      'Mua sắm': 20,
+      'Sức khỏe': 25,
+      'Giáo dục': 30,
+      'Gia đình': 35,
+      'Quà tặng': 40,
+      'Khác': 45,
+      'Lương': 50,
+      'Thưởng': 51,
+      'Đầu tư': 52,
+      'Bán đồ': 53,
+      'Thu nhập khác': 54,
+    };
+    return mapping[categoryName] ?? 1;
+  }
+
+  String? _getCategoryIconPath(String categoryName) {
+    if (categoryName.contains('Tất cả') || categoryName.contains(',')) {
+      return null; // Không hiển thị icon nếu chọn nhiều hạng mục
+    }
+    final iconId = _fallbackIconIdByName(categoryName);
+    return 'lib/assets/category_icon/$iconId.png';
+  }
+
+  Widget _buildCategoryIcon(String categoryName, {double size = 20}) {
+    final iconPath = _getCategoryIconPath(categoryName);
+    if (iconPath == null) return const SizedBox();
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.asset(
+          iconPath,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.category, size: size * 0.6, color: Colors.grey);
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -64,10 +120,7 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
         ),
         title: const Text(
           'Thêm hạn mức',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -94,10 +147,7 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                 children: [
                   Text(
                     'Số tiền',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -164,6 +214,7 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                     iconColor: Colors.red,
                     label: 'Hạng mục chi',
                     value: _formatCategoryDisplay(_selectedCategory),
+                    categoryIcon: _buildCategoryIcon(_selectedCategory),
                     onTap: () async {
                       final result = await Navigator.push(
                         context,
@@ -262,7 +313,10 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                       }
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                       child: Row(
                         children: [
                           Container(
@@ -271,7 +325,11 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                               color: Colors.grey.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(Icons.calendar_today, color: Colors.grey, size: 20),
+                            child: Icon(
+                              Icons.calendar_today,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -287,7 +345,9 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _endDate == null ? 'Không xác định' : _formatDate(_endDate!),
+                                  _endDate == null
+                                      ? 'Không xác định'
+                                      : _formatDate(_endDate!),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -449,6 +509,7 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
     required Color iconColor,
     required String label,
     required String value,
+    Widget? categoryIcon,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -472,18 +533,27 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      if (categoryIcon != null) ...[
+                        categoryIcon,
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -542,9 +612,9 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
 
   void _saveSpendingLimit() {
     // TODO: Validate and save spending limit
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Lưu hạn mức chi thành công')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Lưu hạn mức chi thành công')));
     Navigator.pop(context);
   }
 }

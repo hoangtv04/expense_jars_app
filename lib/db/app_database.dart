@@ -1,8 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../models/Jar.dart';
-
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
@@ -24,10 +22,11 @@ class AppDatabase {
       'password': '123456',
     });
 
+    // ===== JAR =====
     final jarId = await db.insert('jars', {
       'user_id': userId,
-      'nameJar': 'Ví chính',
-      'name': JarType.cash.name,
+      'name': 'cash', // JarType.cash.name
+      'nameJar': 'Ví tiền mặt',
       'balance': 1000000.0,
       'description': 'Ví chính',
       'is_deleted': 0,
@@ -36,6 +35,7 @@ class AppDatabase {
 
     // ===== CATEGORY =====
     final foodCategoryId = await db.insert('categories', {
+      'icon_id': 2, 
       'user_id': userId,
       'name': 'Ăn uống',
       'type': 'expense',
@@ -43,6 +43,7 @@ class AppDatabase {
 
     // Subcategories for Ăn uống
     await db.insert('categories', {
+      'icon_id': 3, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn vặt',
@@ -50,6 +51,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 18, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tối',
@@ -57,6 +59,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 41, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn trưa',
@@ -64,6 +67,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 19, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn sáng',
@@ -71,6 +75,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 6, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Cafe',
@@ -78,6 +83,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 1, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tiệm',
@@ -85,6 +91,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 36, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Đi chợ/siêu thị',
@@ -92,6 +99,7 @@ class AppDatabase {
     });
 
     final serviceId = await db.insert('categories', {
+      'icon_id': 40, 
       'user_id': userId,
       'name': 'Dịch vụ sinh hoạt',
       'type': 'expense',
@@ -99,6 +107,7 @@ class AppDatabase {
 
     // Subcategories for Dịch vụ sinh hoạt
     await db.insert('categories', {
+      'icon_id': 16, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Thuê người giúp việc',
@@ -106,6 +115,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 30, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại cố định',
@@ -113,6 +123,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 50, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Truyền hình',
@@ -120,6 +131,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 21, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Gas',
@@ -127,6 +139,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 46, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại di động',
@@ -134,6 +147,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 53, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Internet',
@@ -141,6 +155,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 52, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Nước',
@@ -148,6 +163,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 15, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện',
@@ -155,6 +171,7 @@ class AppDatabase {
     });
 
     final travelId = await db.insert('categories', {
+      'icon_id': 56, 
       'user_id': userId,
       'name': 'Đi lại',
       'type': 'expense',
@@ -162,6 +179,7 @@ class AppDatabase {
 
     // Subcategories for Đi lại
     await db.insert('categories', {
+      'icon_id': 49, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Taxi/thuê xe',
@@ -169,6 +187,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 14, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Rửa xe',
@@ -176,6 +195,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 38, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Gửi xe',
@@ -183,6 +203,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 54, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Sửa chữa, bảo dưỡng xe',
@@ -190,42 +211,49 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 13, 
       'user_id': userId,
       'name': 'Con cái',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 48, 
       'user_id': userId,
       'name': 'Trang phục',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 35, 
       'user_id': userId,
       'name': 'Hiếu hỉ',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 27, 
       'user_id': userId,
       'name': 'Sức khỏe',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 28, 
       'user_id': userId,
       'name': 'Nhà cửa',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 11, 
       'user_id': userId,
       'name': 'Hưởng thụ',
       'type': 'expense',
     });
 
     final salaryCategoryId = await db.insert('categories', {
+      'icon_id': 33, 
       'user_id': userId,
       'name': 'Lương',
       'type': 'income',
@@ -300,8 +328,8 @@ class AppDatabase {
   CREATE TABLE jars (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    nameJar TEXT NOT NULL,
     name TEXT NOT NULL,
+    nameJar TEXT NOT NULL,
     balance REAL DEFAULT 0,
     description TEXT,
     is_deleted INTEGER DEFAULT 0,
@@ -313,6 +341,7 @@ class AppDatabase {
     await db.execute('''
   CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    icon_id INTEGER,
     user_id INTEGER NOT NULL,
     parent_id INTEGER,
     name TEXT NOT NULL,

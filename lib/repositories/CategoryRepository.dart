@@ -22,9 +22,12 @@ class CategoryRepository {
 
   Future<int> updateCategory(Category category) async {
     final db = await AppDatabase.instance.database;
+    final updateMap = category.toMap();
+    // Giữ created_at không thay đổi, chỉ cập nhật các trường khác
+    updateMap.remove('created_at');
     return await db.update(
       'categories',
-      category.toMap(),
+      updateMap,
       where: 'id = ?',
       whereArgs: [category.id],
     );

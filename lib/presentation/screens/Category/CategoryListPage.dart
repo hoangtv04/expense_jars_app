@@ -5,11 +5,8 @@ import 'EditCategoryPage.dart';
 
 class CategoryListPage extends StatefulWidget {
   final bool isSelectionMode; // Thêm tham số để biết có phải chế độ chọn không
-  
-  const CategoryListPage({
-    super.key,
-    this.isSelectionMode = false,
-  });
+
+  const CategoryListPage({super.key, this.isSelectionMode = false});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -23,15 +20,72 @@ class _CategoryListPageState extends State<CategoryListPage>
 
   List<Category> _expenseCategories = [];
   List<Category> _incomeCategories = [];
-  
+
   List<Category> _filteredExpenseCategories = [];
   List<Category> _filteredIncomeCategories = [];
-  
+
   Map<int, List<Category>> _subcategoriesMap = {};
   Set<int> _expandedCategories = {};
 
   bool _isLoading = true;
   String _searchQuery = '';
+
+  // Fallback icon mapping by category name
+  int _fallbackIconIdByName(String categoryName) {
+    final mapping = {
+      'Ăn uống': 2,
+      'Cafe': 6,
+      'Di chuyển': 10,
+      'Giải trí': 15,
+      'Mua sắm': 20,
+      'Sức khỏe': 25,
+      'Giáo dục': 30,
+      'Gia đình': 35,
+      'Quà tặng': 40,
+      'Khác': 45,
+      'Lương': 50,
+      'Thưởng': 51,
+      'Đầu tư': 52,
+      'Bán đồ': 53,
+      'Thu nhập khác': 54,
+    };
+    return mapping[categoryName] ?? 1;
+  }
+
+  String? _categoryIconPath(Category category) {
+    final iconId = category.icon_id ?? _fallbackIconIdByName(category.name);
+    return 'lib/assets/category_icon/$iconId.png';
+  }
+
+  Widget _buildCategoryIcon(Category category, {double size = 40}) {
+    final iconPath = _categoryIconPath(category);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: iconPath != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                iconPath,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.category,
+                    size: size * 0.6,
+                    color: Colors.grey,
+                  );
+                },
+              ),
+            )
+          : Icon(Icons.category, size: size * 0.6, color: Colors.grey),
+    );
+  }
 
   @override
   void initState() {
@@ -70,7 +124,7 @@ class _CategoryListPageState extends State<CategoryListPage>
       _subcategoriesMap = subcatsMap;
       _isLoading = false;
     });
-    
+
     _filterCategories();
   }
 
@@ -81,18 +135,30 @@ class _CategoryListPageState extends State<CategoryListPage>
         _filteredIncomeCategories = _incomeCategories;
       } else {
         _filteredExpenseCategories = _expenseCategories.where((cat) {
-          final matchesName = cat.name.toLowerCase().contains(_searchQuery.toLowerCase());
-          final hasMatchingSubcategory = _subcategoriesMap[cat.id]?.any(
-            (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
-          ) ?? false;
+          final matchesName = cat.name.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+          final hasMatchingSubcategory =
+              _subcategoriesMap[cat.id]?.any(
+                (subcat) => subcat.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              ) ??
+              false;
           return matchesName || hasMatchingSubcategory;
         }).toList();
-        
+
         _filteredIncomeCategories = _incomeCategories.where((cat) {
-          final matchesName = cat.name.toLowerCase().contains(_searchQuery.toLowerCase());
-          final hasMatchingSubcategory = _subcategoriesMap[cat.id]?.any(
-            (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
-          ) ?? false;
+          final matchesName = cat.name.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+          final hasMatchingSubcategory =
+              _subcategoriesMap[cat.id]?.any(
+                (subcat) => subcat.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              ) ??
+              false;
           return matchesName || hasMatchingSubcategory;
         }).toList();
       }
@@ -120,10 +186,7 @@ class _CategoryListPageState extends State<CategoryListPage>
         ),
         title: const Text(
           'Chọn hạng mục',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -209,10 +272,7 @@ class _CategoryListPageState extends State<CategoryListPage>
             const SizedBox(height: 16),
             Text(
               'Chưa có hạng mục nào',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -226,7 +286,7 @@ class _CategoryListPageState extends State<CategoryListPage>
         final category = categories[index];
         final hasSubcategories = _subcategoriesMap.containsKey(category.id);
         final isExpanded = _expandedCategories.contains(category.id);
-        
+
         return Column(
           children: [
             _buildCategoryItem(category, hasSubcategories, isExpanded),
@@ -240,7 +300,7 @@ class _CategoryListPageState extends State<CategoryListPage>
 
   Widget _buildSubcategoriesGrid(int parentId) {
     final subcategories = _subcategoriesMap[parentId] ?? [];
-    
+
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -288,17 +348,19 @@ class _CategoryListPageState extends State<CategoryListPage>
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Center(
-          child: Text(
-            subcategory.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 13,
-              height: 1.2,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildCategoryIcon(subcategory, size: 32),
+            const SizedBox(height: 4),
+            Text(
+              subcategory.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, height: 1.2),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -329,7 +391,11 @@ class _CategoryListPageState extends State<CategoryListPage>
     return emojiMap[name] ?? '📁';
   }
 
-  Widget _buildCategoryItem(Category category, bool hasSubcategories, bool isExpanded) {
+  Widget _buildCategoryItem(
+    Category category,
+    bool hasSubcategories,
+    bool isExpanded,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -337,26 +403,30 @@ class _CategoryListPageState extends State<CategoryListPage>
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        leading: hasSubcategories
-            ? IconButton(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasSubcategories)
+              IconButton(
                 icon: Icon(
-                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  isExpanded
+                      ? Icons.keyboard_arrow_down
+                      : Icons.keyboard_arrow_right,
                   size: 24,
                   color: Colors.grey[600],
                 ),
                 onPressed: () => _toggleCategory(category.id!),
               )
-            : const SizedBox(width: 24),
+            else
+              const SizedBox(width: 24),
+            const SizedBox(width: 8),
+            _buildCategoryIcon(category, size: 40),
+          ],
+        ),
         title: Text(
           category.name,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         onTap: () {
           if (widget.isSelectionMode) {

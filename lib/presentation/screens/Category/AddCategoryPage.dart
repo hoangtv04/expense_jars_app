@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'SelectParentCategoryPage.dart';
+import 'SelectCategoryIconPage.dart';
 
 class AddCategoryPage extends StatefulWidget {
   final CategoryType categoryType;
@@ -18,6 +19,7 @@ class AddCategoryPage extends StatefulWidget {
 class _AddCategoryPageState extends State<AddCategoryPage> {
   final TextEditingController _nameController = TextEditingController();
   Category? _selectedParentCategory;
+  int? _selectedIconId;
   final CategoryController _controller = CategoryController();
   List<Category> _parentCategories = [];
   bool _isLoadingParents = false;
@@ -63,6 +65,23 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     }
   }
 
+  void _showIconSelector() async {
+    final result = await Navigator.push<int?>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectCategoryIconPage(
+          selectedIconId: _selectedIconId,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedIconId = result;
+      });
+    }
+  }
+
   Future<void> _saveCategory() async {
     final newName = _nameController.text.trim();
     
@@ -77,6 +96,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       name: newName,
       type: widget.categoryType,
       parentId: _selectedParentCategory?.id,
+      iconId: _selectedIconId,
     );
 
     if (mounted) {
@@ -117,24 +137,56 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name input
-                  TextField(
-                    controller: _nameController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Tên hạng mục',
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                  // Icon and Name input row
+                  Row(
+                    children: [
+                      // Icon selection button
+                      GestureDetector(
+                        onTap: _showIconSelector,
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: _selectedIconId != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    'lib/assets/category_icon/$_selectedIconId.png',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.category);
+                                    },
+                                  ),
+                                )
+                              : const Icon(Icons.add_a_photo),
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
+                      const SizedBox(width: 12),
+                      // Name input
+                      Expanded(
+                        child: TextField(
+                          controller: _nameController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'Tên hạng mục',
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          style: const TextStyle(fontSize: 16),
+                        ),
                       ),
-                    ),
-                    style: const TextStyle(fontSize: 16),
+                    ],
                   ),
                   const SizedBox(height: 24),
 
