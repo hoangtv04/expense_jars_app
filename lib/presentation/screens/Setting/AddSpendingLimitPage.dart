@@ -1,0 +1,533 @@
+import 'package:flutter/material.dart';
+import 'SelectCategoryForLimitPage.dart';
+import 'SelectAccountForLimitPage.dart';
+
+class AddSpendingLimitPage extends StatefulWidget {
+  const AddSpendingLimitPage({super.key});
+
+  @override
+  State<AddSpendingLimitPage> createState() => _AddSpendingLimitPageState();
+}
+
+class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  
+  String _selectedCategory = 'Tất cả hạng mục chi';
+  String _selectedAccount = 'Tất cả tài khoản';
+  String _repeatFrequency = 'Hàng tháng';
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate;
+  bool _carryForward = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  String _formatCategoryDisplay(String categoryString) {
+    // Nếu chứa "Tất cả hạng mục chi" thì hiển thị "Tất cả"
+    if (categoryString.contains('Tất cả hạng mục chi')) {
+      return 'Tất cả hạng mục chi';
+    }
+    // Nếu danh sách dài quá, hiển thị số lượng
+    final categories = categoryString.split(', ');
+    if (categories.length > 3) {
+      return '${categories.length} hạng mục';
+    }
+    return categoryString;
+  }
+
+  String _formatAccountDisplay(String accountString) {
+    // Nếu chứa "Tất cả tài khoản" thì hiển thị "Tất cả tài khoản"
+    if (accountString.contains('Tất cả tài khoản')) {
+      return 'Tất cả tài khoản';
+    }
+    // Nếu danh sách dài quá, hiển thị số lượng
+    final accounts = accountString.split(', ');
+    if (accounts.length > 3) {
+      return '${accounts.length} tài khoản';
+    }
+    return accountString;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE3F2FD),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Thêm hạn mức',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _saveSpendingLimit,
+          ),
+        ],
+        backgroundColor: const Color(0xFFE3F2FD),
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Amount input section
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Số tiền',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '0',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'đ',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Form fields section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _buildTextField(
+                    icon: Icons.edit,
+                    iconColor: Colors.orange,
+                    hint: 'Tên hạn mức',
+                    controller: _nameController,
+                  ),
+                  _buildDivider(),
+                  _buildSelectItem(
+                    icon: Icons.category,
+                    iconColor: Colors.red,
+                    label: 'Hạng mục chi',
+                    value: _formatCategoryDisplay(_selectedCategory),
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SelectCategoryForLimitPage(
+                            selectedCategory: _selectedCategory,
+                          ),
+                        ),
+                      );
+                      if (result != null && result is List) {
+                        setState(() {
+                          _selectedCategory = result.join(', ');
+                        });
+                      }
+                    },
+                  ),
+                  _buildDivider(),
+                  _buildSelectItem(
+                    icon: Icons.account_balance_wallet,
+                    iconColor: Colors.grey,
+                    label: 'Tài khoản',
+                    value: _formatAccountDisplay(_selectedAccount),
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SelectAccountForLimitPage(
+                            selectedAccount: _selectedAccount,
+                          ),
+                        ),
+                      );
+                      if (result != null && result is List) {
+                        setState(() {
+                          _selectedAccount = result.join(', ');
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Repeat settings section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _buildSelectItem(
+                    icon: Icons.refresh,
+                    iconColor: Colors.grey,
+                    label: 'Lặp lại',
+                    value: _repeatFrequency,
+                    onTap: () {
+                      _showRepeatDialog();
+                    },
+                  ),
+                  _buildDivider(),
+                  _buildSelectItem(
+                    icon: Icons.calendar_today,
+                    iconColor: Colors.grey,
+                    label: 'Ngày bắt đầu',
+                    value: _formatDate(_startDate),
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _startDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
+                      if (date != null) {
+                        setState(() {
+                          _startDate = date;
+                        });
+                      }
+                    },
+                  ),
+                  _buildDivider(),
+                  InkWell(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _endDate ?? _startDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
+                      if (date != null) {
+                        setState(() {
+                          _endDate = date;
+                        });
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.calendar_today, color: Colors.grey, size: 20),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ngày kết thúc',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _endDate == null ? 'Không xác định' : _formatDate(_endDate!),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Nút X để xóa ngày kết thúc
+                          if (_endDate != null)
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _endDate = null;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Icon(
+                                  Icons.close,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          Icon(Icons.chevron_right, color: Colors.grey[400]),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Carry forward toggle
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dồn sang kỳ sau',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Số tiền dư hoặc bội chi sẽ được chuyển sang kỳ sau',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _carryForward,
+                    onChanged: (value) {
+                      setState(() {
+                        _carryForward = value;
+                      });
+                    },
+                    activeColor: Colors.blue,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 80),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: ElevatedButton(
+            onPressed: _saveSpendingLimit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0288D1),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Lưu lại',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required IconData icon,
+    required Color iconColor,
+    required String hint,
+    required TextEditingController controller,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectItem({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 60),
+      child: Divider(height: 1, color: Colors.grey[200]),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  void _showRepeatDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Chọn chu kỳ lặp lại'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildRepeatOption('Không lặp lại'),
+            _buildRepeatOption('Hàng ngày'),
+            _buildRepeatOption('Hàng tuần'),
+            _buildRepeatOption('Hàng tháng'),
+            _buildRepeatOption('Hàng quý'),
+            _buildRepeatOption('Hàng năm'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRepeatOption(String option) {
+    return RadioListTile<String>(
+      title: Text(option),
+      value: option,
+      groupValue: _repeatFrequency,
+      onChanged: (value) {
+        setState(() {
+          _repeatFrequency = value!;
+        });
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _saveSpendingLimit() {
+    // TODO: Validate and save spending limit
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Lưu hạn mức chi thành công')),
+    );
+    Navigator.pop(context);
+  }
+}
