@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -8,18 +9,14 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             /// ===== HEADER XANH =====
             Container(
               width: double.infinity,
@@ -34,49 +31,57 @@ class _SettingPageState extends State<SettingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
                       /// Avatar + Name
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.white,
-                            child: Text(
-                              "DC",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                      /// Avatar + Name (Click để sang Profile)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Profile(),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Colors.white,
+                              child: Text(
+                                "DC",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "Xin chào!",
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  "Xin chào!",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                "duc cuong",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                SizedBox(height: 4),
+                                Text(
+                                  "duc cuong",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
 
                       /// Icons bên phải
@@ -84,10 +89,7 @@ class _SettingPageState extends State<SettingPage> {
                         children: [
                           Stack(
                             children: [
-                              const Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                              ),
+                              const Icon(Icons.refresh, color: Colors.white),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -114,7 +116,7 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white,
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
 
@@ -201,10 +203,7 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -212,9 +211,18 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildGrid() {
     final List<String> items = [
-      "aa","bb","cc","dd",
-      "ee","ff","gg","hh",
-      "ii","jj","kk","ll"
+      "aa",
+      "bb",
+      "cc",
+      "dd",
+      "ee",
+      "ff",
+      "gg",
+      "hh",
+      "ii",
+      "jj",
+      "kk",
+      "ll",
     ];
 
     return Padding(
@@ -239,16 +247,10 @@ class _SettingPageState extends State<SettingPage> {
                   color: Colors.blue[100],
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  Icons.star,
-                  color: Colors.blue,
-                ),
+                child: const Icon(Icons.star, color: Colors.blue),
               ),
               const SizedBox(height: 8),
-              Text(
-                items[index],
-                textAlign: TextAlign.center,
-              ),
+              Text(items[index], textAlign: TextAlign.center),
             ],
           );
         },
