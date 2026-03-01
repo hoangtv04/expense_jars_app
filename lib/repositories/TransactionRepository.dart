@@ -123,4 +123,26 @@ class TransactionRepository {
       'expense': (row['totalExpense'] as num?)?.toDouble() ?? 0,
     };
   }
+
+  final AppDatabase _db = AppDatabase.instance;
+
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
+    return _db.getDailyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
+    return _db.getWeeklyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
+    return _db.getMonthlyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+    return _db.getQuarterReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+    return _db.getYearlyReport(userId);
+  }
 }

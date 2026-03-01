@@ -3,6 +3,7 @@ import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.da
 import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
 import 'package:flutter_application_jars/presentation/screens/Report/Thongke.dart';
+import 'package:flutter_application_jars/presentation/screens/Report/Other.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -19,11 +20,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   late final List<Widget> _pages = [
-    home(onChanged: refresh), // CHỮ H PHẢI HOA
+    home(onChanged: refresh), 
     JarListPage(onChanged: refresh),
     TransactionListPage(onChanged: refresh),
     const Thongke(),
-    const Center(child: Text("Khác")),
+    const OtherPage(),
   ];
 
   @override

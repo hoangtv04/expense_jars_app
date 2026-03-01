@@ -490,4 +490,110 @@ class AppDatabase {
     final value = result.first['total'];
     return value == null ? 0.0 : (value as num).toDouble();
   }
+
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      date as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY date
+    ORDER BY date
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-W%W', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-%m', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) || '-Q' || 
+      ((cast(strftime('%m', date) as integer) - 1) / 3 + 1) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
 }
