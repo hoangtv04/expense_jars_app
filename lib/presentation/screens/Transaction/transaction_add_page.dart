@@ -168,6 +168,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       jarId: _selectedJar!,
                       categoryId: _selectedCategory!,
                       amount: double.parse(_amountController.text),
+                      type: _selectedCategoryObject!.type,
                       note: _noteController.text,
                       date: DateTime.now().toIso8601String(),
                       createdAt: DateTime.now().toIso8601String(),
@@ -177,7 +178,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
 
 
 
-                    _controllerJar.updateJarAmount(_selectedJar!, -double.parse(_amountController.text));
+
                     await _controller.add(transaction);
 
 

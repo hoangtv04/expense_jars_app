@@ -91,7 +91,13 @@ class TransactionRepository {
 
   Future<List<Transaction>> getAllTransactions() async {
     final db = await AppDatabase.instance.database;
-    final maps = await db.query('transactions');
+
+    final maps = await db.query(
+      'transactions',
+      where: 'is_deleted = ?',
+      whereArgs: [0],
+    );
+
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
