@@ -14,7 +14,6 @@ class AppDatabase {
     return _database!;
   }
 
-
   Future<void> _seedData(Database db) async {
     // ===== USER =====
     final userId = await db.insert('users', {
@@ -281,37 +280,27 @@ class AppDatabase {
     });
 
     // ===== JAR LOG =====
-    await db.insert('jar_logs', {
-      'jar_id': jarId,
-      'change_amount': 12000000.0,
-    });
+    await db.insert('jar_logs', {'jar_id': jarId, 'change_amount': 12000000.0});
 
-    await db.insert('jar_logs', {
-      'jar_id': jarId,
-      'change_amount': -50000.0,
-    });
+    await db.insert('jar_logs', {'jar_id': jarId, 'change_amount': -50000.0});
 
     print('🌱 Seed data inserted');
   }
-
 
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
 
-    final db = await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    final db = await openDatabase(path, version: 1, onCreate: _createDB);
 
     final tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table'"
+      "SELECT name FROM sqlite_master WHERE type='table'",
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
+
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
@@ -387,17 +376,20 @@ class AppDatabase {
   ''');
 
     await db.execute(
-        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
+      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_date ON transactions(date)');
+      'CREATE INDEX idx_transactions_date ON transactions(date)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
+      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
-    await   _seedData(db);
+      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
+    );
+    await _seedData(db);
     print('Database created successfully');
   }
-
 
   Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
     final db = await database;
@@ -471,4 +463,166 @@ class AppDatabase {
     );
   }
 
+  Future<double> getTotalIncome(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND c.type = 'income'
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<double> getTotalExpense(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND c.type = 'expense'
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<double> getCurrentBalance(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(balance) as total
+    FROM jars
+    WHERE user_id = ?
+      AND is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      date as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY date
+    ORDER BY date
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-W%W', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-%m', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) || '-Q' || 
+      ((cast(strftime('%m', date) as integer) - 1) / 3 + 1) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
 }

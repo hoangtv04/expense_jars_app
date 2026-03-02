@@ -2,7 +2,6 @@
 
 
 
-import 'package:flutter_application_jars/repositories/CategoryRepository.dart';
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
 
 import '../db/app_state.dart';
@@ -64,7 +63,7 @@ class TransactionController {
 
 
 
-  Future<List<TransactionWithCategory>> getTransactionsByJar(int jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -89,6 +88,25 @@ class TransactionController {
     return list;
   }
 
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
+    return _repo.getDailyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
+    return _repo.getWeeklyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
+    return _repo.getMonthlyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+    return _repo.getQuarterReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+    return _repo.getYearlyReport(userId);
+  }
 
   Future<double> getTransactionsTotalIncome(int jarId) async {
 

@@ -37,6 +37,9 @@ class TransactionRepository {
   Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
     final db = await AppDatabase.instance.database;
 
+    print('===== REPO START =====');
+    print('jarId = $jarId');
+
     final result = await db.rawQuery(
       '''
     SELECT 
@@ -101,6 +104,51 @@ class TransactionRepository {
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
+  Future<Map<String, double>> getSummaryByUser(int userId) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT 
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as totalIncome,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as totalExpense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+    AND t.is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final row = result.first;
+
+    return {
+      'income': (row['totalIncome'] as num?)?.toDouble() ?? 0,
+      'expense': (row['totalExpense'] as num?)?.toDouble() ?? 0,
+    };
+  }
+
+  final AppDatabase _db = AppDatabase.instance;
+
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
+    return _db.getDailyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
+    return _db.getWeeklyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
+    return _db.getMonthlyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+    return _db.getQuarterReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+    return _db.getYearlyReport(userId);
+  }
 
 
   Future<double> getTotalIncome(int jarId) async {
