@@ -184,6 +184,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -272,22 +273,24 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
-                    final transaction = Transaction(
+
+
+
+                    final transaction  = Transaction(
                       userId: 1,
                       jarId: _selectedJar!,
                       categoryId: _selectedCategory!,
                       amount: double.parse(_amountController.text),
+                      type: _selectedCategoryObject!.type,
                       note: _noteController.text,
                       date: DateTime.now().toIso8601String(),
                       createdAt: DateTime.now().toIso8601String(),
                       isDeleted: 0,
                     );
 
-                    _controllerJar.updateJarAmount(
-                      _selectedJar!,
-                      -double.parse(_amountController.text),
-                    );
+
                     await _controller.add(transaction);
+
 
                     Navigator.pop(context, true);
                   },

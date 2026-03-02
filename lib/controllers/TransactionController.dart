@@ -37,6 +37,11 @@ class TransactionController {
     if(transaction.amount > jar.balance) {
       throw Exception("Số tiền vượt quá số dư của hũ");
     }
+    if(transaction.type == CategoryType.expense) {
+      await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
+    } else if(transaction.type == CategoryType.income) {
+      await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
+    }
     await _repo.insertTransactions(transaction);
     AppState.jarChanged.value++;
   }
