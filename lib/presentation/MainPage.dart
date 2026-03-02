@@ -1,8 +1,3 @@
-
-
-
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -33,22 +28,20 @@ class _MainPageState extends State<MainPage> {
       JarListPage(onChanged: refresh),
       TransactionListPage(onChanged: refresh),
       Container(), // Placeholder for CategoryListPage - will be navigated separately
-      SettingPage() // Placeholder for "Khác"
+      SettingPage(), // Placeholder for "Khác"
     ];
   }
+
   void refresh() {
     setState(() {});
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: HeroMode(
         enabled: false,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: _pages,
-        ),
+        child: IndexedStack(index: _currentIndex, children: _pages),
       ),
       bottomNavigationBar: Container(
         color: Colors.white,
@@ -70,7 +63,7 @@ class _MainPageState extends State<MainPage> {
   Widget _buildNavItem(IconData icon, String label, int index) {
     bool isSelected = _currentIndex == index;
     bool isCenter = index == 2; // "Ghi chép" button
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {

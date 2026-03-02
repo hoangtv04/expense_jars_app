@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'SpendingLimitPage.dart';
+import 'SpendingLimt/SpendingLimitPage.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -9,18 +9,14 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             /// ===== HEADER XANH =====
             Container(
               width: double.infinity,
@@ -35,11 +31,9 @@ class _SettingPageState extends State<SettingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
                       /// Avatar + Name
                       Row(
                         children: [
@@ -85,10 +79,7 @@ class _SettingPageState extends State<SettingPage> {
                         children: [
                           Stack(
                             children: [
-                              const Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                              ),
+                              const Icon(Icons.refresh, color: Colors.white),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -115,7 +106,7 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white,
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
 
@@ -196,10 +187,7 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -208,7 +196,11 @@ class _SettingPageState extends State<SettingPage> {
   Widget _buildGrid() {
     final List<Map<String, dynamic>> items = [
       {"label": "aa", "icon": Icons.star, "color": Colors.blue},
-      {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
+      {
+        "label": "Hạn mức chi",
+        "isCustom": true,
+        "color": const Color(0xFFFFA500),
+      },
       {"label": "cc", "icon": Icons.star, "color": Colors.blue},
       {"label": "dd", "icon": Icons.star, "color": Colors.blue},
       {"label": "ee", "icon": Icons.star, "color": Colors.blue},
@@ -236,7 +228,7 @@ class _SettingPageState extends State<SettingPage> {
         itemBuilder: (context, index) {
           final item = items[index];
           final isCustomIcon = item["isCustom"] == true;
-          
+
           return GestureDetector(
             onTap: () {
               if (item["label"] == "Hạn mức chi") {
@@ -257,12 +249,9 @@ class _SettingPageState extends State<SettingPage> {
                     color: item["color"].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: isCustomIcon 
+                  child: isCustomIcon
                       ? _buildHandMoneyIcon()
-                      : Icon(
-                          item["icon"],
-                          color: item["color"],
-                        ),
+                      : Icon(item["icon"], color: item["color"]),
                 ),
                 const SizedBox(height: 8),
                 Text(

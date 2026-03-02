@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../controllers/CategoryController.dart';
-import '../../../models/Category.dart';
+import '../../../../controllers/CategoryController.dart';
+import '../../../../models/Category.dart';
 
 class SelectCategoryForLimitPage extends StatefulWidget {
   final String selectedCategory;
@@ -531,6 +531,37 @@ class _SelectCategoryForLimitPageState
         child: SafeArea(
           child: ElevatedButton(
             onPressed: () {
+              // Lấy tất cả hạng mục cha
+              final allParents = _allCategories
+                  .where((cat) => cat.parent_id == null)
+                  .toList();
+
+              // Kiểm tra xem tất cả hạng mục cha có được chọn không
+              bool allParentsSelected = allParents.every(
+                (parent) => _selectedCategories.contains(parent.name ?? ''),
+              );
+
+              // Kiểm tra xem tất cả hạng mục con có được chọn không
+              bool allChildrenSelected = true;
+              for (var parent in allParents) {
+                final children = _getChildCategories(parent.id ?? 0);
+                if (children.isNotEmpty) {
+                  for (var child in children) {
+                    if (!_selectedCategories.contains(child.name ?? '')) {
+                      allChildrenSelected = false;
+                      break;
+                    }
+                  }
+                  if (!allChildrenSelected) break;
+                }
+              }
+
+              // Nếu tất cả hạng mục cha và con đều được chọn, return "Tất cả hạng mục chi"
+              if (allParentsSelected && allChildrenSelected) {
+                Navigator.pop(context, ['Tất cả hạng mục chi']);
+                return;
+              }
+
               // Xây dựng danh sách hiển thị
               final displayList = <String>[];
 

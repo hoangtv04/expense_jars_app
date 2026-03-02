@@ -386,6 +386,24 @@ class AppDatabase {
   );
   ''');
 
+    await db.execute('''
+  CREATE TABLE spending_limits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    categories TEXT, -- JSON array of category IDs or "all" for all categories
+    accounts TEXT, -- JSON array of account IDs or "all" for all accounts
+    repeat_frequency TEXT DEFAULT 'Hàng tháng' CHECK (repeat_frequency IN ('Không lặp lại', 'Hàng ngày', 'Hàng tuần', 'Hàng tháng', 'Hàng quý', 'Hàng năm')),
+    start_date TEXT NOT NULL,
+    end_date TEXT, -- Nullable for unlimited duration
+    carry_forward INTEGER DEFAULT 0,
+    is_deleted INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  ''');
+
     await db.execute(
         'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
@@ -394,6 +412,8 @@ class AppDatabase {
         'CREATE INDEX idx_transactions_category ON transactions(category_id)');
     await db.execute(
         'CREATE INDEX idx_categories_parent ON categories(parent_id)');
+    await db.execute(
+        'CREATE INDEX idx_spending_limits_user ON spending_limits(user_id)');
     await   _seedData(db);
     print('Database created successfully');
   }
