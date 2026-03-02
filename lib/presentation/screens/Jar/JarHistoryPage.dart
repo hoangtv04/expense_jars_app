@@ -130,7 +130,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
           Expanded(
             child: FutureBuilder<List<TransactionWithCategory>>(
               future: _controller
-                  .getTransactionsByJar(widget.jarId!),
+                  .getTransactionsWithCategory(widget.jarId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {

@@ -9,6 +9,7 @@ import '../models/Category.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
+import '../repositories/CategoryRepository.dart';
 import '../repositories/TransactionRepository.dart';
 
 
