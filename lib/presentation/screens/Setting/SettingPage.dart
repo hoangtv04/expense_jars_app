@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'SpendingLimitPage.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -41,43 +40,53 @@ class _SettingPageState extends State<SettingPage> {
                     children: [
 
                       /// Avatar + Name
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.white,
-                            child: Text(
-                              "DC",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                      /// Avatar + Name (Click để sang Profile)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Profile(),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Colors.white,
+                              child: Text(
+                                "DC",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "Xin chào!",
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  "Xin chào!",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                "duc cuong",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                SizedBox(height: 4),
+                                Text(
+                                  "duc cuong",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
 
                       /// Icons bên phải
@@ -85,10 +94,7 @@ class _SettingPageState extends State<SettingPage> {
                         children: [
                           Stack(
                             children: [
-                              const Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                              ),
+                              const Icon(Icons.refresh, color: Colors.white),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -182,6 +188,12 @@ class _SettingPageState extends State<SettingPage> {
             _buildSectionTitle("Tính năng"),
             _buildGrid(),
 
+            const SizedBox(height: 20),
+
+            /// ===== TIỆN ÍCH =====
+            _buildSectionTitle("Tiện ích"),
+            _buildGrid(),
+
             const SizedBox(height: 30),
           ],
         ),
@@ -196,29 +208,17 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
   Widget _buildGrid() {
-    final List<Map<String, dynamic>> items = [
-      {"label": "aa", "icon": Icons.star, "color": Colors.blue},
-      {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
-      {"label": "cc", "icon": Icons.star, "color": Colors.blue},
-      {"label": "dd", "icon": Icons.star, "color": Colors.blue},
-      {"label": "ee", "icon": Icons.star, "color": Colors.blue},
-      {"label": "ff", "icon": Icons.star, "color": Colors.blue},
-      {"label": "gg", "icon": Icons.star, "color": Colors.blue},
-      {"label": "hh", "icon": Icons.star, "color": Colors.blue},
-      {"label": "ii", "icon": Icons.star, "color": Colors.blue},
-      {"label": "jj", "icon": Icons.star, "color": Colors.blue},
-      {"label": "kk", "icon": Icons.star, "color": Colors.blue},
-      {"label": "ll", "icon": Icons.star, "color": Colors.blue},
+    final List<String> items = [
+      "aa","bb","cc","dd",
+      "ee","ff","gg","hh",
+      "ii","jj","kk","ll"
     ];
 
     return Padding(
@@ -234,60 +234,28 @@ class _SettingPageState extends State<SettingPage> {
           childAspectRatio: 0.8,
         ),
         itemBuilder: (context, index) {
-          final item = items[index];
-          final isCustomIcon = item["isCustom"] == true;
-          
-          return GestureDetector(
-            onTap: () {
-              if (item["label"] == "Hạn mức chi") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SpendingLimitPage(),
-                  ),
-                );
-              }
-            },
-            child: Column(
-              children: [
-                Container(
-                  width: 55,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: item["color"].withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: isCustomIcon 
-                      ? _buildHandMoneyIcon()
-                      : Icon(
-                          item["icon"],
-                          color: item["color"],
-                        ),
+          return Column(
+            children: [
+              Container(
+                width: 55,
+                height: 55,
+                decoration: BoxDecoration(
+                  color: Colors.blue[100],
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  item["label"],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                child: const Icon(
+                  Icons.star,
+                  color: Colors.blue,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                items[index],
+                textAlign: TextAlign.center,
+              ),
+            ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildHandMoneyIcon() {
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: Image.asset(
-        'lib/assets/income.png',
-        width: 40,
-        height: 40,
-        fit: BoxFit.contain,
       ),
     );
   }
