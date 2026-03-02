@@ -44,13 +44,20 @@ class _SpendingLimitDetailPageState extends State<SpendingLimitDetailPage> {
     final sign = value < 0 ? '-' : '';
     final absValue = value.abs();
 
-    // Format với 3 chữ số thập phân
-    final formatted = absValue.toStringAsFixed(3);
+    // Format với 0 chữ số thập phân
+    final formatted = absValue.toStringAsFixed(0);
 
-    // Thay dấu chấm thập phân bằng dấu phẩy
-    final withComma = formatted.replaceAll('.', ',');
+    // Thêm dấu chấm phân cách hàng nghìn
+    final buffer = StringBuffer();
+    for (int i = 0; i < formatted.length; i++) {
+      final indexFromEnd = formatted.length - i;
+      buffer.write(formatted[i]);
+      if (indexFromEnd > 1 && indexFromEnd % 3 == 1) {
+        buffer.write('.');
+      }
+    }
 
-    return '$sign$withComma đ';
+    return '$sign${buffer.toString()} đ';
   }
 
   String _formatShortDate(DateTime date) {
