@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'SelectCategoryForLimitPage.dart';
 import 'SelectAccountForLimitPage.dart';
+import '../../../../controllers/SpendingLimitController.dart';
 
 class AddSpendingLimitPage extends StatefulWidget {
   const AddSpendingLimitPage({super.key});
@@ -12,13 +13,38 @@ class AddSpendingLimitPage extends StatefulWidget {
 class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final SpendingLimitController _controller = SpendingLimitController();
 
   String _selectedCategory = 'Tất cả hạng mục chi';
   String _selectedAccount = 'Tất cả tài khoản';
   String _repeatFrequency = 'Hàng tháng';
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
-  bool _carryForward = false;
+
+  String _formatAmountWithCommas(String value) {
+    final digits = value.replaceAll(',', '').replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return '';
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      final indexFromEnd = digits.length - i;
+      buffer.write(digits[i]);
+      if (indexFromEnd > 1 && indexFromEnd % 3 == 1) {
+        buffer.write(',');
+      }
+    }
+    return buffer.toString();
+  }
+
+  void _onAmountChanged(String value) {
+    final formatted = _formatAmountWithCommas(value);
+    if (formatted == value) return;
+
+    _amountController.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 
   // Fallback icon mapping by category name
   int _fallbackIconIdByName(String categoryName) {
@@ -84,8 +110,9 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
   }
 
   String _formatCategoryDisplay(String categoryString) {
-    // Nếu chứa "Tất cả hạng mục chi" thì hiển thị "Tất cả"
-    if (categoryString.contains('Tất cả hạng mục chi')) {
+    // Nếu chứa "Tất cả hạng mục chi" hoặc bằng chính xác thì hiển thị
+    if (categoryString == 'Tất cả hạng mục chi' ||
+        categoryString.contains('Tất cả hạng mục chi')) {
       return 'Tất cả hạng mục chi';
     }
     // Nếu danh sách dài quá, hiển thị số lượng
@@ -158,6 +185,7 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                           child: TextField(
                             controller: _amountController,
                             keyboardType: TextInputType.number,
+                            onChanged: _onAmountChanged,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 40,
@@ -392,41 +420,6 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Dồn sang kỳ sau',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Số tiền dư hoặc bội chi sẽ được chuyển sang kỳ sau',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch(
-                    value: _carryForward,
-                    onChanged: (value) {
-                      setState(() {
-                        _carryForward = value;
-                      });
-                    },
-                    activeColor: Colors.blue,
-                  ),
-                ],
-              ),
             ),
 
             const SizedBox(height: 80),
@@ -610,11 +603,72 @@ class _AddSpendingLimitPageState extends State<AddSpendingLimitPage> {
     );
   }
 
-  void _saveSpendingLimit() {
-    // TODO: Validate and save spending limit
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Lưu hạn mức chi thành công')));
-    Navigator.pop(context);
+  void _saveSpendingLimit() async {
+    // Validate inputs
+    final name = _nameController.text.trim();
+    final amountStr = _amountController.text.trim();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập tên hạn mức chi')),
+      );
+      return;
+    }
+
+    if (amountStr.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng nhập số tiền')));
+      return;
+    }
+
+    final amount = double.tryParse(amountStr.replaceAll(',', ''));
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập số tiền hợp lệ')),
+      );
+      return;
+    }
+
+    // Check if name already exists
+    final nameExists = await _controller.checkNameExists(name);
+    if (nameExists) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Tên hạn mức chi đã tồn tại. Vui lòng chọn tên khác.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      await _controller.addSpendingLimit(
+        name: name,
+        amount: amount,
+        categories: _selectedCategory,
+        accounts: _selectedAccount,
+        repeatFrequency: _repeatFrequency,
+        startDate: _startDate.toIso8601String().split('T')[0],
+        endDate: _endDate != null
+            ? _endDate!.toIso8601String().split('T')[0]
+            : null,
+        carryForward: false,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lưu hạn mức chi thành công')),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+    }
   }
 }

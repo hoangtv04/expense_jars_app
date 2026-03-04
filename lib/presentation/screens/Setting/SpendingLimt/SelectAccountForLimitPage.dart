@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../../controllers/JarController.dart';
-import '../../../models/Jar.dart';
+import '../../../../controllers/JarController.dart';
+import '../../../../models/Jar.dart';
 
 class SelectAccountForLimitPage extends StatefulWidget {
   final String selectedAccount;
 
-  const SelectAccountForLimitPage({
-    super.key,
-    required this.selectedAccount,
-  });
+  const SelectAccountForLimitPage({super.key, required this.selectedAccount});
 
   @override
   State<SelectAccountForLimitPage> createState() =>
       _SelectAccountForLimitPageState();
 }
 
-class _SelectAccountForLimitPageState
-    extends State<SelectAccountForLimitPage> {
+class _SelectAccountForLimitPageState extends State<SelectAccountForLimitPage> {
   late TextEditingController _searchController;
   late JarController _jarController;
   List<Jar> _filteredJars = [];
@@ -59,10 +55,11 @@ class _SelectAccountForLimitPageState
     } else {
       setState(() {
         _filteredJars = _allJars
-            .where((jar) =>
-                (jar.nameJar ?? '')
-                    .toLowerCase()
-                    .contains(query.toLowerCase()))
+            .where(
+              (jar) => (jar.nameJar ?? '').toLowerCase().contains(
+                query.toLowerCase(),
+              ),
+            )
             .toList();
       });
     }
@@ -120,10 +117,7 @@ class _SelectAccountForLimitPageState
         ),
         title: const Text(
           'Chọn tài khoản',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE3F2FD),
         foregroundColor: Colors.black,
@@ -148,8 +142,10 @@ class _SelectAccountForLimitPageState
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
@@ -205,10 +201,7 @@ class _SelectAccountForLimitPageState
                 ? Center(
                     child: Text(
                       'Không tìm thấy tài khoản',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   )
                 : ListView.builder(
@@ -281,7 +274,10 @@ class _SelectAccountForLimitPageState
           child: ElevatedButton(
             onPressed: () {
               final selectedList = _selectedJars.toList();
-              Navigator.pop(context, selectedList.isNotEmpty ? selectedList : ['Tất cả tài khoản']);
+              Navigator.pop(
+                context,
+                selectedList.isNotEmpty ? selectedList : ['Tất cả tài khoản'],
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0288D1),

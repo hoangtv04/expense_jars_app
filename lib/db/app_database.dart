@@ -14,6 +14,7 @@ class AppDatabase {
     return _database!;
   }
 
+
   Future<void> _seedData(Database db) async {
     // ===== USER =====
     final userId = await db.insert('users', {
@@ -287,6 +288,7 @@ class AppDatabase {
     print('🌱 Seed data inserted');
   }
 
+
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
@@ -294,13 +296,12 @@ class AppDatabase {
     final db = await openDatabase(path, version: 1, onCreate: _createDB);
 
     final tables = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type='table'",
+        "SELECT name FROM sqlite_master WHERE type='table'"
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
-
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
@@ -375,21 +376,36 @@ class AppDatabase {
   );
   ''');
 
+    await db.execute('''
+  CREATE TABLE spending_limits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    categories TEXT, -- JSON array of category IDs or "all" for all categories
+    accounts TEXT, -- JSON array of account IDs or "all" for all accounts
+    repeat_frequency TEXT DEFAULT 'Hàng tháng' CHECK (repeat_frequency IN ('Không lặp lại', 'Hàng ngày', 'Hàng tuần', 'Hàng tháng', 'Hàng quý', 'Hàng năm')),
+    start_date TEXT NOT NULL,
+    end_date TEXT, -- Nullable for unlimited duration
+    carry_forward INTEGER DEFAULT 0,
+    is_deleted INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  ''');
+
     await db.execute(
-      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
-    );
+        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
-      'CREATE INDEX idx_transactions_date ON transactions(date)',
-    );
+        'CREATE INDEX idx_transactions_date ON transactions(date)');
     await db.execute(
-      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
-    );
+        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
     await db.execute(
-      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
-    );
-    await _seedData(db);
+        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
+    await   _seedData(db);
     print('Database created successfully');
   }
+
 
   Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
     final db = await database;
