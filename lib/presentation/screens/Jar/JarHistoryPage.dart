@@ -31,6 +31,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   @override
   void initState() {
     super.initState();
+    print("HISTORY JAR ID = ${widget.jarId}");
 
     // 🔥 GỌI 1 LẦN DUY NHẤT KHI MỞ PAGE
     _incomeFuture =

@@ -50,7 +50,8 @@ class TransactionController {
   Future<List<TransactionWithCategory>> getTransactionsWithCategory(int id) async {
 
 
-    return await _cateRepo.getType(id);
+    return await _cateRepo.getTransactionWithCategory(id);
+
 
   }
 
