@@ -8,10 +8,12 @@ class CategoryController {
     required String name,
     required CategoryType type,
     int? parentId,
+    int? iconId,
     double? limitAmount,
     String? description,
   }) async {
     final category = Category(
+      icon_id: iconId,
       user_id: 1, // TODO: Get from logged user
       parent_id: parentId,
       name: name,

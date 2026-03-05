@@ -33,6 +33,9 @@ class  JarController{
 
     print("insert");
     await _repo.insertJar(jar);
+
+    AppState.jarChanged.value++;
+
   }
   Future<void> updateJarSetting(UpdateJarSetting res) async {
 

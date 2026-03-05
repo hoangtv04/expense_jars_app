@@ -2,7 +2,6 @@
 
 
 
-import 'package:flutter_application_jars/repositories/CategoryRepository.dart';
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
 
 import '../db/app_state.dart';
@@ -10,6 +9,7 @@ import '../models/Category.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
+import '../repositories/CategoryRepository.dart';
 import '../repositories/TransactionRepository.dart';
 
 
@@ -26,6 +26,10 @@ class TransactionController {
     await _repo.deleteTransactions(id);
   }
 
+  Future<void> update(Transaction updatedTransaction) async {
+    await _repo.updateTransaction(updatedTransaction);
+  }
+
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {
       throw Exception("Amount không hợp lệ");
@@ -37,6 +41,11 @@ class TransactionController {
     if(transaction.amount > jar.balance) {
       throw Exception("Số tiền vượt quá số dư của hũ");
     }
+    if(transaction.type == CategoryType.expense) {
+      await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
+    } else if(transaction.type == CategoryType.income) {
+      await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
+    }
     await _repo.insertTransactions(transaction);
     AppState.jarChanged.value++;
   }
@@ -45,7 +54,8 @@ class TransactionController {
   Future<List<TransactionWithCategory>> getTransactionsWithCategory(int id) async {
 
 
-    return await _cateRepo.getType(id);
+    return await _cateRepo.getTransactionWithCategory(id);
+
 
   }
 
@@ -59,7 +69,7 @@ class TransactionController {
 
 
 
-  Future<List<TransactionWithCategory>> getTransactionsByJar(int jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -84,6 +94,25 @@ class TransactionController {
     return list;
   }
 
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
+    return _repo.getDailyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
+    return _repo.getWeeklyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
+    return _repo.getMonthlyReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+    return _repo.getQuarterReport(userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+    return _repo.getYearlyReport(userId);
+  }
 
   Future<double> getTransactionsTotalIncome(int jarId) async {
 

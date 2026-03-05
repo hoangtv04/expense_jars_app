@@ -1,8 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../models/Jar.dart';
-
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
@@ -24,10 +22,11 @@ class AppDatabase {
       'password': '123456',
     });
 
+    // ===== JAR =====
     final jarId = await db.insert('jars', {
       'user_id': userId,
-      'nameJar': 'Ví chính',
-      'name': JarType.cash.name,
+      'name': 'cash', // JarType.cash.name
+      'nameJar': 'Ví tiền mặt',
       'balance': 1000000.0,
       'description': 'Ví chính',
       'is_deleted': 0,
@@ -36,6 +35,7 @@ class AppDatabase {
 
     // ===== CATEGORY =====
     final foodCategoryId = await db.insert('categories', {
+      'icon_id': 2, 
       'user_id': userId,
       'name': 'Ăn uống',
       'type': 'expense',
@@ -43,6 +43,7 @@ class AppDatabase {
 
     // Subcategories for Ăn uống
     await db.insert('categories', {
+      'icon_id': 3, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn vặt',
@@ -50,6 +51,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 18, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tối',
@@ -57,6 +59,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 41, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn trưa',
@@ -64,6 +67,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 19, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn sáng',
@@ -71,6 +75,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 6, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Cafe',
@@ -78,6 +83,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 1, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tiệm',
@@ -85,6 +91,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 36, 
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Đi chợ/siêu thị',
@@ -92,6 +99,7 @@ class AppDatabase {
     });
 
     final serviceId = await db.insert('categories', {
+      'icon_id': 40, 
       'user_id': userId,
       'name': 'Dịch vụ sinh hoạt',
       'type': 'expense',
@@ -99,6 +107,7 @@ class AppDatabase {
 
     // Subcategories for Dịch vụ sinh hoạt
     await db.insert('categories', {
+      'icon_id': 16, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Thuê người giúp việc',
@@ -106,6 +115,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 30, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại cố định',
@@ -113,6 +123,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 50, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Truyền hình',
@@ -120,6 +131,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 21, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Gas',
@@ -127,6 +139,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 46, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại di động',
@@ -134,6 +147,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 53, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Internet',
@@ -141,6 +155,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 52, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Nước',
@@ -148,6 +163,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 15, 
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện',
@@ -155,6 +171,7 @@ class AppDatabase {
     });
 
     final travelId = await db.insert('categories', {
+      'icon_id': 56, 
       'user_id': userId,
       'name': 'Đi lại',
       'type': 'expense',
@@ -162,6 +179,7 @@ class AppDatabase {
 
     // Subcategories for Đi lại
     await db.insert('categories', {
+      'icon_id': 49, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Taxi/thuê xe',
@@ -169,6 +187,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 14, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Rửa xe',
@@ -176,6 +195,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 38, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Gửi xe',
@@ -183,6 +203,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 54, 
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Sửa chữa, bảo dưỡng xe',
@@ -190,42 +211,49 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
+      'icon_id': 13, 
       'user_id': userId,
       'name': 'Con cái',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 48, 
       'user_id': userId,
       'name': 'Trang phục',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 35, 
       'user_id': userId,
       'name': 'Hiếu hỉ',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 27, 
       'user_id': userId,
       'name': 'Sức khỏe',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 28, 
       'user_id': userId,
       'name': 'Nhà cửa',
       'type': 'expense',
     });
 
     await db.insert('categories', {
+      'icon_id': 11, 
       'user_id': userId,
       'name': 'Hưởng thụ',
       'type': 'expense',
     });
 
     final salaryCategoryId = await db.insert('categories', {
+      'icon_id': 33, 
       'user_id': userId,
       'name': 'Lương',
       'type': 'income',
@@ -253,15 +281,9 @@ class AppDatabase {
     });
 
     // ===== JAR LOG =====
-    await db.insert('jar_logs', {
-      'jar_id': jarId,
-      'change_amount': 12000000.0,
-    });
+    await db.insert('jar_logs', {'jar_id': jarId, 'change_amount': 12000000.0});
 
-    await db.insert('jar_logs', {
-      'jar_id': jarId,
-      'change_amount': -50000.0,
-    });
+    await db.insert('jar_logs', {'jar_id': jarId, 'change_amount': -50000.0});
 
     print('🌱 Seed data inserted');
   }
@@ -271,11 +293,7 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
 
-    final db = await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    final db = await openDatabase(path, version: 1, onCreate: _createDB);
 
     final tables = await db.rawQuery(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -300,8 +318,8 @@ class AppDatabase {
   CREATE TABLE jars (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    nameJar TEXT NOT NULL,
     name TEXT NOT NULL,
+    nameJar TEXT NOT NULL,
     balance REAL DEFAULT 0,
     description TEXT,
     is_deleted INTEGER DEFAULT 0,
@@ -313,6 +331,7 @@ class AppDatabase {
     await db.execute('''
   CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    icon_id INTEGER,
     user_id INTEGER NOT NULL,
     parent_id INTEGER,
     name TEXT NOT NULL,
@@ -357,6 +376,56 @@ class AppDatabase {
   );
   ''');
 
+    await db.execute('''
+  CREATE TABLE spending_limits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    categories TEXT, -- JSON array of category IDs or "all" for all categories
+    accounts TEXT, -- JSON array of account IDs or "all" for all accounts
+    repeat_frequency TEXT DEFAULT 'Hàng tháng' CHECK (repeat_frequency IN ('Không lặp lại', 'Hàng ngày', 'Hàng tuần', 'Hàng tháng', 'Hàng quý', 'Hàng năm')),
+    start_date TEXT NOT NULL,
+    end_date TEXT, -- Nullable for unlimited duration
+    carry_forward INTEGER DEFAULT 0,
+    is_deleted INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  ''');
+
+    await db.execute('''
+  CREATE TABLE savings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        jar_id INTEGER,
+        name TEXT NOT NULL,
+        principal REAL NOT NULL,
+        interest_rate REAL,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        status TEXT DEFAULT 'active'
+    CHECK (status IN ('active','closed')),
+    note TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (jar_id) REFERENCES jars(id) ON DELETE SET NULL
+    );
+  ''');
+    await db.execute('''
+  CREATE TABLE saving_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  saving_id INTEGER NOT NULL,
+  transaction_id INTEGER,
+  change_amount REAL NOT NULL,
+  type TEXT NOT NULL 
+    CHECK (type IN ('deposit','withdraw','interest','close')),
+  note TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (saving_id) REFERENCES savings(id) ON DELETE CASCADE,
+  FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE SET NULL
+);
+  ''');
     await db.execute(
         'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
@@ -442,4 +511,166 @@ class AppDatabase {
     );
   }
 
+  Future<double> getTotalIncome(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND c.type = 'income'
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<double> getTotalExpense(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(t.amount) as total
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND c.type = 'expense'
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<double> getCurrentBalance(int userId) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(balance) as total
+    FROM jars
+    WHERE user_id = ?
+      AND is_deleted = 0
+  ''',
+      [userId],
+    );
+
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
+  }
+
+  Future<List<Map<String, dynamic>>> getDailyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      date as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY date
+    ORDER BY date
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-W%W', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y-%m', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) || '-Q' || 
+      ((cast(strftime('%m', date) as integer) - 1) / 3 + 1) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) async {
+    final db = await database;
+
+    return await db.rawQuery(
+      '''
+    SELECT 
+      strftime('%Y', date) as period,
+      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.user_id = ?
+      AND t.status = 'completed'
+      AND t.is_deleted = 0
+    GROUP BY period
+    ORDER BY period
+  ''',
+      [userId],
+    );
+  }
 }

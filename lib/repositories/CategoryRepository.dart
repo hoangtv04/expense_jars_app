@@ -22,9 +22,12 @@ class CategoryRepository {
 
   Future<int> updateCategory(Category category) async {
     final db = await AppDatabase.instance.database;
+    final updateMap = category.toMap();
+    // Giữ created_at không thay đổi, chỉ cập nhật các trường khác
+    updateMap.remove('created_at');
     return await db.update(
       'categories',
-      category.toMap(),
+      updateMap,
       where: 'id = ?',
       whereArgs: [category.id],
     );
@@ -81,7 +84,25 @@ class CategoryRepository {
         .map((e) => TransactionWithCategory.fromMap(e))
         .toList();
   }
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(int id) async {
+    final db = await AppDatabase.instance.database;
 
+    final result = await db.rawQuery('''
+    SELECT 
+      t.*, 
+      c.name as category_name, 
+      c.type
+    FROM transactions t
+    INNER JOIN categories c ON t.category_id = c.id
+    WHERE t.is_deleted = 0
+      AND t.jar_id = ?
+    ORDER BY t.created_at DESC
+  ''', [id]);
+
+    return result
+        .map((e) => TransactionWithCategory.fromMap(e))
+        .toList();
+  }
   Future<Category?> getCategoryById(int id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query(

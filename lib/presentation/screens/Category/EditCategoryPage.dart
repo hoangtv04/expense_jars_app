@@ -29,6 +29,54 @@ class _EditCategoryPageState extends State<EditCategoryPage>
   bool _isLoading = true;
   String _searchQuery = '';
 
+  int _fallbackIconIdByName(String name) {
+    const map = {
+      'Ăn uống': 2,
+      'Ăn sáng': 5,
+      'Ăn tiệm': 1,
+      'Ăn tối': 15,
+      'Ăn trưa': 8,
+      'Ăn vặt': 3,
+      'Cafe': 6,
+      'Đi chợ/siêu thị': 23,
+      'Con cái': 10,
+      'Đồ chơi': 42,
+      'Học phí': 50,
+      'Sách vở': 52,
+      'Sữa': 54,
+      'Tiền tiêu vặt': 37,
+      'Cho vay': 31,
+      'Ba': 1,
+    };
+    return map[name] ?? 1;
+  }
+
+  String _categoryIconPath(Category category) {
+    final iconId = category.icon_id ?? _fallbackIconIdByName(category.name);
+    return 'lib/assets/category_icon/$iconId.png';
+  }
+
+  Widget _buildCategoryIcon(Category category, {double size = 44}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Image.asset(
+        _categoryIconPath(category),
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Icons.image_not_supported_outlined,
+          color: Colors.grey[400],
+          size: size * 0.55,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -287,24 +335,23 @@ class _EditCategoryPageState extends State<EditCategoryPage>
           _loadCategories();
         }
       },
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: Text(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _buildCategoryIcon(subcategory, size: 48),
+          const SizedBox(height: 8),
+          Text(
             subcategory.name,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
+              color: Colors.grey[700],
               height: 1.2,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -331,12 +378,25 @@ class _EditCategoryPageState extends State<EditCategoryPage>
                 onPressed: () => _toggleCategory(category.id!),
               )
             : const SizedBox(width: 24),
-        title: Text(
-          category.name,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+        minLeadingWidth: 20,
+        horizontalTitleGap: 8,
+        visualDensity: const VisualDensity(vertical: 0.5),
+        titleAlignment: ListTileTitleAlignment.center,
+        title: Row(
+          children: [
+            _buildCategoryIcon(category, size: 44),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                category.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1C92C5),
+                ),
+              ),
+            ),
+          ],
         ),
         trailing: category.name == 'Cho vay'
             ? Icon(Icons.lock_outline, color: Colors.grey[400])

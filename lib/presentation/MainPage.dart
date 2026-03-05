@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_application_jars/presentation/screens/Jar/JarListPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Jar/JarLogPage.dart';
+import 'package:flutter_application_jars/presentation/screens/Report/Thongke.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/SettingPage.dart';
 import 'package:flutter_application_jars/presentation/screens/Transaction/transaction_list_page.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
@@ -32,7 +33,7 @@ class _MainPageState extends State<MainPage> {
       HomeScreen(onChanged: refresh),
       JarListPage(onChanged: refresh),
       TransactionListPage(onChanged: refresh),
-      Container(), // Placeholder for CategoryListPage - will be navigated separately
+      Thongke(), // Placeholder for CategoryListPage - will be navigated separately
       SettingPage() // Placeholder for "Khác"
     ];
   }

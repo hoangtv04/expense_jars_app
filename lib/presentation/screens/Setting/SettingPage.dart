@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
 
+import 'SpendingLimt/SpendingLimitPage.dart';
+
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
@@ -9,14 +11,18 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
+
+
       body: SingleChildScrollView(
         child: Column(
           children: [
+
             /// ===== HEADER XANH =====
             Container(
               width: double.infinity,
@@ -31,9 +37,11 @@ class _SettingPageState extends State<SettingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+
                       /// Avatar + Name
                       /// Avatar + Name (Click để sang Profile)
                       GestureDetector(
@@ -116,7 +124,7 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white,
                           ),
                         ],
-                      ),
+                      )
                     ],
                   ),
 
@@ -203,26 +211,29 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold
+          ),
         ),
       ),
     );
   }
 
   Widget _buildGrid() {
-    final List<String> items = [
-      "aa",
-      "bb",
-      "cc",
-      "dd",
-      "ee",
-      "ff",
-      "gg",
-      "hh",
-      "ii",
-      "jj",
-      "kk",
-      "ll",
+    final List<Map<String, dynamic>> items = [
+      {"label": "aa", "icon": Icons.star, "color": Colors.blue},
+      {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
+      {"label": "cc", "icon": Icons.star, "color": Colors.blue},
+      {"label": "dd", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ee", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ff", "icon": Icons.star, "color": Colors.blue},
+      {"label": "gg", "icon": Icons.star, "color": Colors.blue},
+      {"label": "hh", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ii", "icon": Icons.star, "color": Colors.blue},
+      {"label": "jj", "icon": Icons.star, "color": Colors.blue},
+      {"label": "kk", "icon": Icons.star, "color": Colors.blue},
+      {"label": "ll", "icon": Icons.star, "color": Colors.blue},
     ];
 
     return Padding(
@@ -238,22 +249,57 @@ class _SettingPageState extends State<SettingPage> {
           childAspectRatio: 0.8,
         ),
         itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Container(
-                width: 55,
-                height: 55,
-                decoration: BoxDecoration(
-                  color: Colors.blue[100],
-                  borderRadius: BorderRadius.circular(16),
+          final item = items[index];
+          final isCustomIcon = item["isCustom"] == true;
+          
+          return GestureDetector(
+            onTap: () {
+              if (item["label"] == "Hạn mức chi") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SpendingLimitPage(),
+                  ),
+                );
+              }
+            },
+            child: Column(
+              children: [
+                Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: item["color"].withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: isCustomIcon 
+                      ? _buildHandMoneyIcon()
+                      : Icon(item["icon"], color: item["color"]),
                 ),
-                child: const Icon(Icons.star, color: Colors.blue),
-              ),
-              const SizedBox(height: 8),
-              Text(items[index], textAlign: TextAlign.center),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  item["label"],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHandMoneyIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Image.asset(
+        'lib/assets/income.png',
+        width: 40,
+        height: 40,
+        fit: BoxFit.contain,
       ),
     );
   }

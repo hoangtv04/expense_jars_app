@@ -31,6 +31,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   @override
   void initState() {
     super.initState();
+    print("HISTORY JAR ID = ${widget.jarId}");
 
     // 🔥 GỌI 1 LẦN DUY NHẤT KHI MỞ PAGE
     _incomeFuture =
@@ -130,7 +131,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
           Expanded(
             child: FutureBuilder<List<TransactionWithCategory>>(
               future: _controller
-                  .getTransactionsByJar(widget.jarId!),
+                  .getTransactionsWithCategory(widget.jarId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
