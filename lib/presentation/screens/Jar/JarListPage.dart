@@ -1,45 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_jars/presentation/screens/Jar/UpdateJarPage.dart';
 
 import '../../../controllers/JarController.dart';
+import '../../../controllers/SavingController.dart';
 import '../../../db/app_state.dart';
+
 import '../../../models/Jar.dart';
+import '../../../models/Saving.dart';
+
 import 'JarAddPage.dart';
 import 'JarHistoryPage.dart';
-
-
-
-
-
-
+import 'SavingAddPage.dart';
+import 'UpdateJarPage.dart';
 
 class JarListPage extends StatefulWidget {
   final VoidCallback onChanged;
 
-  const JarListPage({
-    super.key,
-    required this.onChanged,
-  });
+  const JarListPage({super.key, required this.onChanged});
 
   @override
   State<JarListPage> createState() => _JarListPageState();
 }
 
 class _JarListPageState extends State<JarListPage> {
-  final _controller = JarController();
+  final _jarController = JarController();
+  final _savingController = SavingController();
 
-  // 🔹 Lưu Future để FutureBuilder theo dõi
-  late Future<List<Jar>> _futureJars;
-
-
-
+  /// ===== BottomSheet Jar =====
   void _showJarOptions(BuildContext context, Jar jar) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
@@ -48,7 +39,6 @@ class _JarListPageState extends State<JarListPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
 
-              // Thanh nhỏ phía trên (đẹp hơn)
               Container(
                 width: 40,
                 height: 5,
@@ -60,8 +50,8 @@ class _JarListPageState extends State<JarListPage> {
               ),
 
               ListTile(
-                leading: Icon(Icons.edit),
-                title: Text("Sửa tên hũ"),
+                leading: const Icon(Icons.edit),
+                title: const Text("Sửa tên hũ"),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -69,28 +59,22 @@ class _JarListPageState extends State<JarListPage> {
                       builder: (_) => UpdateJarPage(jar: jar),
                     ),
                   ).then((_) {
-                    // 🔥 Khi quay lại → reload DB
-                    widget.onChanged(); // báo MainPage nếu cần
+                    widget.onChanged();
                   });
-
-
                 },
               ),
 
               ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
                   "Xóa hũ",
                   style: TextStyle(color: Colors.red),
                 ),
                 onTap: () {
-
                   if (jar.id != null) {
-                    _controller.deleteJar(jar.id!);
+                    _jarController.deleteJar(jar.id!);
                   }
-
                   Navigator.pop(context);
-                  // xử lý xóa
                 },
               ),
             ],
@@ -100,38 +84,82 @@ class _JarListPageState extends State<JarListPage> {
     );
   }
 
-  void _showEditNameDialog(Jar jar) {
-    TextEditingController controller =
-    TextEditingController(text: jar.nameJar);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Sửa tên hũ"),
-          content: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: "Nhập tên mới",
+  /// ===== UI Saving Item =====
+  Widget savingItem(Saving saving) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.orange[100],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.savings,
+              color: Colors.orange,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Hủy"),
+          title: Text(
+            saving.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            "${saving.principal.toStringAsFixed(0)} đ",
+          ),
+          trailing: Text(
+            "${saving.interestRate ?? 0}%",
+            style: const TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
             ),
-            ElevatedButton(
-              onPressed: () {
+          ),
+        ),
+        const Divider(height: 1),
+      ],
+    );
+  }
 
-
-                print(controller.text);
-                Navigator.pop(context);
-              },
-              child: Text("Lưu"),
+  /// ===== UI Jar Item =====
+  Widget jarItem(Jar jar) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
-        );
-      },
+            child: const Icon(
+              Icons.account_balance_wallet,
+              color: Colors.blue,
+            ),
+          ),
+          title: Text(
+            jar.nameJar,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text("${jar.balance.toStringAsFixed(0)} đ"),
+          trailing: IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              _showJarOptions(context, jar);
+            },
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => JarHistoryPage(jarId: jar.id),
+              ),
+            );
+          },
+        ),
+        const Divider(height: 1),
+      ],
     );
   }
 
@@ -142,14 +170,13 @@ class _JarListPageState extends State<JarListPage> {
       child: Scaffold(
         backgroundColor: Colors.grey[100],
 
+        /// ===== FAB =====
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blue,
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const JarAddPage(),
-              ),
+              MaterialPageRoute(builder: (_) => const JarAddPage()),
             );
           },
           child: const Icon(Icons.add),
@@ -158,179 +185,138 @@ class _JarListPageState extends State<JarListPage> {
         body: ValueListenableBuilder(
           valueListenable: AppState.jarChanged,
           builder: (context, value, child) {
-            return FutureBuilder<List<Jar>>(
-              future: _controller.getJar(),
-              builder: (context, snapshot) {
+            return Column(
+              children: [
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                /// ===== HEADER =====
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
+                  child: Column(
+                    children: [
 
-                if (!snapshot.hasData) {
-                  return const SizedBox();
-                }
-
-                final jars = snapshot.data!;
-                final totalMoney = _controller.calTotalMoney(jars);
-
-                return Column(
-                  children: [
-
-                    /// ===== HEADER TRẮNG =====
-                    Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
-                      child: Column(
-                        children: [
-
-                          /// Title + icon
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              SizedBox(width: 24),
-                              Text(
-                                "Tài khoản",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Icon(Icons.search),
-                                  SizedBox(width: 16),
-                                  Icon(Icons.tune),
-                                ],
-                              )
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          /// TAB BAR
-                          const TabBar(
-                            labelColor: Colors.blue,
-                            unselectedLabelColor: Colors.black54,
-                            indicatorColor: Colors.blue,
-                            tabs: [
-                              Tab(text: "Tài khoản"),
-                              Tab(text: "Sổ tiết kiệm"),
-                              Tab(text: "Tích lũy"),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    /// ===== PHẦN NỀN VÀNG =====
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFFFFE7B0),
-                            Color(0xFFFFD580),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Tổng tiền",
-                            style: TextStyle(fontSize: 16),
-                          ),
+                        children: const [
+                          SizedBox(width: 24),
                           Text(
-                            "${totalMoney.toStringAsFixed(0)} đ",
-                            style: const TextStyle(
+                            "Tài khoản",
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    /// ===== ĐANG SỬ DỤNG =====
-                    Container(
-                      width: double.infinity,
-                      color: Colors.white,
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Đang sử dụng (${totalMoney.toStringAsFixed(0)} đ)",
-                            style: const TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const Icon(Icons.keyboard_arrow_up),
-                        ],
-                      ),
-                    ),
-
-                    /// ===== LIST =====
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: jars.length,
-                        itemBuilder: (context, index) {
-                          final jar = jars[index];
-
-                          return Column(
+                          Row(
                             children: [
-                              ListTile(
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue[100],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.account_balance_wallet,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                                title: Text(
-                                  jar.nameJar,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  "${jar.balance.toStringAsFixed(0)} đ",
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.more_vert),
-                                  onPressed: () {
-                                    _showJarOptions(context, jar);
-                                  },
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          JarHistoryPage(jarId: jar.id),
-                                    ),
-                                  );
-                                },
-                              ),
-                              const Divider(height: 1),
+                              Icon(Icons.search),
+                              SizedBox(width: 16),
+                              Icon(Icons.tune),
                             ],
+                          )
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      const TabBar(
+                        labelColor: Colors.blue,
+                        unselectedLabelColor: Colors.black54,
+                        indicatorColor: Colors.blue,
+                        tabs: [
+                          Tab(text: "Tài khoản"),
+                          Tab(text: "Sổ tiết kiệm"),
+                          Tab(text: "Tích lũy"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                /// ===== BODY =====
+                Expanded(
+                  child: TabBarView(
+                    children: [
+
+                      /// ===== TAB 1 JAR =====
+                      FutureBuilder<List<Jar>>(
+                        future: _jarController.getJar(),
+                        builder: (context, snapshot) {
+
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          final jars = snapshot.data!;
+
+                          return ListView.builder(
+                            itemCount: jars.length,
+                            itemBuilder: (context, index) {
+                              return jarItem(jars[index]);
+                            },
                           );
                         },
                       ),
-                    ),
-                  ],
-                );
-              },
+
+                      /// ===== TAB 2 SAVING =====
+                      Column(
+                        children: [
+
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SavingAddPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text("Thêm sổ tiết kiệm"),
+                            ),
+                          ),
+
+                          Expanded(
+                            child: FutureBuilder<List<Saving>>(
+                              future: _savingController.getSaving(),
+                              builder: (context, snapshot) {
+
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+
+                                final savings = snapshot.data!;
+
+                                if (savings.isEmpty) {
+                                  return const Center(
+                                    child: Text("Chưa có sổ tiết kiệm"),
+                                  );
+                                }
+
+                                return ListView.builder(
+                                  itemCount: savings.length,
+                                  itemBuilder: (context, index) {
+                                    return savingItem(savings[index]);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      /// ===== TAB 3 =====
+                      const Center(
+                        child: Text("Danh sách mục tiêu tích lũy"),
+                      ),
+                    ],
+                  ),
+                )
+              ],
             );
           },
         ),

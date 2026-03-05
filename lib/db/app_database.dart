@@ -394,6 +394,38 @@ class AppDatabase {
   );
   ''');
 
+    await db.execute('''
+  CREATE TABLE savings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        jar_id INTEGER,
+        name TEXT NOT NULL,
+        principal REAL NOT NULL,
+        interest_rate REAL,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        status TEXT DEFAULT 'active'
+    CHECK (status IN ('active','closed')),
+    note TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (jar_id) REFERENCES jars(id) ON DELETE SET NULL
+    );
+  ''');
+    await db.execute('''
+  CREATE TABLE saving_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  saving_id INTEGER NOT NULL,
+  transaction_id INTEGER,
+  change_amount REAL NOT NULL,
+  type TEXT NOT NULL 
+    CHECK (type IN ('deposit','withdraw','interest','close')),
+  note TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (saving_id) REFERENCES savings(id) ON DELETE CASCADE,
+  FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE SET NULL
+);
+  ''');
     await db.execute(
         'CREATE INDEX idx_transactions_user ON transactions(user_id)');
     await db.execute(
