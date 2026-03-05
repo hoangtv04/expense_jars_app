@@ -5,6 +5,7 @@ import '../../../controllers/JarController.dart';
 import '../../../models/Transaction.dart';
 import '../../../models/Category.dart';
 import '../Category/CategoryListPage.dart';
+import '../../../models/Jar.dart';
 
 class TransactionAddPage extends StatefulWidget {
   const TransactionAddPage({super.key});
@@ -25,6 +26,8 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   int? _selectedJar;
   int? _selectedCategory;
   Category? _selectedCategoryObject;
+  Jar? _selectedJarObject;
+
 
   // Fallback icon mapping by category name
   int _fallbackIconIdByName(String categoryName) {
@@ -203,6 +206,11 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                   final amount = double.tryParse(value ?? '');
                   if (amount == null || amount <= 0) {
                     return 'Nhập số tiền hợp lệ';
+                  }
+                  if (_selectedCategoryObject?.type == 'expense' &&
+                      _selectedJarObject != null &&
+                      amount > _selectedJarObject!.balance) {
+                    return 'Số tiền vượt quá số dư của hũ';
                   }
                   return null;
                 },
