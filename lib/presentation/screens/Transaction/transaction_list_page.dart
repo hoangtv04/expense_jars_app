@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/TransactionController.dart';
 import '../../../models/Transaction.dart';
 import 'transaction_add_page.dart';
+import 'transaction_edit_page.dart';
 
 class TransactionListPage extends StatefulWidget {
   final VoidCallback onChanged;
@@ -61,14 +62,41 @@ class _TransactionListPageState extends State<TransactionListPage> {
               return ListTile(
                 title: Text('Số tiền: ${t.amount}'),
                 subtitle: Text(t.date!),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () async {
-                    await _controller.delete(t.id!);
-                    setState(() {
-                      _futureTransactions = _controller.getAll();
-                    });
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ✏ Edit
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionEditPage(transaction: t),
+                          ),
+                        );
+
+                        if (result == true) {
+                          widget.onChanged();
+                          setState(() {
+                            _futureTransactions = _controller.getAll();
+                          });
+                        }
+                      },
+                    ),
+
+                    // 🗑 Delete
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        await _controller.delete(t.id!);
+                        widget.onChanged();
+                        setState(() {
+                          _futureTransactions = _controller.getAll();
+                        });
+                      },
+                    ),
+                  ],
                 ),
               );
             },

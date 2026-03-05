@@ -70,12 +70,111 @@ class TransactionRepository {
 
   Future<int> deleteTransactions(int id) async {
     final db = await AppDatabase.instance.database;
-    return await db.update(
-      'transactions',
-      {'is_deleted': 1},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+
+    return await db.transaction((txn) async {
+
+      // Lấy transaction cần xóa
+      final result = await txn.query(
+        'transactions',
+        where: 'id = ? AND is_deleted = 0',
+        whereArgs: [id],
+      );
+
+      if (result.isEmpty) return 0;
+
+      final transaction = Transaction.fromMap(result.first);
+
+      // Lấy jar tương ứng
+      final jarResult = await txn.query(
+        'jars',
+        where: 'id = ?',
+        whereArgs: [transaction.jarId],
+      );
+
+      double currentBalance = jarResult.first['balance'] as double;
+      double newBalance = currentBalance;
+
+      //  Rollback balance
+      if (transaction.type == 'income') {
+        newBalance -= transaction.amount;   // Xóa thu → trừ lại
+      } else {
+        newBalance += transaction.amount;   // Xóa chi → cộng lại
+      }
+
+      //  Update jar balance
+      await txn.update(
+        'jars',
+        {'balance': newBalance},
+        where: 'id = ?',
+        whereArgs: [transaction.jarId],
+      );
+
+      // Soft delete transaction
+      return await txn.update(
+        'transactions',
+        {'is_deleted': 1},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
+  }
+
+  Future<int> updateTransaction(Transaction updatedTransaction) async {
+    final db = await AppDatabase.instance.database;
+
+    return await db.transaction((txn) async {
+
+      //  Lấy transaction cũ
+      final oldResult = await txn.query(
+        'transactions',
+        where: 'id = ? AND is_deleted = 0',
+        whereArgs: [updatedTransaction.id],
+      );
+
+      if (oldResult.isEmpty) return 0;
+
+      final oldTransaction = Transaction.fromMap(oldResult.first);
+
+      //  Lấy jar
+      final jarResult = await txn.query(
+        'jars',
+        where: 'id = ?',
+        whereArgs: [oldTransaction.jarId],
+      );
+
+      double currentBalance = jarResult.first['balance'] as double;
+      double newBalance = currentBalance;
+
+      //  Rollback transaction cũ
+      if (oldTransaction.type == 'income') {
+        newBalance -= oldTransaction.amount;
+      } else {
+        newBalance += oldTransaction.amount;
+      }
+
+      //  Apply transaction mới
+      if (updatedTransaction.type == 'income') {
+        newBalance += updatedTransaction.amount;
+      } else {
+        newBalance -= updatedTransaction.amount;
+      }
+
+      //  Update jar balance
+      await txn.update(
+        'jars',
+        {'balance': newBalance},
+        where: 'id = ?',
+        whereArgs: [oldTransaction.jarId],
+      );
+
+      // 6️⃣ Update transaction
+      return await txn.update(
+        'transactions',
+        updatedTransaction.toMap(),
+        where: 'id = ?',
+        whereArgs: [updatedTransaction.id],
+      );
+    });
   }
 
   Future<Transaction?> getTransactionById(int id) async {

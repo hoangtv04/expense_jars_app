@@ -26,6 +26,10 @@ class TransactionController {
     await _repo.deleteTransactions(id);
   }
 
+  Future<void> update(Transaction updatedTransaction) async {
+    await _repo.updateTransaction(updatedTransaction);
+  }
+
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {
       throw Exception("Amount không hợp lệ");

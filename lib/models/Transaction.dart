@@ -67,4 +67,32 @@ class   Transaction {
     };
   }
 
+  Transaction copyWith({
+    int? id,
+    int? userId,
+    int? jarId,
+    int? categoryId,
+    double? amount,
+    String? note,
+    String? date,
+    String? status,
+    int? isDeleted,
+    String? createdAt,
+    CategoryType? type,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      jarId: jarId ?? this.jarId,
+      categoryId: categoryId ?? this.categoryId,
+      amount: amount ?? this.amount,
+      note: note ?? this.note,
+      date: date ?? this.date,
+      status: status ?? this.status,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      type: type ?? this.type,
+    );
+  }
+
 }
