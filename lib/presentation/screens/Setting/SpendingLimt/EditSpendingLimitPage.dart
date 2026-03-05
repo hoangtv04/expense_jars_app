@@ -254,11 +254,12 @@ class _EditSpendingLimitPageState extends State<EditSpendingLimitPage> {
           mainAxisSize: MainAxisSize.min,
           children:
               [
+                    'Không lặp lại',
                     'Hàng ngày',
                     'Hàng tuần',
                     'Hàng tháng',
-                    'Hàng năm',
-                    'Không lặp lại',
+                    'Hàng quý',
+                    'Hàng năm',   
                   ]
                   .map(
                     (freq) => RadioListTile<String>(
