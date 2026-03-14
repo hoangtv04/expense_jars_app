@@ -98,8 +98,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
       ],
     );
   }
-
-  Widget _buildCategoryField() {
+Widget _buildCategoryField() {
     return InkWell(
       onTap: () async {
         final result = await Navigator.push<Category>(
@@ -196,7 +195,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Số tiền',
+labelText: 'Số tiền',
                   prefixIcon: const Icon(Icons.attach_money),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -274,7 +273,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                   ),
                   onPressed: () async {
                     if (!_formKey.currentState!.validate()) return;
-                    if (_selectedCategory == null) {
+if (_selectedCategory == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Chọn danh mục')),
                       );
@@ -296,6 +295,8 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       isDeleted: 0,
                     );
 
+
+                    print("check type"+_selectedCategoryObject!.type.name);
 
                     await _controller.add(transaction);
 
