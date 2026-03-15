@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'EditCategoryPage.dart';
+import 'TransferCategoryPage.dart';
 
 class CategoryListPage extends StatefulWidget {
   final bool isSelectionMode; // Thêm tham số để biết có phải chế độ chọn không
+  final String? customTitle; // optional custom title
 
-  const CategoryListPage({super.key, this.isSelectionMode = false});
+  const CategoryListPage({super.key, this.isSelectionMode = false, this.customTitle});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -184,25 +186,41 @@ class _CategoryListPageState extends State<CategoryListPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Chọn hạng mục',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        title: Text(
+          widget.customTitle ?? (widget.isSelectionMode ? 'Chọn hạng mục' : 'Quản lý hạng mục'),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EditCategoryPage(),
-                ),
-              ).then((_) => _loadCategories());
-            },
-          ),
+            if (widget.customTitle == 'Hạng mục thu/chi')
+              IconButton(
+                icon: const Icon(Icons.swap_horiz),
+                tooltip: 'Chuyển hạng mục',
+                onPressed: () async {
+                  // Open transfer page for expense categories
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TransferCategoryPage(type: CategoryType.expense)),
+                  );
+                  if (result == true) {
+                    // reload categories after transfer
+                    _loadCategories();
+                  }
+                },
+              ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditCategoryPage(),
+                  ),
+                ).then((_) => _loadCategories());
+              },
+            ),
         ],
         bottom: TabBar(
           controller: _tabController,

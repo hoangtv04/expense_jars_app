@@ -3,9 +3,12 @@ import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'EditCategoryDetailPage.dart';
 import 'AddCategoryPage.dart';
+import 'TransferCategoryPage.dart';
 
 class EditCategoryPage extends StatefulWidget {
-  const EditCategoryPage({super.key});
+  final String? customTitle;
+
+  const EditCategoryPage({super.key, this.customTitle});
 
   @override
   State<EditCategoryPage> createState() => _EditCategoryPageState();
@@ -162,9 +165,9 @@ class _EditCategoryPageState extends State<EditCategoryPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Chỉnh sửa hạng mục',
-          style: TextStyle(
+        title: Text(
+          widget.customTitle ?? 'Chỉnh sửa hạng mục',
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -172,6 +175,23 @@ class _EditCategoryPageState extends State<EditCategoryPage>
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        actions: [
+          if (widget.customTitle == 'Hạng mục thu/chi')
+            IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Chuyển hạng mục',
+              onPressed: () async {
+                final currentType = _tabController.index == 0 ? CategoryType.expense : CategoryType.income;
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TransferCategoryPage(type: currentType)),
+                );
+                if (result == true) {
+                  _loadCategories();
+                }
+              },
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.blue,
