@@ -46,7 +46,8 @@ class TransactionWithCategory extends Transaction {
       categoryName: map['category_name'] as String?,
 
       type: CategoryType.values.firstWhere(
-            (e) => e.name == map['type'],
+            (e) => e.name.toLowerCase() == (map['type']?.toString().toLowerCase().trim() ?? ""),
+        orElse: () => CategoryType.expense,
       ),
     );
   }

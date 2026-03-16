@@ -31,6 +31,9 @@ class   Transaction {
 
 
   factory Transaction.fromMap(Map<String, dynamic> map) {
+    final String? typeFromDb = map['type']?.toString();
+    print("DEBUG: Giá trị trong DB là: '$typeFromDb'");
+    print("DEBUG: Các giá trị Enum có thể là: ${CategoryType.values.map((e) => e.name).toList()}");
     return Transaction(
       id: map['id'],
       userId: map['user_id'],
@@ -45,7 +48,8 @@ class   Transaction {
 
 
       type: CategoryType.values.firstWhere(
-            (e) => e.name == map['type'],
+            (e) => e.name.toLowerCase() == (map['type']?.toString().toLowerCase().trim() ?? ""),
+        orElse: () => CategoryType.expense,
       ),
 
     );

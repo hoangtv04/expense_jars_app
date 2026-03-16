@@ -224,7 +224,7 @@ class _SettingPageState extends State<SettingPage> {
     final List<Map<String, dynamic>> items = [
       {"label": "aa", "icon": Icons.star, "color": Colors.blue},
       {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
-      {"label": "cc", "icon": Icons.star, "color": Colors.blue},
+      {"label": "Xuất dữ liệu", "icon": Icons.book, "color": Colors.blue},
       {"label": "dd", "icon": Icons.star, "color": Colors.blue},
       {"label": "ee", "icon": Icons.star, "color": Colors.blue},
       {"label": "ff", "icon": Icons.star, "color": Colors.blue},
@@ -255,6 +255,15 @@ class _SettingPageState extends State<SettingPage> {
           return GestureDetector(
             onTap: () {
               if (item["label"] == "Hạn mức chi") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SpendingLimitPage(),
+                  ),
+                );
+              }
+
+              if (item["label"] == "Xuất dữ liệu") {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
