@@ -43,13 +43,13 @@ class   Transaction {
       isDeleted: map['is_deleted'],
       createdAt: map['created_at'],
 
-      /// 🔥 CONVERT STRING → ENUM
-      type: map['type'] != null
-          ? CategoryType.values.firstWhere(
+
+      type: CategoryType.values.firstWhere(
             (e) => e.name == map['type'],
-      )
-          : null,
+      ),
+
     );
+
   }
 
   Map<String, dynamic> toMap() {

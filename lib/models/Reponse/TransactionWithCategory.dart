@@ -46,8 +46,7 @@ class TransactionWithCategory extends Transaction {
       categoryName: map['category_name'] as String?,
 
       type: CategoryType.values.firstWhere(
-            (e) => e.name == map['category_type'],
-        orElse: () => CategoryType.expense, // fallback an toàn
+            (e) => e.name == map['type'],
       ),
     );
   }

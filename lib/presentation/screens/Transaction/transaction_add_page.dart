@@ -297,6 +297,10 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                     );
 
 
+
+
+                    print("check type"+_selectedCategoryObject!.type.name);
+
                     await _controller.add(transaction);
 
 
