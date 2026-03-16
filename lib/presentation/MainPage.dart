@@ -25,7 +25,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      HomeScreen(onChanged: refresh),
+      HomeScreen(),
       JarListPage(onChanged: refresh),
       TransactionListPage(onChanged: refresh),
       Thongke(), // Placeholder for CategoryListPage - will be navigated separately
