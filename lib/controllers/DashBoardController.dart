@@ -6,11 +6,12 @@ class DashboardController {
   final AppDatabase _db = AppDatabase.instance;
   final TransactionRepository _transactionRepo = TransactionRepository();
   Future<Map<String, double>> getSummary(int userId) async {
-    final data = await _transactionRepo.getSummaryByUser(userId);
+    final db = AppDatabase.instance;
 
-    final income = data['income'] ?? 0;
-    final expense = data['expense'] ?? 0;
+    final income = await db.getTotalIncome(userId);
+    final expense = await db.getTotalExpense(userId);
+    final balance = await db.getCurrentBalance(userId);
 
-    return {'income': income, 'expense': expense, 'balance': income - expense};
+    return {'income': income, 'expense': expense, 'balance': balance};
   }
 }

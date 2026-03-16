@@ -14,7 +14,6 @@ class AppDatabase {
     return _database!;
   }
 
-
   Future<void> _seedData(Database db) async {
     // ===== USER =====
     final userId = await db.insert('users', {
@@ -35,7 +34,7 @@ class AppDatabase {
 
     // ===== CATEGORY =====
     final foodCategoryId = await db.insert('categories', {
-      'icon_id': 2, 
+      'icon_id': 2,
       'user_id': userId,
       'name': 'Ăn uống',
       'type': 'expense',
@@ -43,7 +42,7 @@ class AppDatabase {
 
     // Subcategories for Ăn uống
     await db.insert('categories', {
-      'icon_id': 3, 
+      'icon_id': 3,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn vặt',
@@ -51,7 +50,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 18, 
+      'icon_id': 18,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tối',
@@ -59,7 +58,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 41, 
+      'icon_id': 41,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn trưa',
@@ -67,7 +66,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 19, 
+      'icon_id': 19,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn sáng',
@@ -75,7 +74,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 6, 
+      'icon_id': 6,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Cafe',
@@ -83,7 +82,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 1, 
+      'icon_id': 1,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Ăn tiệm',
@@ -91,7 +90,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 36, 
+      'icon_id': 36,
       'user_id': userId,
       'parent_id': foodCategoryId,
       'name': 'Đi chợ/siêu thị',
@@ -99,7 +98,7 @@ class AppDatabase {
     });
 
     final serviceId = await db.insert('categories', {
-      'icon_id': 40, 
+      'icon_id': 40,
       'user_id': userId,
       'name': 'Dịch vụ sinh hoạt',
       'type': 'expense',
@@ -107,7 +106,7 @@ class AppDatabase {
 
     // Subcategories for Dịch vụ sinh hoạt
     await db.insert('categories', {
-      'icon_id': 16, 
+      'icon_id': 16,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Thuê người giúp việc',
@@ -115,7 +114,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 30, 
+      'icon_id': 30,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại cố định',
@@ -123,7 +122,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 50, 
+      'icon_id': 50,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Truyền hình',
@@ -131,7 +130,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 21, 
+      'icon_id': 21,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Gas',
@@ -139,7 +138,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 46, 
+      'icon_id': 46,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện thoại di động',
@@ -147,7 +146,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 53, 
+      'icon_id': 53,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Internet',
@@ -155,7 +154,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 52, 
+      'icon_id': 52,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Nước',
@@ -163,7 +162,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 15, 
+      'icon_id': 15,
       'user_id': userId,
       'parent_id': serviceId,
       'name': 'Điện',
@@ -171,7 +170,7 @@ class AppDatabase {
     });
 
     final travelId = await db.insert('categories', {
-      'icon_id': 56, 
+      'icon_id': 56,
       'user_id': userId,
       'name': 'Đi lại',
       'type': 'expense',
@@ -179,7 +178,7 @@ class AppDatabase {
 
     // Subcategories for Đi lại
     await db.insert('categories', {
-      'icon_id': 49, 
+      'icon_id': 49,
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Taxi/thuê xe',
@@ -187,7 +186,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 14, 
+      'icon_id': 14,
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Rửa xe',
@@ -195,7 +194,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 38, 
+      'icon_id': 38,
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Gửi xe',
@@ -203,7 +202,7 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 54, 
+      'icon_id': 54,
       'user_id': userId,
       'parent_id': travelId,
       'name': 'Sửa chữa, bảo dưỡng xe',
@@ -211,49 +210,49 @@ class AppDatabase {
     });
 
     await db.insert('categories', {
-      'icon_id': 13, 
+      'icon_id': 13,
       'user_id': userId,
       'name': 'Con cái',
       'type': 'expense',
     });
 
     await db.insert('categories', {
-      'icon_id': 48, 
+      'icon_id': 48,
       'user_id': userId,
       'name': 'Trang phục',
       'type': 'expense',
     });
 
     await db.insert('categories', {
-      'icon_id': 35, 
+      'icon_id': 35,
       'user_id': userId,
       'name': 'Hiếu hỉ',
       'type': 'expense',
     });
 
     await db.insert('categories', {
-      'icon_id': 27, 
+      'icon_id': 27,
       'user_id': userId,
       'name': 'Sức khỏe',
       'type': 'expense',
     });
 
     await db.insert('categories', {
-      'icon_id': 28, 
+      'icon_id': 28,
       'user_id': userId,
       'name': 'Nhà cửa',
       'type': 'expense',
     });
 
     await db.insert('categories', {
-      'icon_id': 11, 
+      'icon_id': 11,
       'user_id': userId,
       'name': 'Hưởng thụ',
       'type': 'expense',
     });
 
     final salaryCategoryId = await db.insert('categories', {
-      'icon_id': 33, 
+      'icon_id': 33,
       'user_id': userId,
       'name': 'Lương',
       'type': 'income',
@@ -288,7 +287,6 @@ class AppDatabase {
     print('🌱 Seed data inserted');
   }
 
-
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
@@ -296,12 +294,13 @@ class AppDatabase {
     final db = await openDatabase(path, version: 1, onCreate: _createDB);
 
     final tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table'"
+      "SELECT name FROM sqlite_master WHERE type='table'",
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
+
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
@@ -427,17 +426,20 @@ class AppDatabase {
 );
   ''');
     await db.execute(
-        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
+      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_date ON transactions(date)');
+      'CREATE INDEX idx_transactions_date ON transactions(date)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
+      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
-    await   _seedData(db);
+      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
+    );
+    await _seedData(db);
     print('Database created successfully');
   }
-
 
   Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
     final db = await database;
@@ -672,5 +674,18 @@ class AppDatabase {
   ''',
       [userId],
     );
+  }
+
+  Future<double> getCurrentBalanceOfID(int userID) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT SUM(balance) as total FROM jars WHERE user_id = ? AND is_deleted = 0
+      ''',
+      [userID],
+    );
+    final value = result.first['total'];
+    return value == null ? 0.0 : (value as num).toDouble();
   }
 }

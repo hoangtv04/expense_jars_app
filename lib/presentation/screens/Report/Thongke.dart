@@ -31,7 +31,7 @@ class _ThongkeState extends State<Thongke> {
 
             final income = snapshot.data!['income'] ?? 0;
             final expense = snapshot.data!['expense'] ?? 0;
-            final balance = income - expense;
+            final balance = snapshot.data!['balance'] ?? 0;
 
             final percent =
             income + expense == 0 ? 0.0 : income / (income + expense);
