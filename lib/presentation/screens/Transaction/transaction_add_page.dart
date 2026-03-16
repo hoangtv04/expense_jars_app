@@ -23,6 +23,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
 
+
   int? _selectedJar;
   int? _selectedCategory;
   Category? _selectedCategoryObject;
@@ -207,6 +208,8 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                   if (amount == null || amount <= 0) {
                     return 'Nhập số tiền hợp lệ';
                   }
+
+
                   if (_selectedCategoryObject?.type == 'expense' &&
                       _selectedJarObject != null &&
                       amount > _selectedJarObject!.balance) {
@@ -278,6 +281,31 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Chọn danh mục')),
                       );
+                      return;
+                    }
+
+                    if (_selectedJar == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn hũ')));
+                      return;
+                    }
+
+                    if (_selectedCategoryObject == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn danh mục')));
+                      return;
+                    }
+
+                    // B. Kiểm tra logic số dư (Bất đồng bộ)
+                    final amount = double.parse(_amountController.text);
+                    final jar = await _controllerJar.getJarById(_selectedJar!);
+
+                    if (jar == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hũ không tồn tại')));
+                      return;
+                    }
+
+                    // C. Kiểm tra số dư nếu là chi tiêu (So sánh Enum với Enum)
+                    if (_selectedCategoryObject!.type == CategoryType.expense && amount > jar.balance) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Số tiền vượt quá số dư của hũ')));
                       return;
                     }
 

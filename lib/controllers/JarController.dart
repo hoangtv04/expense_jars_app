@@ -65,7 +65,11 @@ class  JarController{
     print('Jar count: ${list.length}');
     return list;
   }
+  Future<Jar?> getJarById(int id) async {
+    final jar = await _repo.getJarById(id);
 
+    return jar;
+  }
   double calTotalMoney(List<Jar> jars) {
     return jars.fold(0, (sum, jar) => sum + jar.balance);
   }
