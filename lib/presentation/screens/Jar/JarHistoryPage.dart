@@ -157,6 +157,10 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                     final isIncome =
                         item.type == CategoryType.income;
 
+                    print(item.type);
+                    print(CategoryType.income);
+
+
                     return Container(
                       margin:
                       const EdgeInsets.only(bottom: 12),

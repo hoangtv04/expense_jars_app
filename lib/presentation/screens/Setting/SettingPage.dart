@@ -139,7 +139,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     alignment: Alignment.center,
                     child: const Text(
-                      "long ăn shit ",
+                      "Get premium",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

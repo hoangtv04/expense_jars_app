@@ -24,10 +24,15 @@ class TransactionController {
 
   Future<void> delete(int id) async {
     await _repo.deleteTransactions(id);
+
+    AppState.jarChanged.value++;
+
   }
 
   Future<void> update(Transaction updatedTransaction) async {
     await _repo.updateTransaction(updatedTransaction);
+    AppState.jarChanged.value++;
+
   }
 
   Future<void> add(Transaction transaction) async {

@@ -42,20 +42,21 @@ class TransactionRepository {
 
     final result = await db.rawQuery(
       '''
-    SELECT 
-      t.*,
-      c.name AS category_name,
-      c.type AS category_type
-    FROM transactions t
-    LEFT JOIN categories c
-      ON t.category_id = c.id
-      AND c.is_deleted = 0
-    WHERE (t.is_deleted = 0 OR t.is_deleted IS NULL)
-      AND t.jar_id = ?
-    ORDER BY t.created_at DESC
+  SELECT 
+  t.*,
+  c.name AS category_name,
+  c.type AS type  
+FROM transactions t
+LEFT JOIN categories c
+  ON t.category_id = c.id
+  AND c.is_deleted = 0
+WHERE (t.is_deleted = 0 OR t.is_deleted IS NULL)
+  AND t.jar_id = ?
+ORDER BY t.created_at DESC
     ''',
       [jarId],
     );
+
 
     return result
         .map((e) => TransactionWithCategory.fromMap(e))
@@ -94,8 +95,10 @@ class TransactionRepository {
       double currentBalance = jarResult.first['balance'] as double;
       double newBalance = currentBalance;
 
+      print(transaction.type!.name + " ");
+      print(transaction.type);
       //  Rollback balance
-      if (transaction.type == 'income') {
+      if (transaction.type?.name == 'income') {
         newBalance -= transaction.amount;   // Xóa thu → trừ lại
       } else {
         newBalance += transaction.amount;   // Xóa chi → cộng lại
@@ -146,7 +149,7 @@ class TransactionRepository {
       double newBalance = currentBalance;
 
       //  Rollback transaction cũ
-      if (oldTransaction.type == 'income') {
+      if (oldTransaction.type?.name == 'income') {
         newBalance -= oldTransaction.amount;
       } else {
         newBalance += oldTransaction.amount;
