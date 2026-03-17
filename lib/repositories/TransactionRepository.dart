@@ -19,7 +19,7 @@ class TransactionRepository {
     return await db.insert("transactions", transaction.toMap());
   }
 
-  Future<List<Transaction>> getAllTransactionByJarId(int jar_id) async {
+  Future<List<Transaction>> getAllTransactionByJarId(String jar_id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query('transactions',
       where: 'jar_id = ?',
@@ -69,7 +69,7 @@ ORDER BY t.created_at DESC
     return await db.insert('transactions', transaction.toMap());
   }
 
-  Future<int> deleteTransactions(int id) async {
+  Future<int> deleteTransactions(String id) async {
     final db = await AppDatabase.instance.database;
 
     return await db.transaction((txn) async {
@@ -206,7 +206,7 @@ ORDER BY t.created_at DESC
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
-  Future<Map<String, double>> getSummaryByUser(int userId) async {
+  Future<Map<String, double>> getSummaryByUser(String userId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery(
@@ -232,28 +232,28 @@ ORDER BY t.created_at DESC
 
   final AppDatabase _db = AppDatabase.instance;
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getDailyReport(String userId) {
     return _db.getDailyReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getWeeklyReport(String userId) {
     return _db.getWeeklyReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getMonthlyReport(String userId) {
     return _db.getMonthlyReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+  Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
     return _db.getQuarterReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getYearlyReport(String userId) {
     return _db.getYearlyReport(userId);
   }
 
 
-  Future<double> getTotalIncome(int jarId) async {
+  Future<double> getTotalIncome(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''
@@ -270,7 +270,7 @@ ORDER BY t.created_at DESC
     return total == null ? 0.0 : (total as num).toDouble();
   }
 
-  Future<double> getTotalExpense(int jarId) async {
+  Future<double> getTotalExpense(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''

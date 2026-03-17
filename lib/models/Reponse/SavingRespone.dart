@@ -1,6 +1,6 @@
 class SavingRespone {
-  int userId;
-  int? jarId;
+  String userId;         // int -> String (UUID từ Supabase Auth)
+  String? jarId;         // int? -> String? (UUID của hũ liên kết)
   String name;
   double principal;
   double? interestRate;

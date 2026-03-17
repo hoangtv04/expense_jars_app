@@ -26,7 +26,7 @@ class _ReportScreenState extends State<ReportScreen>
   }
 
   Future<void> loadMonthly() async {
-    final data = await controller.getMonthlyReport(1); 
+    final data = await controller.getMonthlyReport("aaa");
     setState(() {
       monthlyData = data;
     });

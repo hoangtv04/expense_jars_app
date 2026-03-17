@@ -1,13 +1,13 @@
 class SpendingLimit {
-  final int? id;
-  final int user_id;
+  final String? id;          // int? -> String?
+  final String user_id;      // int -> String (UUID từ Supabase Auth)
   final String name;
   final double amount;
-  final String categories; // JSON string
-  final String accounts; // JSON string
+  final String categories;   // JSON string (Chứa danh sách UUID của Categories)
+  final String accounts;     // JSON string (Chứa danh sách UUID của Jars)
   final String repeat_frequency;
   final String start_date;
-  final String? end_date; // Nullable
+  final String? end_date;
   final int carry_forward;
   final int is_deleted;
   final DateTime created_at;
@@ -29,18 +29,20 @@ class SpendingLimit {
 
   factory SpendingLimit.fromMap(Map<String, dynamic> map) {
     return SpendingLimit(
-      id: map['id'],
-      user_id: map['user_id'],
-      name: map['name'],
-      amount: map['amount'],
-      categories: map['categories'],
-      accounts: map['accounts'],
-      repeat_frequency: map['repeat_frequency'],
-      start_date: map['start_date'],
+      id: map['id']?.toString(), // Đảm bảo lấy ra String UUID
+      user_id: map['user_id'].toString(),
+      name: map['name'] ?? '',
+      amount: (map['amount'] as num).toDouble(), // Ép kiểu double an toàn
+      categories: map['categories'] ?? '[]',
+      accounts: map['accounts'] ?? '[]',
+      repeat_frequency: map['repeat_frequency'] ?? 'Hàng tháng',
+      start_date: map['start_date'] ?? '',
       end_date: map['end_date'],
       carry_forward: map['carry_forward'] ?? 0,
       is_deleted: map['is_deleted'] ?? 0,
-      created_at: DateTime.parse(map['created_at']),
+      created_at: map['created_at'] != null
+          ? DateTime.parse(map['created_at'])
+          : DateTime.now(),
     );
   }
 

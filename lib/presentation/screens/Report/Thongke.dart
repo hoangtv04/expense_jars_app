@@ -20,7 +20,7 @@ class _ThongkeState extends State<Thongke> {
       builder: (context, value, child) {
 
         return FutureBuilder<Map<String, double>>(
-          future: controller.getSummary(1),
+          future: controller.getSummary("aaa"),
           builder: (context, snapshot) {
 
             if (!snapshot.hasData) {

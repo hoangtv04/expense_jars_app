@@ -19,34 +19,23 @@ class _EditCategoryPageState extends State<EditCategoryPage>
 
   List<Category> _expenseCategories = [];
   List<Category> _incomeCategories = [];
-  
+
   List<Category> _filteredExpenseCategories = [];
   List<Category> _filteredIncomeCategories = [];
-  
-  Map<int, List<Category>> _subcategoriesMap = {};
-  Set<int> _expandedCategories = {};
+
+  // 🔥 Chuyển sang String cho UUID
+  Map<String, List<Category>> _subcategoriesMap = {};
+  Set<String> _expandedCategories = {};
 
   bool _isLoading = true;
   String _searchQuery = '';
 
   int _fallbackIconIdByName(String name) {
     const map = {
-      'Ăn uống': 2,
-      'Ăn sáng': 5,
-      'Ăn tiệm': 1,
-      'Ăn tối': 15,
-      'Ăn trưa': 8,
-      'Ăn vặt': 3,
-      'Cafe': 6,
-      'Đi chợ/siêu thị': 23,
-      'Con cái': 10,
-      'Đồ chơi': 42,
-      'Học phí': 50,
-      'Sách vở': 52,
-      'Sữa': 54,
-      'Tiền tiêu vặt': 37,
-      'Cho vay': 31,
-      'Ba': 1,
+      'Ăn uống': 2, 'Ăn sáng': 5, 'Ăn tiệm': 1, 'Ăn tối': 15,
+      'Ăn trưa': 8, 'Ăn vặt': 3, 'Cafe': 6, 'Đi chợ/siêu thị': 23,
+      'Con cái': 10, 'Đồ chơi': 42, 'Học phí': 50, 'Sách vở': 52,
+      'Sữa': 54, 'Tiền tiêu vặt': 37, 'Cho vay': 31, 'Ba': 1,
     };
     return map[name] ?? 1;
   }
@@ -58,21 +47,12 @@ class _EditCategoryPageState extends State<EditCategoryPage>
 
   Widget _buildCategoryIcon(Category category, {double size = 44}) {
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-      ),
+      width: size, height: size,
+      decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12)),
       padding: const EdgeInsets.all(4),
       child: Image.asset(
-        _categoryIconPath(category),
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Icon(
-          Icons.image_not_supported_outlined,
-          color: Colors.grey[400],
-          size: size * 0.55,
-        ),
+        _categoryIconPath(category), fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Icon(Icons.image_not_supported_outlined, color: Colors.grey[400], size: size * 0.55),
       ),
     );
   }
@@ -97,8 +77,8 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     final expense = await _controller.getCategoriesByType(CategoryType.expense);
     final income = await _controller.getCategoriesByType(CategoryType.income);
 
-    // Load subcategories for all parent categories
-    Map<int, List<Category>> subcatsMap = {};
+    // 🔥 Load subcategories dùng String ID
+    Map<String, List<Category>> subcatsMap = {};
     for (var cat in [...expense, ...income]) {
       if (cat.id != null) {
         final subcats = await _controller.getSubcategories(cat.id!);
@@ -114,7 +94,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
       _subcategoriesMap = subcatsMap;
       _isLoading = false;
     });
-    
+
     _filterCategories();
   }
 
@@ -127,15 +107,15 @@ class _EditCategoryPageState extends State<EditCategoryPage>
         _filteredExpenseCategories = _expenseCategories.where((cat) {
           final matchesName = cat.name.toLowerCase().contains(_searchQuery.toLowerCase());
           final hasMatchingSubcategory = _subcategoriesMap[cat.id]?.any(
-            (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
+                  (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
           ) ?? false;
           return matchesName || hasMatchingSubcategory;
         }).toList();
-        
+
         _filteredIncomeCategories = _incomeCategories.where((cat) {
           final matchesName = cat.name.toLowerCase().contains(_searchQuery.toLowerCase());
           final hasMatchingSubcategory = _subcategoriesMap[cat.id]?.any(
-            (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
+                  (subcat) => subcat.name.toLowerCase().contains(_searchQuery.toLowerCase())
           ) ?? false;
           return matchesName || hasMatchingSubcategory;
         }).toList();
@@ -143,7 +123,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     });
   }
 
-  void _toggleCategory(int categoryId) {
+  void _toggleCategory(String categoryId) { // 🔥 Chuyển int -> String
     setState(() {
       if (_expandedCategories.contains(categoryId)) {
         _expandedCategories.remove(categoryId);
@@ -158,92 +138,51 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Chỉnh sửa hạng mục',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        title: const Text('Chỉnh sửa hạng mục', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0,
         bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.blue,
-          unselectedLabelColor: Colors.black,
-          indicatorColor: Colors.blue,
-          tabs: const [
-            Tab(text: 'Mục chi'),
-            Tab(text: 'Mục thu'),
-          ],
+          controller: _tabController, labelColor: Colors.blue, unselectedLabelColor: Colors.black, indicatorColor: Colors.blue,
+          tabs: const [Tab(text: 'Mục chi'), Tab(text: 'Mục thu')],
         ),
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên hạng mục',
-                hintStyle: TextStyle(color: Colors.grey[400]),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                filled: true, fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+                setState(() => _searchQuery = value);
                 _filterCategories();
               },
             ),
           ),
-          // Tab content
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildCategoryList(_filteredExpenseCategories),
-                      _buildCategoryList(_filteredIncomeCategories),
-                    ],
-                  ),
+              controller: _tabController,
+              children: [
+                _buildCategoryList(_filteredExpenseCategories),
+                _buildCategoryList(_filteredIncomeCategories),
+              ],
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Get current tab type
-          final currentType = _tabController.index == 0 
-              ? CategoryType.expense 
-              : CategoryType.income;
-          
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddCategoryPage(categoryType: currentType),
-            ),
-          );
-          
-          if (result == true) {
-            _loadCategories();
-          }
+          final currentType = _tabController.index == 0 ? CategoryType.expense : CategoryType.income;
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddCategoryPage(categoryType: currentType)));
+          if (result == true) _loadCategories();
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, color: Colors.white),
@@ -259,13 +198,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
           children: [
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
-            Text(
-              'Chưa có hạng mục nào',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              ),
-            ),
+            Text('Chưa có hạng mục nào', style: TextStyle(fontSize: 16, color: Colors.grey[500])),
           ],
         ),
       );
@@ -278,7 +211,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
         final category = categories[index];
         final hasSubcategories = _subcategoriesMap.containsKey(category.id);
         final isExpanded = _expandedCategories.contains(category.id);
-        
+
         return Column(
           children: [
             _buildCategoryItem(category, hasSubcategories, isExpanded),
@@ -290,30 +223,20 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     );
   }
 
-  Widget _buildSubcategoriesGrid(int parentId) {
+  Widget _buildSubcategoriesGrid(String parentId) { // 🔥 Chuyển sang String
     final subcategories = _subcategoriesMap[parentId] ?? [];
-    
+
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
       child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.8,
+          crossAxisCount: 4, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 0.8,
         ),
         itemCount: subcategories.length,
-        itemBuilder: (context, index) {
-          final subcat = subcategories[index];
-          return _buildSubcategoryItem(subcat);
-        },
+        itemBuilder: (context, index) => _buildSubcategoryItem(subcategories[index]),
       ),
     );
   }
@@ -321,19 +244,8 @@ class _EditCategoryPageState extends State<EditCategoryPage>
   Widget _buildSubcategoryItem(Category subcategory) {
     return GestureDetector(
       onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditCategoryDetailPage(
-              category: subcategory,
-              isSubcategory: true,
-            ),
-          ),
-        );
-        
-        if (result == true) {
-          _loadCategories();
-        }
+        final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditCategoryDetailPage(category: subcategory, isSubcategory: true)));
+        if (result == true) _loadCategories();
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -341,15 +253,8 @@ class _EditCategoryPageState extends State<EditCategoryPage>
           _buildCategoryIcon(subcategory, size: 48),
           const SizedBox(height: 8),
           Text(
-            subcategory.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[700],
-              height: 1.2,
-            ),
+            subcategory.name, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.2),
           ),
         ],
       ),
@@ -359,62 +264,30 @@ class _EditCategoryPageState extends State<EditCategoryPage>
   Widget _buildCategoryItem(Category category, bool hasSubcategories, bool isExpanded) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: hasSubcategories
             ? IconButton(
-                icon: Icon(
-                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                  size: 24,
-                  color: Colors.grey[600],
-                ),
-                onPressed: () => _toggleCategory(category.id!),
-              )
+          icon: Icon(isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right, size: 24, color: Colors.grey[600]),
+          onPressed: () => _toggleCategory(category.id!), // cat.id là String
+        )
             : const SizedBox(width: 24),
         minLeadingWidth: 20,
         horizontalTitleGap: 8,
-        visualDensity: const VisualDensity(vertical: 0.5),
-        titleAlignment: ListTileTitleAlignment.center,
         title: Row(
           children: [
             _buildCategoryIcon(category, size: 44),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                category.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1C92C5),
-                ),
-              ),
+              child: Text(category.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF1C92C5))),
             ),
           ],
         ),
-        trailing: category.name == 'Cho vay'
-            ? Icon(Icons.lock_outline, color: Colors.grey[400])
-            : null,
+        trailing: category.name == 'Cho vay' ? Icon(Icons.lock_outline, color: Colors.grey[400]) : null,
         onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditCategoryDetailPage(
-                category: category,
-                isSubcategory: false,
-              ),
-            ),
-          );
-          
-          if (result == true) {
-            _loadCategories();
-          }
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditCategoryDetailPage(category: category, isSubcategory: false)));
+          if (result == true) _loadCategories();
         },
       ),
     );

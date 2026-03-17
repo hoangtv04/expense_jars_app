@@ -10,7 +10,7 @@ class CategoryRepository {
     return await db.insert("categories", category.toMap());
   }
 
-  Future<int> deleteCategory(int id) async {
+  Future<int> deleteCategory(String id) async {
     final db = await AppDatabase.instance.database;
     return await db.update(
       'categories',
@@ -45,7 +45,7 @@ class CategoryRepository {
     return maps.map((e) => Category.fromMap(e)).toList();
   }
 
-  Future<List<Category>> getSubcategories(int parentId) async {
+  Future<List<Category>> getSubcategories(String parentId) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query(
       'categories',
@@ -84,7 +84,7 @@ class CategoryRepository {
         .map((e) => TransactionWithCategory.fromMap(e))
         .toList();
   }
-  Future<List<TransactionWithCategory>> getTransactionWithCategory(int id) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(String id) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''
@@ -103,7 +103,7 @@ class CategoryRepository {
         .map((e) => TransactionWithCategory.fromMap(e))
         .toList();
   }
-  Future<Category?> getCategoryById(int id) async {
+  Future<Category?> getCategoryById(String id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query(
       'categories',

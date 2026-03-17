@@ -10,7 +10,7 @@ import '../../../models/Reponse/TransactionWithCategory.dart';
 
 
 class JarHistoryPage extends StatefulWidget {
-   final int? jarId;
+   final String? jarId;
 
   const JarHistoryPage({
     super.key,
@@ -134,7 +134,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                   .getTransactionsWithCategory(widget.jarId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
+                    ConnectionState.waiting){
                   return const Center(
                       child: CircularProgressIndicator());
                 }

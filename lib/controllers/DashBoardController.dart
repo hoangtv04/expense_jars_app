@@ -5,7 +5,7 @@ import '../db/app_database.dart';
 class DashboardController {
   final AppDatabase _db = AppDatabase.instance;
   final TransactionRepository _transactionRepo = TransactionRepository();
-  Future<Map<String, double>> getSummary(int userId) async {
+  Future<Map<String, double>> getSummary(String userId) async {
     final data = await _transactionRepo.getSummaryByUser(userId);
 
     final income = data['income'] ?? 0;

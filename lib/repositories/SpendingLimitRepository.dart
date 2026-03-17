@@ -17,7 +17,7 @@ class SpendingLimitRepository {
     );
   }
 
-  Future<int> deleteSpendingLimit(int id) async {
+  Future<int> deleteSpendingLimit(String id) async {
     final db = await AppDatabase.instance.database;
     return await db.update(
       'spending_limits',
@@ -27,7 +27,7 @@ class SpendingLimitRepository {
     );
   }
 
-  Future<List<SpendingLimit>> getSpendingLimitsByUserId(int userId) async {
+  Future<List<SpendingLimit>> getSpendingLimitsByUserId(String userId) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query(
       'spending_limits',
@@ -39,7 +39,7 @@ class SpendingLimitRepository {
     return maps.map((e) => SpendingLimit.fromMap(e)).toList();
   }
 
-  Future<SpendingLimit?> getSpendingLimitById(int id) async {
+  Future<SpendingLimit?> getSpendingLimitById(String id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query(
       'spending_limits',
@@ -55,9 +55,9 @@ class SpendingLimitRepository {
   }
 
   Future<bool> isNameExists({
-    required int userId,
+    required String userId,
     required String name,
-    int? excludeId,
+    String? excludeId,
   }) async {
     final db = await AppDatabase.instance.database;
     final trimmedName = name.trim().toLowerCase();
@@ -92,7 +92,7 @@ class SpendingLimitRepository {
   }
 
   Future<double> getSpentAmountForLimit({
-    required int userId,
+    required String userId,
     required SpendingLimit limit,
     required DateTime fromDate,
     required DateTime toDate,

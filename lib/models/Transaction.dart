@@ -1,59 +1,49 @@
 import 'Category.dart';
 
-class   Transaction {
-  final int? id;
-  final int userId;
-  final int jarId;
-  final int categoryId;
+class Transaction {
+  final String? id;
+  final String userId;
+  final String jarId;
+  final String categoryId; // 🔥 Đã chuyển int -> String (UUID)
   final double amount;
   final String? note;
   final String? date;
   final String? status;
   final int isDeleted;
   final String? createdAt;
-
-  /// 🔥 THÊM DÒNG NÀY
   final CategoryType? type;
 
   Transaction({
     this.id,
     required this.userId,
     required this.jarId,
-    required this.categoryId,
+    required this.categoryId, // 🔥 String
     required this.amount,
     this.note,
     this.date,
     this.status = 'completed',
     this.isDeleted = 0,
     this.createdAt,
-    this.type, // 🔥 THÊM
+    this.type,
   });
 
-
   factory Transaction.fromMap(Map<String, dynamic> map) {
-    final String? typeFromDb = map['type']?.toString();
-    print("DEBUG: Giá trị trong DB là: '$typeFromDb'");
-    print("DEBUG: Các giá trị Enum có thể là: ${CategoryType.values.map((e) => e.name).toList()}");
     return Transaction(
-      id: map['id'],
-      userId: map['user_id'],
-      jarId: map['jar_id'],
-      categoryId: map['category_id'],
+      id: map['id']?.toString(),
+      userId: map['user_id'].toString(),
+      jarId: map['jar_id'].toString(),
+      categoryId: map['category_id'].toString(), // 🔥 Ép kiểu về String
       amount: (map['amount'] as num).toDouble(),
       note: map['note'],
       date: map['date'],
       status: map['status'],
-      isDeleted: map['is_deleted'],
+      isDeleted: map['is_deleted'] ?? 0,
       createdAt: map['created_at'],
-
-
       type: CategoryType.values.firstWhere(
             (e) => e.name.toLowerCase() == (map['type']?.toString().toLowerCase().trim() ?? ""),
         orElse: () => CategoryType.expense,
       ),
-
     );
-
   }
 
   Map<String, dynamic> toMap() {
@@ -61,7 +51,7 @@ class   Transaction {
       'id': id,
       'user_id': userId,
       'jar_id': jarId,
-      'category_id': categoryId,
+      'category_id': categoryId, // 🔥 String UUID
       'amount': amount,
       'note': note,
       'date': date,
@@ -71,11 +61,12 @@ class   Transaction {
     };
   }
 
+  // Hàm copyWith để tiện cập nhật object
   Transaction copyWith({
-    int? id,
-    int? userId,
-    int? jarId,
-    int? categoryId,
+    String? id,
+    String? userId,
+    String? jarId,
+    String? categoryId,
     double? amount,
     String? note,
     String? date,
@@ -98,5 +89,4 @@ class   Transaction {
       type: type ?? this.type,
     );
   }
-
 }

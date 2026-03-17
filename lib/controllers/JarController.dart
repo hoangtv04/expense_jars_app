@@ -3,6 +3,7 @@
 
 import 'package:flutter_application_jars/models/Reponse/JarOption.dart';
 import 'package:flutter_application_jars/models/Reponse/UpdateJarSetting.dart';
+import 'package:uuid/uuid.dart';
 
 import '../db/app_state.dart';
 import '../models/Jar.dart';
@@ -11,7 +12,7 @@ import '../repositories/JarRepository.dart';
 
 class  JarController{
   final JarRepository _repo = JarRepository();
-
+  final _uuid = const Uuid();
 
   JarType jarTypeFromString(String value) {
     return JarType.values.firstWhere(
@@ -22,7 +23,8 @@ class  JarController{
     final JarType jarName = jarTypeFromString(res.name);
 
     final jar = Jar(
-      user_id: 1,
+        id: _uuid.v4(),
+      user_id: "aaa",
       name: jarName,
       nameJar: res.nameJar,
       balance: res.balance,
@@ -49,7 +51,7 @@ class  JarController{
 
 
 
-  Future<void> deleteJar(int id) async {
+  Future<void> deleteJar(String id) async {
 
     await  _repo.deleteJar(id);
 
@@ -62,10 +64,13 @@ class  JarController{
   Future<List<Jar>> getJar() async {
     final list = await _repo.getAll();
 
+    for (var jar in list) {
+      print('ID: ${jar.id} | Tên: ${jar.nameJar} | Số dư: ${jar.balance}');
+    }
     print('Jar count: ${list.length}');
     return list;
   }
-  Future<Jar?> getJarById(int id) async {
+  Future<Jar?> getJarById(String id) async {
     final jar = await _repo.getJarById(id);
 
     return jar;
@@ -80,7 +85,7 @@ class  JarController{
   }
 
 
-  Future<void> settingJar(int id, double amount) async {
+  Future<void> settingJar(String id, double amount) async {
     final jar = await _repo.getJarById(id);
 
     if (jar == null) {
@@ -91,7 +96,7 @@ class  JarController{
 
     await _repo.updateJar(id,updatedJar);
   }
-  Future<void> updateJarAmount(int id, double amount) async {
+  Future<void> updateJarAmount(String id, double amount) async {
     final jar = await _repo.getJarById(id);
 
     if (jar == null) {

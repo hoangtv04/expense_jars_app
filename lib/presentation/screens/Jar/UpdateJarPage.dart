@@ -22,7 +22,8 @@ class _UpdateJarPage extends State<UpdateJarPage> {
   final _nameJar = TextEditingController();
     JarType? _selectedName;
 
-    late final int _idJar;
+    late final String _idJar;
+
   @override
   void initState() {
     super.initState();

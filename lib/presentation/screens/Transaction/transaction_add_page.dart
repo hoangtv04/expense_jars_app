@@ -23,9 +23,9 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
 
-
-  int? _selectedJar;
-  int? _selectedCategory;
+  // 🔥 Đã chuyển sang String? cho UUID
+  String? _selectedJar;
+  String? _selectedCategory;
   Category? _selectedCategoryObject;
   Jar? _selectedJarObject;
 
@@ -70,21 +70,21 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
       ),
       child: iconPath != null
           ? ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                iconPath,
-                width: size,
-                height: size,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    Icons.category,
-                    size: size * 0.6,
-                    color: Colors.grey,
-                  );
-                },
-              ),
-            )
+        borderRadius: BorderRadius.circular(6),
+        child: Image.asset(
+          iconPath,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.category,
+              size: size * 0.6,
+              color: Colors.grey,
+            );
+          },
+        ),
+      )
           : Icon(Icons.category, size: size * 0.6, color: Colors.grey),
     );
   }
@@ -113,7 +113,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
         if (result != null) {
           setState(() {
             _selectedCategoryObject = result;
-            _selectedCategory = result.id;
+            _selectedCategory = result.id; // result.id hiện là String UUID
           });
         }
       },
@@ -209,8 +209,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                     return 'Nhập số tiền hợp lệ';
                   }
 
-
-                  if (_selectedCategoryObject?.type == 'expense' &&
+                  if (_selectedCategoryObject?.type == CategoryType.expense &&
                       _selectedJarObject != null &&
                       amount > _selectedJarObject!.balance) {
                     return 'Số tiền vượt quá số dư của hũ';
@@ -225,7 +224,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                 future: _controllerJar.getListJarIdAndName(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return const SizedBox();
-                  return DropdownButtonFormField<int>(
+                  return DropdownButtonFormField<String>( // 🔥 CHUYỂN SANG STRING
                     value: _selectedJar,
                     decoration: InputDecoration(
                       labelText: 'Chọn hũ',
@@ -234,9 +233,9 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    items: snapshot.data!.map((jar) {
-                      return DropdownMenuItem(
-                        value: jar.id,
+                    items: (snapshot.data as List).map((jar) {
+                      return DropdownMenuItem<String>( // 🔥 CHUYỂN SANG STRING
+                        value: jar.id, // jar.id hiện là String UUID
                         child: Text(jar.name),
                       );
                     }).toList(),
@@ -294,7 +293,6 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
-                    // B. Kiểm tra logic số dư (Bất đồng bộ)
                     final amount = double.parse(_amountController.text);
                     final jar = await _controllerJar.getJarById(_selectedJar!);
 
@@ -303,20 +301,17 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
-                    // C. Kiểm tra số dư nếu là chi tiêu (So sánh Enum với Enum)
                     if (_selectedCategoryObject!.type == CategoryType.expense && amount > jar.balance) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Số tiền vượt quá số dư của hũ')));
                       return;
                     }
 
-
-
-
                     final transaction  = Transaction(
-                      userId: 1,
-                      jarId: _selectedJar!,
-                      categoryId: _selectedCategory!,
-                      amount: double.parse(_amountController.text),
+
+                      userId: "aaa", // 🔥 ĐÃ ĐỔI SANG "aaa"
+                      jarId: _selectedJar!, // String UUID
+                      categoryId: _selectedCategory!, // String UUID
+                      amount: amount,
                       type: _selectedCategoryObject!.type,
                       note: _noteController.text,
                       date: DateTime.now().toIso8601String(),
@@ -324,13 +319,9 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       isDeleted: 0,
                     );
 
-
-
-
                     print("check type"+_selectedCategoryObject!.type.name);
 
                     await _controller.add(transaction);
-
 
                     Navigator.pop(context, true);
                   },
