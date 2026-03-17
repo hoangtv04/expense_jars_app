@@ -604,26 +604,42 @@ Future<List<Map<String, dynamic>>> getDailyReport(
   );
 }
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) async {
-    final db = await database;
+Future<List<Map<String, dynamic>>> getWeeklyReport(
+  int userId,
+  int month,
+  int year,
+) async {
 
-    return await db.rawQuery(
-      '''
+  final db = await database;
+
+  return await db.rawQuery(
+    '''
     SELECT 
-      strftime('%Y-W%W', date) as period,
+      ((CAST(strftime('%d', t.date) AS INTEGER)-1) / 7 + 1) as week,
+
       SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
+
       SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
+
     WHERE t.user_id = ?
       AND t.status = 'completed'
       AND t.is_deleted = 0
-    GROUP BY period
-    ORDER BY period
+      AND strftime('%m', t.date) = ?
+      AND strftime('%Y', t.date) = ?
+
+    GROUP BY week
+    ORDER BY week
   ''',
-      [userId],
-    );
-  }
+    [
+      userId,
+      month.toString().padLeft(2, '0'),
+      year.toString(),
+    ],
+  );
+}
 
   Future<List<Map<String, dynamic>>> getMonthlyReport(
     int userId,

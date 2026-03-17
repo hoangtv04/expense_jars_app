@@ -233,9 +233,13 @@ class TransactionRepository {
   return _db.getDailyReport(userId, day, month, year);
 }
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
-    return _db.getWeeklyReport(userId);
-  }
+Future<List<Map<String, dynamic>>> getWeeklyReport(
+  int userId,
+  int month,
+  int year,
+) {
+  return _db.getWeeklyReport(userId, month, year);
+}
 
   Future<List<Map<String, dynamic>>> getMonthlyReport(
     int userId,

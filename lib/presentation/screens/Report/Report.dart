@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_application_jars/presentation/screens/Report/ReportWeekly.dart';
 import 'ReportDaily.dart';
 import '../../../controllers/TransactionController.dart';
 
@@ -233,7 +234,7 @@ class _ReportScreenState extends State<ReportScreen>
         children: [
           ReportDaily(),
 
-          const Center(child: Text("Report Tuần")),
+          ReportWeekly(),
 
           buildMonthlyTab(),
 
