@@ -1,5 +1,3 @@
-
-
 import '../db/app_database.dart';
 import '../models/Category.dart';
 import '../models/Jar.dart';
@@ -7,34 +5,35 @@ import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
 
 class TransactionRepository {
-
-  Future<int> insertTransaction(Transaction jar) async{
+  Future<int> insertTransaction(Transaction jar) async {
     final db = await AppDatabase.instance.database;
     return await db.insert("transactions", jar.toMap());
   }
 
-
-  Future<int> deleteTransaction(Transaction transaction) async{
+  Future<int> deleteTransaction(Transaction transaction) async {
     final db = await AppDatabase.instance.database;
     return await db.insert("transactions", transaction.toMap());
   }
 
   Future<List<Transaction>> getAllTransactionByJarId(int jar_id) async {
     final db = await AppDatabase.instance.database;
-    final maps = await db.query('transactions',
+    final maps = await db.query(
+      'transactions',
       where: 'jar_id = ?',
       whereArgs: [jar_id],
     );
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
+
   Future<List<Transaction>> getAllTransaction() async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query('transactions');
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
-
-  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
+  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(
+    int jarId,
+  ) async {
     final db = await AppDatabase.instance.database;
 
     print('===== REPO START =====');
@@ -57,9 +56,7 @@ class TransactionRepository {
       [jarId],
     );
 
-    return result
-        .map((e) => TransactionWithCategory.fromMap(e))
-        .toList();
+    return result.map((e) => TransactionWithCategory.fromMap(e)).toList();
   }
   // belong to Demons
 
@@ -72,7 +69,6 @@ class TransactionRepository {
     final db = await AppDatabase.instance.database;
 
     return await db.transaction((txn) async {
-
       // Lấy transaction cần xóa
       final result = await txn.query(
         'transactions',
@@ -96,9 +92,9 @@ class TransactionRepository {
 
       //  Rollback balance
       if (transaction.type == 'income') {
-        newBalance -= transaction.amount;   // Xóa thu → trừ lại
+        newBalance -= transaction.amount; // Xóa thu → trừ lại
       } else {
-        newBalance += transaction.amount;   // Xóa chi → cộng lại
+        newBalance += transaction.amount; // Xóa chi → cộng lại
       }
 
       //  Update jar balance
@@ -123,7 +119,6 @@ class TransactionRepository {
     final db = await AppDatabase.instance.database;
 
     return await db.transaction((txn) async {
-
       //  Lấy transaction cũ
       final oldResult = await txn.query(
         'transactions',
@@ -229,16 +224,25 @@ class TransactionRepository {
 
   final AppDatabase _db = AppDatabase.instance;
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
-    return _db.getDailyReport(userId);
-  }
+ Future<List<Map<String, dynamic>>> getDailyReport(
+  int userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _db.getDailyReport(userId, day, month, year);
+}
 
   Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
     return _db.getWeeklyReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
-    return _db.getMonthlyReport(userId);
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+    int userId,
+    int month,
+    int year,
+  ) {
+    return _db.getMonthlyReport(userId, month, year);
   }
 
   Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
@@ -249,18 +253,20 @@ class TransactionRepository {
     return _db.getYearlyReport(userId);
   }
 
-
   Future<double> getTotalIncome(int jarId) async {
     final db = await AppDatabase.instance.database;
 
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
     SELECT SUM(t.amount) as total
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
     WHERE t.jar_id = ?
       AND t.is_deleted = 0
       AND c.type = ?
-  ''', [jarId, CategoryType.income.name]);
+  ''',
+      [jarId, CategoryType.income.name],
+    );
 
     final total = result.first['total'];
 
@@ -270,18 +276,20 @@ class TransactionRepository {
   Future<double> getTotalExpense(int jarId) async {
     final db = await AppDatabase.instance.database;
 
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
     SELECT SUM(t.amount) as total
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
     WHERE t.jar_id = ?
       AND t.is_deleted = 0
       AND c.type = ?
-  ''', [jarId, CategoryType.expense.name]);
+  ''',
+      [jarId, CategoryType.expense.name],
+    );
 
     final total = result.first['total'];
 
     return total == null ? 0.0 : (total as num).toDouble();
   }
-
 }

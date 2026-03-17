@@ -87,16 +87,25 @@ class TransactionController {
     return list;
   }
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
-    return _repo.getDailyReport(userId);
-  }
+  Future<List<Map<String, dynamic>>> getDailyReport(
+  int userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _repo.getDailyReport(userId, day, month, year);
+}
 
   Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
     return _repo.getWeeklyReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
-    return _repo.getMonthlyReport(userId);
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+    int userId,
+    int month,
+    int year,
+  ) {
+    return _repo.getMonthlyReport(userId, month, year);
   }
 
   Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {

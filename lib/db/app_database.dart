@@ -570,13 +570,19 @@ class AppDatabase {
     return value == null ? 0.0 : (value as num).toDouble();
   }
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) async {
-    final db = await database;
+Future<List<Map<String, dynamic>>> getDailyReport(
+  int userId,
+  int day,
+  int month,
+  int year,
+) async {
 
-    return await db.rawQuery(
-      '''
+  final db = await database;
+
+  return await db.rawQuery(
+    '''
     SELECT 
-      date as period,
+      strftime('%Y-%m-%d', t.date) as period,
       SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
       SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
     FROM transactions t
@@ -584,12 +590,19 @@ class AppDatabase {
     WHERE t.user_id = ?
       AND t.status = 'completed'
       AND t.is_deleted = 0
-    GROUP BY date
-    ORDER BY date
+      AND strftime('%d', t.date) = ?
+      AND strftime('%m', t.date) = ?
+      AND strftime('%Y', t.date) = ?
+    GROUP BY strftime('%Y-%m-%d', t.date)
   ''',
-      [userId],
-    );
-  }
+    [
+      userId,
+      day.toString().padLeft(2, '0'),
+      month.toString().padLeft(2, '0'),
+      year.toString(),
+    ],
+  );
+}
 
   Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) async {
     final db = await database;
@@ -612,7 +625,11 @@ class AppDatabase {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) async {
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+    int userId,
+    int month,
+    int year,
+  ) async {
     final db = await database;
 
     return await db.rawQuery(
@@ -626,10 +643,12 @@ class AppDatabase {
     WHERE t.user_id = ?
       AND t.status = 'completed'
       AND t.is_deleted = 0
+      AND strftime('%m', date) = ?
+      AND strftime('%Y', date) = ?
     GROUP BY period
     ORDER BY period
   ''',
-      [userId],
+      [userId, month.toString().padLeft(2, '0'), year.toString()],
     );
   }
 
