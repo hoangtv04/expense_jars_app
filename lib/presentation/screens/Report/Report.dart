@@ -1,5 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../controllers/TransactionController.dart';
+import 'ReportDaily.dart';
+import 'ReportWeekly.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});

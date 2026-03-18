@@ -32,7 +32,7 @@ class _ThongkeState extends State<Thongke> {
 
   Future<void> loadData() async {
     try {
-      const userId = 1;
+      const userId = "aaa";
 
       final summary = await controller.getSummary(userId);
 
@@ -130,7 +130,8 @@ class _ThongkeState extends State<Thongke> {
     );
   }
 
-  Widget _buildBalanceCard() {
+  Widget _buildBalanceCard(double balance, double income, double expense) {
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

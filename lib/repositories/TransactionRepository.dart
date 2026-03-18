@@ -34,7 +34,7 @@ class TransactionRepository {
   }
 
 
-  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
+  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     print('===== REPO START =====');
@@ -266,7 +266,7 @@ Future<List<Map<String, dynamic>>> getWeeklyReport(
   }
 
 
-  Future<double> getTotalIncome(int jarId) async {
+  Future<double> getTotalIncome(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''

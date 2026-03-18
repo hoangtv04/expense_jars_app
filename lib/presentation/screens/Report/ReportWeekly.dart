@@ -26,7 +26,7 @@ class _ReportWeeklyState extends State<ReportWeekly> {
   Future<void> loadWeekly() async {
 
     final data = await controller.getWeeklyReport(
-      1,
+      "aaa",
       currentMonth.month,
       currentMonth.year,
     );

@@ -24,7 +24,7 @@ class _ReportDailyState extends State<ReportDaily> {
 
   Future<void> loadDaily() async {
     final data = await controller.getDailyReport(
-      1,
+      "aaa",
       currentDate.day,
       currentDate.month,
       currentDate.year,

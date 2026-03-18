@@ -24,12 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void loadData() {
-    summaryFuture = controller.getSummary(1);
+    summaryFuture = controller.getSummary("aaa");
   }
 
   void refreshData() {
     setState(() {
-      summaryFuture = controller.getSummary(1);
+      summaryFuture = controller.getSummary("aaa");
     });
   }
 
@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
         valueListenable: AppState.jarChanged,
         builder: (context, value, child) {
           return FutureBuilder<Map<String, double>>(
-            future: controller.getSummary(1),
+            future: controller.getSummary("aaa"),
 
             builder: (context, snapshot) {
               if (!snapshot.hasData) {

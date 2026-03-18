@@ -3,6 +3,7 @@
 
 
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
+import 'package:uuid/uuid.dart';
 
 import '../db/app_state.dart';
 import '../models/Category.dart';
