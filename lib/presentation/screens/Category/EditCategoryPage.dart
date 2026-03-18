@@ -3,9 +3,12 @@ import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'EditCategoryDetailPage.dart';
 import 'AddCategoryPage.dart';
+import 'TransferCategoryPage.dart';
 
 class EditCategoryPage extends StatefulWidget {
-  const EditCategoryPage({super.key});
+  final String? customTitle;
+
+  const EditCategoryPage({super.key, this.customTitle});
 
   @override
   State<EditCategoryPage> createState() => _EditCategoryPageState();
@@ -19,7 +22,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
 
   List<Category> _expenseCategories = [];
   List<Category> _incomeCategories = [];
-
+  
   List<Category> _filteredExpenseCategories = [];
   List<Category> _filteredIncomeCategories = [];
 
@@ -138,22 +141,58 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-        title: const Text('Chỉnh sửa hạng mục', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.customTitle ?? 'Chỉnh sửa hạng mục',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        actions: [
+          if (widget.customTitle == 'Hạng mục thu/chi')
+            IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Chuyển hạng mục',
+              onPressed: () async {
+                final currentType = _tabController.index == 0 ? CategoryType.expense : CategoryType.income;
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TransferCategoryPage(type: currentType)),
+                );
+                if (result == true) {
+                  _loadCategories();
+                }
+              },
+            ),
+        ],
         bottom: TabBar(
-          controller: _tabController, labelColor: Colors.blue, unselectedLabelColor: Colors.black, indicatorColor: Colors.blue,
-          tabs: const [Tab(text: 'Mục chi'), Tab(text: 'Mục thu')],
+          controller: _tabController,
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.black,
+          indicatorColor: Colors.blue,
+          tabs: const [
+            Tab(text: 'Mục chi'),
+            Tab(text: 'Mục thu'),
+          ],
         ),
       ),
       body: Column(
         children: [
+          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên hạng mục',
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
                 filled: true, fillColor: Colors.white,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -165,6 +204,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
               },
             ),
           ),
+          // Tab content
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -275,6 +315,8 @@ class _EditCategoryPageState extends State<EditCategoryPage>
             : const SizedBox(width: 24),
         minLeadingWidth: 20,
         horizontalTitleGap: 8,
+        visualDensity: const VisualDensity(vertical: 0.5),
+        titleAlignment: ListTileTitleAlignment.center,
         title: Row(
           children: [
             _buildCategoryIcon(category, size: 44),

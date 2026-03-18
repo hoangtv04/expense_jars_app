@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
 import 'package:flutter_application_jars/presentation/screens/Report/Report.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
+import '../Category/EditCategoryPage.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -15,7 +16,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Theme.of(context).colorScheme.surface,
 
 
 
@@ -57,31 +58,31 @@ class _SettingPageState extends State<SettingPage> {
                           children: [
                             CircleAvatar(
                               radius: 22,
-                              backgroundColor: Colors.white,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
                               child: Text(
                                 "DC",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   "Xin chào!",
                                   style: TextStyle(
-                                    color: Colors.white70,
+                                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
                                     fontSize: 14,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   "duc cuong",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.onPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -97,7 +98,7 @@ class _SettingPageState extends State<SettingPage> {
                         children: [
                           Stack(
                             children: [
-                              const Icon(Icons.refresh, color: Colors.white),
+                              Icon(Icons.refresh, color: Theme.of(context).colorScheme.onPrimary),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -119,9 +120,9 @@ class _SettingPageState extends State<SettingPage> {
                             ],
                           ),
                           const SizedBox(width: 16),
-                          const Icon(
+                          Icon(
                             Icons.notifications_none,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ],
                       ),
@@ -159,9 +160,9 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white24,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
+                          child: Text(
                             "100 xu",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                           ),
                         ),
                       ),
@@ -173,9 +174,9 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white24,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
+                          child: Text(
                             "Mã: 123456",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                           ),
                         ),
                       ),
@@ -211,7 +212,11 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
     );
@@ -262,6 +267,15 @@ class _SettingPageState extends State<SettingPage> {
                     builder: (context) => const SpendingLimitPage(),
                   ),
                 );
+              } else if (item["label"] == "Hạng mục   chi/tiêu") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditCategoryPage(
+                      customTitle: 'Hạng mục thu/chi',
+                    ),
+                  ),
+                );
               }
               if (item["label"] == "Báo cáo") {
                 Navigator.push(
@@ -279,15 +293,28 @@ class _SettingPageState extends State<SettingPage> {
                     color: item["color"].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: isCustomIcon
-                      ? _buildHandMoneyIcon()
-                      : Icon(item["icon"], color: item["color"]),
+                  child: item.containsKey("asset")
+                      ? Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Image.asset(
+                            item["asset"],
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : isCustomIcon
+                          ? _buildHandMoneyIcon()
+                          : Icon(item["icon"], color: item["color"]),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   item["label"],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

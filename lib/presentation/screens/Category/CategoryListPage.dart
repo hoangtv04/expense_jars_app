@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../models/Category.dart';
 import 'EditCategoryPage.dart';
+import 'TransferCategoryPage.dart';
 
 class CategoryListPage extends StatefulWidget {
-  final bool isSelectionMode;
+  final bool isSelectionMode; // Thêm tham số để biết có phải chế độ chọn không
+  final String? customTitle; // optional custom title
 
-  const CategoryListPage({super.key, this.isSelectionMode = false});
+  const CategoryListPage({super.key, this.isSelectionMode = false, this.customTitle});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -31,7 +33,7 @@ class _CategoryListPageState extends State<CategoryListPage>
   bool _isLoading = true;
   String _searchQuery = '';
 
-  // Fallback icon mapping (Giữ nguyên)
+  // Fallback icon mapping by category name
   int _fallbackIconIdByName(String categoryName) {
     final mapping = {
       'Ăn uống': 2, 'Cafe': 6, 'Di chuyển': 10, 'Giải trí': 15,
@@ -145,16 +147,45 @@ class _CategoryListPageState extends State<CategoryListPage>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-        title: const Text('Chọn hạng mục', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.customTitle ?? (widget.isSelectionMode ? 'Chọn hạng mục' : 'Quản lý hạng mục'),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const EditCategoryPage())).then((_) => _loadCategories());
-            },
-          ),
+            if (widget.customTitle == 'Hạng mục thu/chi')
+              IconButton(
+                icon: const Icon(Icons.swap_horiz),
+                tooltip: 'Chuyển hạng mục',
+                onPressed: () async {
+                  // Open transfer page for expense categories
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TransferCategoryPage(type: CategoryType.expense)),
+                  );
+                  if (result == true) {
+                    // reload categories after transfer
+                    _loadCategories();
+                  }
+                },
+              ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditCategoryPage(),
+                  ),
+                ).then((_) => _loadCategories());
+              },
+            ),
         ],
         bottom: TabBar(
           controller: _tabController, labelColor: Colors.blue, unselectedLabelColor: Colors.black, indicatorColor: Colors.blue,
@@ -163,12 +194,14 @@ class _CategoryListPageState extends State<CategoryListPage>
       ),
       body: Column(
         children: [
+          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên hạng mục',
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
                 filled: true, fillColor: Colors.white,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -180,6 +213,7 @@ class _CategoryListPageState extends State<CategoryListPage>
               },
             ),
           ),
+          // Tab content
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -251,8 +285,10 @@ class _CategoryListPageState extends State<CategoryListPage>
     return GestureDetector(
       onTap: () {
         if (widget.isSelectionMode) {
+          // Nếu ở chế độ chọn, trả về category đã chọn
           Navigator.pop(context, subcategory);
         } else {
+          // Nếu không, hiển thị snackbar như cũ
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Đã chọn: ${subcategory.name}'), duration: const Duration(seconds: 1)),
           );
@@ -275,7 +311,30 @@ class _CategoryListPageState extends State<CategoryListPage>
       ),
     );
   }
-
+  String _getEmojiForCategory(String name) {
+    final emojiMap = {
+      'Ăn vặt': '🍿',
+      'Ăn tối': '🍖',
+      'Ăn trưa': '🥗',
+      'Ăn sáng': '🍩',
+      'Cafe': '☕',
+      'Ăn tiệm': '🍜',
+      'Đi chợ/siêu thị': '🛍️',
+      'Thuê người giúp việc': '🧹',
+      'Điện thoại cố định': '☎️',
+      'Truyền hình': '📺',
+      'Gas': '🔥',
+      'Điện thoại di động': '📱',
+      'Internet': '📡',
+      'Nước': '💧',
+      'Điện': '💡',
+      'Taxi/thuê xe': '🚗',
+      'Rửa xe': '🚿',
+      'Gửi xe': '🅿️',
+      'Sửa chữa, bảo dưỡng xe': '🔧',
+    };
+    return emojiMap[name] ?? '📁';
+  }
   Widget _buildCategoryItem(Category category, bool hasSubcategories, bool isExpanded) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -299,8 +358,10 @@ class _CategoryListPageState extends State<CategoryListPage>
         title: Text(category.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         onTap: () {
           if (widget.isSelectionMode) {
+            // Ở chế độ chọn: chọn hạng mục (cha hoặc không có con)
             Navigator.pop(context, category);
           } else {
+            // Không ở chế độ chọn: hiển thị snackbar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Đã chọn: ${category.name}'), duration: const Duration(seconds: 1)),
             );
