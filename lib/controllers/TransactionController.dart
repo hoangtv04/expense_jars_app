@@ -3,6 +3,7 @@
 
 
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
+import 'package:uuid/uuid.dart';
 
 import '../db/app_state.dart';
 import '../models/Category.dart';
@@ -22,12 +23,17 @@ class TransactionController {
     return await _repo.getAllTransactions();
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     await _repo.deleteTransactions(id);
+
+    AppState.jarChanged.value++;
+
   }
 
   Future<void> update(Transaction updatedTransaction) async {
     await _repo.updateTransaction(updatedTransaction);
+    AppState.jarChanged.value++;
+
   }
 
   Future<void> add(Transaction transaction) async {
@@ -46,12 +52,26 @@ class TransactionController {
     } else if(transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
     }
-    await _repo.insertTransactions(transaction);
+
+    final newTransaction = Transaction(
+      id: transaction.id ?? const Uuid().v4(),
+      userId: transaction.userId,
+      jarId: transaction.jarId,
+      categoryId: transaction.categoryId,
+      amount: transaction.amount,
+      type: transaction.type,
+      note: transaction.note,
+      date: transaction.date,
+      createdAt: transaction.createdAt,
+      isDeleted: transaction.isDeleted,
+    );
+
+    await _repo.insertTransactions(newTransaction);
     AppState.jarChanged.value++;
   }
 
 
-  Future<List<TransactionWithCategory>> getTransactionsWithCategory(int id) async {
+  Future<List<TransactionWithCategory>> getTransactionsWithCategory(String id) async {
 
 
     return await _cateRepo.getTransactionWithCategory(id);
@@ -61,7 +81,7 @@ class TransactionController {
 
 
 
-    Future<List<Transaction>> getTransactionListById(int id) async {
+    Future<List<Transaction>> getTransactionListById(String id) async {
     final list = await _repo.getAllTransactionByJarId(id);
     print('Jar count: ${list.length}');
     return list;
@@ -69,7 +89,7 @@ class TransactionController {
 
 
 
-  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(String jarId) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -94,33 +114,46 @@ class TransactionController {
     return list;
   }
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
-    return _repo.getDailyReport(userId);
+  Future<List<Map<String, dynamic>>> getDailyReport(
+  String userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _repo.getDailyReport(userId, day, month, year);
+}
+
+  Future<List<Map<String, dynamic>>> getWeeklyReport(
+      String userId,
+  int month,
+  int year,
+) {
+  return _repo.getWeeklyReport(userId, month, year);
+}
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+      String userId,
+    int month,
+    int year,
+  ) {
+    return _repo.getMonthlyReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
-    return _repo.getWeeklyReport(userId);
-  }
-
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
-    return _repo.getMonthlyReport(userId);
-  }
-
-  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+  Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
     return _repo.getQuarterReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getYearlyReport(String userId) {
     return _repo.getYearlyReport(userId);
   }
 
-  Future<double> getTransactionsTotalIncome(int jarId) async {
+  Future<double> getTransactionsTotalIncome(String jarId) async {
 
 
     return _repo.getTotalIncome(jarId);
   }
 
-  Future<double> getTransactionsTotalExpense(int jarId) async {
+  Future<double> getTransactionsTotalExpense(String jarId) async {
 
 
     return _repo.getTotalExpense(jarId);

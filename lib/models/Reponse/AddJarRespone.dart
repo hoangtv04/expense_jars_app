@@ -1,16 +1,15 @@
-import 'package:flutter_application_jars/models/Jar.dart';
-
 class AddJarRespone {
-  final int user_id;
+  final String? id;           // Thêm ID (UUID) để biết hũ nào vừa được tạo
+  final String user_id;       // int -> String (UUID từ Supabase Auth)
   final String nameJar;
-  final String name;
+  final String name;          // Đây thường là JarType.name (String)
   final double balance;
   final String description;
   final int is_deleted;
   final DateTime created_at;
-  // bảng family đề phòng trường hợp gia đình tách riêng ra
 
   AddJarRespone({
+    this.id,
     required this.user_id,
     required this.nameJar,
     required this.name,
@@ -19,4 +18,6 @@ class AddJarRespone {
     this.is_deleted = 0,
     required this.created_at,
   });
+
+
 }

@@ -12,7 +12,7 @@ class JarRepository {
     return await db.insert("jars", jar.toMap());
   }
 
-  Future<void> updateJar(int id,double amount) async{
+  Future<void> updateJar(String id,double amount) async{
     final db = await AppDatabase.instance.database;
 
     await db.update(
@@ -55,7 +55,7 @@ class JarRepository {
   }
 
 
-  Future<Jar?> getJarById(int id) async {
+  Future<Jar?> getJarById(String id) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.query(
@@ -70,7 +70,7 @@ class JarRepository {
     return Jar.fromMap(result.first);
   }
 
-  Future<int> deleteJar(int id) async{
+  Future<int> deleteJar(String id) async{
     final db = await AppDatabase.instance.database;
     return await db.update(
       'jars',

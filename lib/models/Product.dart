@@ -1,5 +1,5 @@
 class Product {
-  final int? id;
+  final String? id; // int? -> String? (Lưu UUID dạng chuỗi)
   final String title;
   final double amount;
   final String category;
@@ -16,18 +16,18 @@ class Product {
   // map -> object (từ DB)
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      id: map['id'],
-      title: map['title'],
-      amount: map['amount'],
-      category: map['category'],
-      date: map['date'],
+      id: map['id']?.toString(), // Đảm bảo lấy ra String UUID
+      title: map['title'] ?? '',
+      amount: (map['amount'] as num).toDouble(), // Ép kiểu an toàn cho double
+      category: map['category'] ?? '',
+      date: map['date'] ?? '',
     );
   }
 
   // object -> map (lưu DB)
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id, // String UUID
       'title': title,
       'amount': amount,
       'category': category,

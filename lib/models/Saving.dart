@@ -1,7 +1,7 @@
 class Saving {
-  int? id;
-  int userId;
-  int? jarId;
+  String? id;            // int? -> String?
+  String userId;         // int -> String (UUID từ Supabase Auth)
+  String? jarId;         // int? -> String? (UUID của hũ liên kết)
   String name;
   double principal;
   double? interestRate;
@@ -43,15 +43,15 @@ class Saving {
 
   factory Saving.fromMap(Map<String, dynamic> map) {
     return Saving(
-      id: map['id'],
-      userId: map['user_id'],
-      jarId: map['jar_id'],
-      name: map['name'],
-      principal: map['principal'],
-      interestRate: map['interest_rate'],
-      startDate: map['start_date'],
+      id: map['id']?.toString(), // Đảm bảo trả về String UUID
+      userId: map['user_id'].toString(),
+      jarId: map['jar_id']?.toString(),
+      name: map['name'] ?? '',
+      principal: (map['principal'] as num).toDouble(),
+      interestRate: (map['interest_rate'] as num?)?.toDouble(),
+      startDate: map['start_date'] ?? '',
       endDate: map['end_date'],
-      status: map['status'],
+      status: map['status'] ?? 'active',
       note: map['note'],
       createdAt: map['created_at'],
     );

@@ -1,7 +1,7 @@
 class SavingLog {
-  int? id;
-  int savingId;
-  int? transactionId;
+  String? id;            // int? -> String?
+  String savingId;       // int -> String (UUID của khoản tiết kiệm)
+  String? transactionId; // int? -> String? (UUID của giao dịch liên quan)
   double changeAmount;
   String type;
   String? note;
@@ -31,11 +31,11 @@ class SavingLog {
 
   factory SavingLog.fromMap(Map<String, dynamic> map) {
     return SavingLog(
-      id: map['id'],
-      savingId: map['saving_id'],
-      transactionId: map['transaction_id'],
-      changeAmount: map['change_amount'],
-      type: map['type'],
+      id: map['id']?.toString(), // Đảm bảo trả về String UUID
+      savingId: map['saving_id'].toString(),
+      transactionId: map['transaction_id']?.toString(),
+      changeAmount: (map['change_amount'] as num).toDouble(), // Ép kiểu double an toàn
+      type: map['type'] ?? '',
       note: map['note'],
       createdAt: map['created_at'],
     );

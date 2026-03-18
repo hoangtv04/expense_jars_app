@@ -1,8 +1,8 @@
 class Category {
-  final int? id;
-  final int? icon_id;
-  final int user_id;
-  final int? parent_id;
+  final String? id;          // int? -> String?
+  final int? icon_id;        // Giữ nguyên int vì đây là ID icon nội bộ
+  final String user_id;      // int -> String (UUID từ Supabase Auth)
+  final String? parent_id;   // int? -> String? (UUID của category cha)
   final String name;
   final CategoryType type;
   final double? limit_amount;
@@ -25,18 +25,21 @@ class Category {
 
   factory Category.fromMap(Map<String, dynamic> map) {
     return Category(
-      id: map['id'],
+      id: map['id']?.toString(), // Đảm bảo lấy ra String
       icon_id: map['icon_id'],
-      user_id: map['user_id'],
-      parent_id: map['parent_id'],
+      user_id: map['user_id'].toString(),
+      parent_id: map['parent_id']?.toString(),
       name: map['name'],
       type: CategoryType.values.firstWhere(
-        (e) => e.name == map['type'],
+            (e) => e.name == map['type'],
+        orElse: () => CategoryType.expense, // Thêm orElse để tránh lỗi crash
       ),
-      limit_amount: map['limit_amount'],
+      limit_amount: (map['limit_amount'] as num?)?.toDouble(),
       description: map['description'],
       is_deleted: map['is_deleted'] ?? 0,
-      created_at: DateTime.parse(map['created_at']),
+      created_at: map['created_at'] != null
+          ? DateTime.parse(map['created_at'])
+          : DateTime.now(),
     );
   }
 
@@ -47,11 +50,11 @@ class Category {
       'user_id': user_id,
       'parent_id': parent_id,
       'name': name,
-      'type': type.name, // enum → string
+      'type': type.name,
       'limit_amount': limit_amount,
       'description': description,
       'is_deleted': is_deleted,
-      'created_at': created_at.toIso8601String(), // DateTime → string
+      'created_at': created_at.toIso8601String(),
     };
   }
 }

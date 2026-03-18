@@ -38,9 +38,10 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
   Future<void> _loadParentCategories() async {
     setState(() => _isLoadingParents = true);
-    
+
+    // Controller sẽ trả về List<Category> với id là String UUID
     final parents = await _controller.getCategoriesByType(widget.categoryType);
-    
+
     setState(() {
       _parentCategories = parents;
       _isLoadingParents = false;
@@ -58,7 +59,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       ),
     );
 
-    if (result != null || result == null) {
+    // Xử lý khi chọn hoặc hủy chọn hạng mục cha
+    if (mounted) {
       setState(() {
         _selectedParentCategory = result;
       });
@@ -84,7 +86,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
   Future<void> _saveCategory() async {
     final newName = _nameController.text.trim();
-    
+
     if (newName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập tên hạng mục')),
@@ -92,6 +94,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       return;
     }
 
+    // 🔥 parentId truyền vào bây giờ sẽ là String? (từ _selectedParentCategory.id)
     await _controller.addCategory(
       name: newName,
       type: widget.categoryType,
@@ -117,8 +120,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.categoryType == CategoryType.expense 
-              ? 'Thêm hạng mục chi' 
+          widget.categoryType == CategoryType.expense
+              ? 'Thêm hạng mục chi'
               : 'Thêm hạng mục thu',
           style: const TextStyle(
             fontSize: 18,
@@ -137,10 +140,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Icon and Name input row
                   Row(
                     children: [
-                      // Icon selection button
                       GestureDetector(
                         onTap: _showIconSelector,
                         child: Container(
@@ -152,20 +153,19 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                           ),
                           child: _selectedIconId != null
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.asset(
-                                    'lib/assets/category_icon/$_selectedIconId.png',
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.category);
-                                    },
-                                  ),
-                                )
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'lib/assets/category_icon/$_selectedIconId.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.category);
+                              },
+                            ),
+                          )
                               : const Icon(Icons.add_a_photo),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Name input
                       Expanded(
                         child: TextField(
                           controller: _nameController,
@@ -189,8 +189,6 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Parent category selection
                   const Text(
                     'Chọn hạng mục cha',
                     style: TextStyle(
@@ -236,7 +234,6 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
               ),
             ),
           ),
-          // Bottom button
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

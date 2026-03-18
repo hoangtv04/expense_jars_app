@@ -19,7 +19,7 @@ class TransactionRepository {
     return await db.insert("transactions", transaction.toMap());
   }
 
-  Future<List<Transaction>> getAllTransactionByJarId(int jar_id) async {
+  Future<List<Transaction>> getAllTransactionByJarId(String jar_id) async {
     final db = await AppDatabase.instance.database;
     final maps = await db.query('transactions',
       where: 'jar_id = ?',
@@ -34,7 +34,7 @@ class TransactionRepository {
   }
 
 
-  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(int jarId) async {
+  Future<List<TransactionWithCategory>> getAllTransactionAndCategoryName(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     print('===== REPO START =====');
@@ -42,20 +42,21 @@ class TransactionRepository {
 
     final result = await db.rawQuery(
       '''
-    SELECT 
-      t.*,
-      c.name AS category_name,
-      c.type AS category_type
-    FROM transactions t
-    LEFT JOIN categories c
-      ON t.category_id = c.id
-      AND c.is_deleted = 0
-    WHERE (t.is_deleted = 0 OR t.is_deleted IS NULL)
-      AND t.jar_id = ?
-    ORDER BY t.created_at DESC
+  SELECT 
+  t.*,
+  c.name AS category_name,
+  c.type AS type  
+FROM transactions t
+LEFT JOIN categories c
+  ON t.category_id = c.id
+  AND c.is_deleted = 0
+WHERE (t.is_deleted = 0 OR t.is_deleted IS NULL)
+  AND t.jar_id = ?
+ORDER BY t.created_at DESC
     ''',
       [jarId],
     );
+
 
     return result
         .map((e) => TransactionWithCategory.fromMap(e))
@@ -68,7 +69,7 @@ class TransactionRepository {
     return await db.insert('transactions', transaction.toMap());
   }
 
-  Future<int> deleteTransactions(int id) async {
+  Future<int> deleteTransactions(String id) async {
     final db = await AppDatabase.instance.database;
 
     return await db.transaction((txn) async {
@@ -94,8 +95,10 @@ class TransactionRepository {
       double currentBalance = jarResult.first['balance'] as double;
       double newBalance = currentBalance;
 
+      print(transaction.type!.name + " ");
+      print(transaction.type);
       //  Rollback balance
-      if (transaction.type == 'income') {
+      if (transaction.type?.name == 'income') {
         newBalance -= transaction.amount;   // Xóa thu → trừ lại
       } else {
         newBalance += transaction.amount;   // Xóa chi → cộng lại
@@ -146,7 +149,7 @@ class TransactionRepository {
       double newBalance = currentBalance;
 
       //  Rollback transaction cũ
-      if (oldTransaction.type == 'income') {
+      if (oldTransaction.type?.name == 'income') {
         newBalance -= oldTransaction.amount;
       } else {
         newBalance += oldTransaction.amount;
@@ -203,7 +206,7 @@ class TransactionRepository {
     return maps.map((e) => Transaction.fromMap(e)).toList();
   }
 
-  Future<Map<String, double>> getSummaryByUser(int userId) async {
+  Future<Map<String, double>> getSummaryByUser(String userId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery(
@@ -229,28 +232,41 @@ class TransactionRepository {
 
   final AppDatabase _db = AppDatabase.instance;
 
-  Future<List<Map<String, dynamic>>> getDailyReport(int userId) {
-    return _db.getDailyReport(userId);
+ Future<List<Map<String, dynamic>>> getDailyReport(
+  String userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _db.getDailyReport(userId, day, month, year);
+}
+
+Future<List<Map<String, dynamic>>> getWeeklyReport(
+    String userId,
+  int month,
+  int year,
+) {
+  return _db.getWeeklyReport(userId, month, year);
+}
+
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+      String userId,
+    int month,
+    int year,
+  ) {
+    return _db.getMonthlyReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(int userId) {
-    return _db.getWeeklyReport(userId);
-  }
-
-  Future<List<Map<String, dynamic>>> getMonthlyReport(int userId) {
-    return _db.getMonthlyReport(userId);
-  }
-
-  Future<List<Map<String, dynamic>>> getQuarterReport(int userId) {
+  Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
     return _db.getQuarterReport(userId);
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(int userId) {
+  Future<List<Map<String, dynamic>>> getYearlyReport(String userId) {
     return _db.getYearlyReport(userId);
   }
 
 
-  Future<double> getTotalIncome(int jarId) async {
+  Future<double> getTotalIncome(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''
@@ -267,7 +283,7 @@ class TransactionRepository {
     return total == null ? 0.0 : (total as num).toDouble();
   }
 
-  Future<double> getTotalExpense(int jarId) async {
+  Future<double> getTotalExpense(String jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''

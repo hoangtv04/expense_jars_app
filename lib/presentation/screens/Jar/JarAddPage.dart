@@ -26,7 +26,7 @@ class _AddMemberPageState extends State<JarAddPage> {
   void _save() async {
     try {
       AddJarRespone addJarRespone = AddJarRespone(
-        user_id: 1,
+        user_id: "rdfghdfg",
         name: _selectedName!.name,
         nameJar: _nameJar.text,
         balance: double.parse(_money.text),

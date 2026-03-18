@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../controllers/TransactionController.dart';
+import '../../../db/app_database.dart';
 import '../../../models/Transaction.dart';
 import 'transaction_add_page.dart';
 import 'transaction_edit_page.dart';
@@ -44,7 +45,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          debugCheckAllData();
           if (snapshot.hasError) {
             return Center(child: Text('Lỗi: ${snapshot.error}'));
           }
@@ -119,5 +120,16 @@ class _TransactionListPageState extends State<TransactionListPage> {
         },
      ),
     );
+  }
+
+  Future<void> debugCheckAllData() async {
+    final db = await AppDatabase.instance.database;
+    final List<Map<String, dynamic>> maps = await db.query('transactions');
+
+    print("--- BẮT ĐẦU KIỂM TRA DỮ LIỆU ---");
+    for (var row in maps) {
+      print("ID: ${row['id']} | Type: '${row['type']}' | Amount: ${row['amount']}");
+    }
+    print("--- KẾT THÚC KIỂM TRA ---");
   }
 }

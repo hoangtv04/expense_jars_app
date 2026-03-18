@@ -1,9 +1,11 @@
+import 'package:uuid/uuid.dart';
+
 import '../models/SpendingLimit.dart';
 import '../repositories/SpendingLimitRepository.dart';
 
 class SpendingLimitController {
   final SpendingLimitRepository _repo = SpendingLimitRepository();
-
+  final _uuid = const Uuid();
   Future<void> addSpendingLimit({
     required String name,
     required double amount,
@@ -15,7 +17,8 @@ class SpendingLimitController {
     required bool carryForward,
   }) async {
     final limit = SpendingLimit(
-      user_id: 1, // TODO: Get from logged user
+      id: _uuid.v4(),
+      user_id: "aaa", // TODO: Get from logged user
       name: name,
       amount: amount,
       categories: categories,
@@ -31,22 +34,27 @@ class SpendingLimitController {
   }
 
   Future<List<SpendingLimit>> getSpendingLimits() async {
-    return await _repo.getSpendingLimitsByUserId(
-      1,
-    ); // TODO: Get from logged user
-  }
+    final limits = await _repo.getSpendingLimitsByUserId("aaa");
 
+    // 🔥 Hiển thị ID ra console để kiểm tra
+    print('--- Danh sách Hạn mức chi tiêu ---');
+    for (var l in limits) {
+      print('Hạn mức: ${l.name} | ID: ${l.id}');
+    }
+
+    return limits;
+  }
   Future<void> updateSpendingLimit(SpendingLimit limit) async {
     await _repo.updateSpendingLimit(limit);
   }
 
-  Future<void> deleteSpendingLimit(int id) async {
+  Future<void> deleteSpendingLimit(String id) async {
     await _repo.deleteSpendingLimit(id);
   }
 
-  Future<bool> checkNameExists(String name, {int? excludeId}) async {
+  Future<bool> checkNameExists(String name, {String? excludeId}) async {
     return await _repo.isNameExists(
-      userId: 1, // TODO: Get from logged user
+      userId: "aaa", // TODO: Get from logged user
       name: name,
       excludeId: excludeId,
     );
@@ -117,7 +125,7 @@ class SpendingLimitController {
   }
 
   Future<Map<String, dynamic>?> getSpendingLimitDetailMetrics(
-    int limitId,
+    String limitId,
   ) async {
     final limit = await _repo.getSpendingLimitById(limitId);
     if (limit == null) return null;

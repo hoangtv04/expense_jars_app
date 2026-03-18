@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../controllers/DashBoardController.dart';
+import '../../../db/app_state.dart';
 
 class Thongke extends StatefulWidget {
   const Thongke({super.key});
@@ -31,7 +32,7 @@ class _ThongkeState extends State<Thongke> {
 
   Future<void> loadData() async {
     try {
-      const userId = 1;
+      const userId = "aaa";
 
       final summary = await controller.getSummary(userId);
 
@@ -50,46 +51,87 @@ class _ThongkeState extends State<Thongke> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Báo cáo tổng quan',
-                    style:
-                        TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBalanceCard(),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Biểu đồ thu / chi',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: CustomPaint(
-                        painter: PieChartPainter(incomePercent: percent),
+    return ValueListenableBuilder<int>(
+      valueListenable: AppState.jarChanged,
+      builder: (context, value, child) {
+
+        return FutureBuilder<Map<String, double>>(
+          future: controller.getSummary("aaa"),
+          builder: (context, snapshot) {
+
+            if (!snapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final income = snapshot.data!['income'] ?? 0;
+            final expense = snapshot.data!['expense'] ?? 0;
+            final balance = snapshot.data!['balance'] ?? 0;
+
+            final percent =
+            income + expense == 0 ? 0.0 : income / (income + expense);
+
+            return Scaffold(
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    const Text(
+                      "Báo cáo tổng quan",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Center(child: LegendWidget()),
-                ],
+
+                    const SizedBox(height: 16),
+
+                    _buildBalanceCard(balance, income, expense),
+
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      "Biểu đồ thu / chi",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: CustomPaint(
+                          painter: PieChartPainter(
+                            incomePercent: percent,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const Center(
+                      child: LegendWidget(),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildBalanceCard() {
+  Widget _buildBalanceCard(double balance, double income, double expense) {
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

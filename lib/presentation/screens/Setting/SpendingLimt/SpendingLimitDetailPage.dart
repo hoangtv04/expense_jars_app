@@ -4,7 +4,7 @@ import '../../../../models/SpendingLimit.dart';
 import 'EditSpendingLimitPage.dart';
 
 class SpendingLimitDetailPage extends StatefulWidget {
-  final int limitId;
+  final String limitId;
 
   const SpendingLimitDetailPage({super.key, required this.limitId});
 
