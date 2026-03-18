@@ -232,16 +232,29 @@ ORDER BY t.created_at DESC
 
   final AppDatabase _db = AppDatabase.instance;
 
-  Future<List<Map<String, dynamic>>> getDailyReport(String userId) {
-    return _db.getDailyReport(userId);
-  }
+ Future<List<Map<String, dynamic>>> getDailyReport(
+  String userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _db.getDailyReport(userId, day, month, year);
+}
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(String userId) {
-    return _db.getWeeklyReport(userId);
-  }
+Future<List<Map<String, dynamic>>> getWeeklyReport(
+    String userId,
+  int month,
+  int year,
+) {
+  return _db.getWeeklyReport(userId, month, year);
+}
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(String userId) {
-    return _db.getMonthlyReport(userId);
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+      String userId,
+    int month,
+    int year,
+  ) {
+    return _db.getMonthlyReport(userId, month, year);
   }
 
   Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
@@ -253,7 +266,7 @@ ORDER BY t.created_at DESC
   }
 
 
-  Future<double> getTotalIncome(String jarId) async {
+  Future<double> getTotalIncome(int jarId) async {
     final db = await AppDatabase.instance.database;
 
     final result = await db.rawQuery('''

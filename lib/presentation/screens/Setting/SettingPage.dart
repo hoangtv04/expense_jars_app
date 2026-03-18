@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
-
+import 'package:flutter_application_jars/presentation/screens/Report/Report.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
 
 class SettingPage extends StatefulWidget {
@@ -124,7 +124,7 @@ class _SettingPageState extends State<SettingPage> {
                             color: Colors.white,
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
 
@@ -211,10 +211,7 @@ class _SettingPageState extends State<SettingPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -222,8 +219,12 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildGrid() {
     final List<Map<String, dynamic>> items = [
-      {"label": "aa", "icon": Icons.star, "color": Colors.blue},
-      {"label": "Hạn mức chi", "isCustom": true, "color": const Color(0xFFFFA500)},
+      {"label": "Báo cáo", "icon": Icons.bar_chart, "color": Colors.green},
+      {
+        "label": "Hạn mức chi",
+        "isCustom": true,
+        "color": const Color(0xFFFFA500),
+      },
       {"label": "Xuất dữ liệu", "icon": Icons.book, "color": Colors.blue},
       {"label": "dd", "icon": Icons.star, "color": Colors.blue},
       {"label": "ee", "icon": Icons.star, "color": Colors.blue},
@@ -262,13 +263,10 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                 );
               }
-
-              if (item["label"] == "Xuất dữ liệu") {
+              if (item["label"] == "Báo cáo") {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const SpendingLimitPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const ReportScreen()),
                 );
               }
             },
@@ -281,7 +279,7 @@ class _SettingPageState extends State<SettingPage> {
                     color: item["color"].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: isCustomIcon 
+                  child: isCustomIcon
                       ? _buildHandMoneyIcon()
                       : Icon(item["icon"], color: item["color"]),
                 ),

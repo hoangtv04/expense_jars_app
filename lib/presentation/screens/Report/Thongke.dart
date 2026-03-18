@@ -13,6 +13,42 @@ class Thongke extends StatefulWidget {
 class _ThongkeState extends State<Thongke> {
   final DashboardController controller = DashboardController();
 
+  double income = 0;
+  double expense = 0;
+  bool isLoading = true;
+
+  double get balance => income - expense;
+
+  double get percent {
+    if (income + expense == 0) return 0;
+    return income / (income + expense);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      const userId = 1;
+
+      final summary = await controller.getSummary(userId);
+
+      setState(() {
+        income = summary['income'] ?? 0;
+        expense = summary['expense'] ?? 0;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      debugPrint("Lỗi loadData: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -31,7 +67,7 @@ class _ThongkeState extends State<Thongke> {
 
             final income = snapshot.data!['income'] ?? 0;
             final expense = snapshot.data!['expense'] ?? 0;
-            final balance = income - expense;
+            final balance = snapshot.data!['balance'] ?? 0;
 
             final percent =
             income + expense == 0 ? 0.0 : income / (income + expense);
@@ -94,7 +130,7 @@ class _ThongkeState extends State<Thongke> {
     );
   }
 
-  Widget _buildBalanceCard(double balance, double income, double expense) {
+  Widget _buildBalanceCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -104,39 +140,31 @@ class _ThongkeState extends State<Thongke> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          const Text("Số dư hiện tại"),
-
+          const Text('Số dư hiện tại'),
           const SizedBox(height: 8),
-
           Text(
-            "${balance.toStringAsFixed(0)} đ",
+            '${balance.toStringAsFixed(0)} đ',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.blue,
             ),
           ),
-
           const SizedBox(height: 16),
-
           Row(
             children: [
-
               Expanded(
                 child: _summaryCard(
-                  title: "Tổng thu",
-                  value: "+${income.toStringAsFixed(0)} đ",
+                  title: 'Tổng thu',
+                  value: '+${income.toStringAsFixed(0)} đ',
                   color: Colors.green,
                 ),
               ),
-
               const SizedBox(width: 12),
-
               Expanded(
                 child: _summaryCard(
-                  title: "Tổng chi",
-                  value: "-${expense.toStringAsFixed(0)} đ",
+                  title: 'Tổng chi',
+                  value: '-${expense.toStringAsFixed(0)} đ',
                   color: Colors.red,
                 ),
               ),
@@ -161,11 +189,8 @@ class _ThongkeState extends State<Thongke> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Text(title),
-
           const SizedBox(height: 8),
-
           Text(
             value,
             style: TextStyle(
@@ -226,9 +251,9 @@ class LegendWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: const [
-        _LegendItem(color: Colors.green, text: "Tổng thu"),
+        _LegendItem(color: Colors.green, text: 'Tổng thu'),
         SizedBox(width: 24),
-        _LegendItem(color: Colors.red, text: "Tổng chi"),
+        _LegendItem(color: Colors.red, text: 'Tổng chi'),
       ],
     );
   }
@@ -238,16 +263,12 @@ class _LegendItem extends StatelessWidget {
   final Color color;
   final String text;
 
-  const _LegendItem({
-    required this.color,
-    required this.text,
-  });
+  const _LegendItem({required this.color, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-
         Container(
           width: 12,
           height: 12,
@@ -256,9 +277,7 @@ class _LegendItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-
         const SizedBox(width: 6),
-
         Text(text),
       ],
     );

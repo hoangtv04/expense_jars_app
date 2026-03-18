@@ -3,7 +3,6 @@
 
 
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
-import 'package:uuid/uuid.dart';
 
 import '../db/app_state.dart';
 import '../models/Category.dart';
@@ -89,7 +88,7 @@ class TransactionController {
 
 
 
-  Future<List<TransactionWithCategory>> getTransactionWithCategory(int jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(String jarId) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -114,16 +113,29 @@ class TransactionController {
     return list;
   }
 
-  Future<List<Map<String, dynamic>>> getDailyReport(String userId) {
-    return _repo.getDailyReport(userId);
-  }
+  Future<List<Map<String, dynamic>>> getDailyReport(
+  String userId,
+  int day,
+  int month,
+  int year,
+) {
+  return _repo.getDailyReport(userId, day, month, year);
+}
 
-  Future<List<Map<String, dynamic>>> getWeeklyReport(String userId) {
-    return _repo.getWeeklyReport(userId);
-  }
+  Future<List<Map<String, dynamic>>> getWeeklyReport(
+      String userId,
+  int month,
+  int year,
+) {
+  return _repo.getWeeklyReport(userId, month, year);
+}
 
-  Future<List<Map<String, dynamic>>> getMonthlyReport(String userId) {
-    return _repo.getMonthlyReport(userId);
+  Future<List<Map<String, dynamic>>> getMonthlyReport(
+      String userId,
+    int month,
+    int year,
+  ) {
+    return _repo.getMonthlyReport(userId, month, year);
   }
 
   Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
