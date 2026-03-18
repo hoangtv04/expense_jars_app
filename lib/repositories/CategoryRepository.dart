@@ -120,7 +120,7 @@ class CategoryRepository {
 
   /// Transfer all transactions from one category to another.
   /// Returns the number of rows updated.
-  Future<int> transferTransactions(int fromCategoryId, int toCategoryId) async {
+  Future<int> transferTransactions(String fromCategoryId, String toCategoryId) async {
     final db = await AppDatabase.instance.database;
     return await db.rawUpdate(
       'UPDATE transactions SET category_id = ? WHERE category_id = ?',
