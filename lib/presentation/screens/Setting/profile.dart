@@ -1,10 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/presentation/screens/login.dart';
-import 'package:flutter_application_jars/presentation/screens/Setting/account.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/EditProfile.dart';
+import 'package:flutter_application_jars/services/session_services.dart';
+import 'package:flutter_application_jars/repositories/user_repository.dart';
+import 'package:flutter_application_jars/models/user.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
   const Profile({super.key});
+
+  @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  String name = "Đăng nhập";
+  String email = "Đăng nhập";
+  bool isLoggedIn = false;
+  final nameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final userId = await SessionService.getUserId();
+
+    debugPrint("PROFILE LOAD USER ID: $userId");
+
+    if (!mounted) return;
+
+    if (userId == null) {
+      setState(() {
+        name = "Đăng nhập";
+        email = "Đăng nhập";
+        isLoggedIn = false;
+      });
+      return;
+    }
+
+    final repo = UserRepository();
+    final User? user = await repo.getUserById(userId);
+
+    if (!mounted) return;
+
+    if (user != null) {
+      setState(() {
+        email = user.email;
+        name = user.fullName ?? user.email.split('@')[0];
+        isLoggedIn = true;
+      });
+    } else {
+      setState(() {
+        name = "Đăng nhập";
+        email = "Đăng nhập";
+        isLoggedIn = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,36 +83,57 @@ class Profile extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER
-          Container(
-            width: double.infinity,
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              children: const [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundColor: Colors.blue,
-                  child: Text(
-                    "DC",
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.white,
+          /// HEADER (CLICK ĐỂ LOGIN)
+          GestureDetector(
+            onTap: () {
+              if (!isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ).then((result) {
+                  if (result == true) {
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      loadUser();
+                    });
+                  }
+                });
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.blue,
+                    child: Text(
+                      (name != "Đăng nhập" && name.isNotEmpty)
+                          ? name[0].toUpperCase()
+                          : "?",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "duc cuong",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "chuoidocchoduoi7c@gmail.com",
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -67,10 +142,26 @@ class Profile extends StatelessWidget {
           /// CẬP NHẬT HỒ SƠ
           GestureDetector(
             onTap: () {
+              if (!isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ).then((result) {
+                  if (result == true) loadUser();
+                });
+                return;
+              }
+
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const EditProfile()),
-              );
+              ).then((result) {
+                if (result == true) {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    loadUser();
+                  });
+                }
+              });
             },
             child: Container(
               width: double.infinity,
@@ -100,35 +191,16 @@ class Profile extends StatelessWidget {
             color: Colors.white,
             child: Column(
               children: [
-                _ProfileItem(
-                  title: "Liên kết tài khoản",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Account()),
-                    );
-                  },
-                ),
-
+                _ProfileItem(title: "Đặt mật khẩu", onTap: () {}),
                 const Divider(height: 1),
 
-                _ProfileItem(
-                  title: "Đặt mật khẩu",
-                  onTap: () {
-                    // TODO: thêm màn đổi mật khẩu sau
-                  },
-                ),
-
-                const Divider(height: 1),
-
-                _LogoutItem(),
+                if (isLoggedIn) _LogoutItem(), // 🔥 chỉ hiện khi login
               ],
             ),
           ),
         ],
       ),
 
-      /// 👇 Bottom Navigation thêm trực tiếp tại đây
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 4,
         type: BottomNavigationBarType.fixed,
@@ -148,7 +220,7 @@ class Profile extends StatelessWidget {
             icon: Icon(Icons.bar_chart),
             label: "Thống kê",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Khác"),
+          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "Khác"),
         ],
       ),
     );
@@ -176,7 +248,9 @@ class _LogoutItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: const Text("Đăng xuất", style: TextStyle(color: Colors.red)),
-      onTap: () {
+      onTap: () async {
+        await SessionService.logout();
+
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),

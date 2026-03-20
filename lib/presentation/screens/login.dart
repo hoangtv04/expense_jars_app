@@ -146,13 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
     ).showSnackBar(const SnackBar(content: Text('Login success')));
 
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainPage(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
+    Navigator.pop(context, true);
   }
 }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/services/session_services.dart';
+import 'package:flutter_application_jars/repositories/user_repository.dart';
+import 'package:flutter_application_jars/models/user.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -8,11 +11,43 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-  final nameController = TextEditingController(text: "duc cuong");
+  final nameController = TextEditingController();
   final phoneController = TextEditingController();
-  final birthController = TextEditingController(text: "01/01/1990");
+  final birthController = TextEditingController();
 
-  String gender = "Nam";
+  String? gender;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  /// 🔥 LOAD USER TỪ SESSION + DB
+  Future<void> loadUser() async {
+    final userId = await SessionService.getUserId();
+    if (userId == null) return;
+
+    final repo = UserRepository();
+    final User? user = await repo.getUserById(userId);
+
+    if (user != null) {
+      setState(() {
+        nameController.text =
+            user.fullName ?? user.email.split('@')[0]; // ưu tiên tên thật
+      });
+    }
+  }
+
+  /// 🔥 SAVE PROFILE
+  Future<void> updateProfile() async {
+    final userId = await SessionService.getUserId();
+    if (userId == null) return;
+
+    await UserRepository().updateProfile(userId, nameController.text.trim());
+
+    Navigator.pop(context, true); // báo về Profile reload
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +77,14 @@ class _EditProfileState extends State<EditProfile> {
             Center(
               child: Stack(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 45,
                     backgroundColor: Colors.blue,
                     child: Text(
-                      "DC",
-                      style: TextStyle(
+                      nameController.text.isNotEmpty
+                          ? nameController.text[0].toUpperCase()
+                          : "?",
+                      style: const TextStyle(
                         fontSize: 26,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -83,7 +120,7 @@ class _EditProfileState extends State<EditProfile> {
 
             const SizedBox(height: 16),
 
-            /// Số điện thoại
+            /// Số điện thoại (chưa lưu DB)
             const Text("Số điện thoại"),
             const SizedBox(height: 6),
             _buildInput(phoneController, hint: "Nhập số điện thoại của bạn"),
@@ -131,31 +168,23 @@ class _EditProfileState extends State<EditProfile> {
                   value: "Nam",
                   groupValue: gender,
                   onChanged: (value) {
-                    setState(() {
-                      gender = value!;
-                    });
+                    setState(() => gender = value!);
                   },
                 ),
                 const Text("Nam"),
-
                 Radio(
                   value: "Nữ",
                   groupValue: gender,
                   onChanged: (value) {
-                    setState(() {
-                      gender = value!;
-                    });
+                    setState(() => gender = value!);
                   },
                 ),
                 const Text("Nữ"),
-
                 Radio(
                   value: "Khác",
                   groupValue: gender,
                   onChanged: (value) {
-                    setState(() {
-                      gender = value!;
-                    });
+                    setState(() => gender = value!);
                   },
                 ),
                 const Text("Khác"),
@@ -175,16 +204,14 @@ class _EditProfileState extends State<EditProfile> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: updateProfile, // 🔥 gọi save thật
                 child: const Text("Cập nhật", style: TextStyle(fontSize: 16)),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            /// Xóa tài khoản
+            /// Xóa tài khoản (chưa xử lý)
             Center(
               child: TextButton(
                 onPressed: () {},

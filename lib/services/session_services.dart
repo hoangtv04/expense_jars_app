@@ -12,4 +12,9 @@ class SessionService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_key);
   }
+
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+  }
 }

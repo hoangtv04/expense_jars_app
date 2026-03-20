@@ -232,6 +232,9 @@ class AppDatabase {
     email TEXT UNIQUE,
     password TEXT,
     full_name TEXT,
+    phone TEXT,
+    birth TEXT,
+    gender TEXT,
     created_at TEXT
   )
 ''');

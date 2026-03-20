@@ -1,6 +1,5 @@
 import 'package:flutter_application_jars/db/app_database.dart';
 import 'package:flutter_application_jars/models/user.dart';
-import 'package:uuid/uuid.dart';
 
 class UserRepository {
   final AppDatabase _db = AppDatabase.instance;
@@ -9,7 +8,7 @@ class UserRepository {
     final data = await _db.loginRaw(email, password);
 
     if (data != null) {
-      return User.fromMap(data); // 🔥 chỗ này phải có id
+      return User.fromMap(data);
     }
 
     return null;
@@ -24,6 +23,23 @@ class UserRepository {
     final data = await _db.loginRaw(email, password);
     if (data != null) {
       return User.fromMap(data);
+    }
+
+    return null;
+  }
+
+  Future<User?> getUserById(String id) async {
+    final db = await _db.database;
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return User.fromMap(result.first);
     }
 
     return null;
@@ -48,5 +64,16 @@ class UserRepository {
 
     await _db.updatePasswordByEmail(email, newPassword);
     return true;
+  }
+
+  Future<void> updateProfile(String id, String fullName) async {
+    final db = await _db.database;
+
+    await db.update(
+      'users',
+      {'full_name': fullName},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }
