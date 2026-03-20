@@ -4,6 +4,7 @@ import 'package:flutter_application_jars/presentation/screens/Setting/EditProfil
 import 'package:flutter_application_jars/services/session_services.dart';
 import 'package:flutter_application_jars/repositories/user_repository.dart';
 import 'package:flutter_application_jars/models/user.dart';
+import 'package:flutter_application_jars/presentation/screens/Setting/ChangePassword.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -16,7 +17,6 @@ class _ProfileState extends State<Profile> {
   String name = "Đăng nhập";
   String email = "Đăng nhập";
   bool isLoggedIn = false;
-  final nameController = TextEditingController();
 
   @override
   void initState() {
@@ -24,10 +24,19 @@ class _ProfileState extends State<Profile> {
     loadUser();
   }
 
+  /// 🔥 FORMAT TÊN ĐẸP
+  String formatName(String raw) {
+    return raw
+        .replaceAll(RegExp(r'[0-9]'), '')
+        .replaceAll('.', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
+        .join(' ');
+  }
+
   Future<void> loadUser() async {
     final userId = await SessionService.getUserId();
-
-    debugPrint("PROFILE LOAD USER ID: $userId");
 
     if (!mounted) return;
 
@@ -48,7 +57,12 @@ class _ProfileState extends State<Profile> {
     if (user != null) {
       setState(() {
         email = user.email;
-        name = user.fullName ?? user.email.split('@')[0];
+
+        // 🔥 ƯU TIÊN fullName → fallback email
+        name = (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : formatName(user.email.split('@')[0]);
+
         isLoggedIn = true;
       });
     } else {
@@ -68,22 +82,13 @@ class _ProfileState extends State<Profile> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.qr_code, color: Colors.black),
-          ),
-        ],
+        leading: const Icon(Icons.more_horiz, color: Colors.black),
       ),
 
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER (CLICK ĐỂ LOGIN)
+          /// HEADER
           GestureDetector(
             onTap: () {
               if (!isLoggedIn) {
@@ -92,9 +97,7 @@ class _ProfileState extends State<Profile> {
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ).then((result) {
                   if (result == true) {
-                    Future.delayed(const Duration(milliseconds: 100), () {
-                      loadUser();
-                    });
+                    loadUser(); // 🔥 bỏ delay
                   }
                 });
               }
@@ -154,12 +157,10 @@ class _ProfileState extends State<Profile> {
 
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const EditProfile()),
+                MaterialPageRoute(builder: (_) => const EditProfile()),
               ).then((result) {
                 if (result == true) {
-                  Future.delayed(const Duration(milliseconds: 100), () {
-                    loadUser();
-                  });
+                  loadUser(); // 🔥 bỏ delay
                 }
               });
             },
@@ -186,15 +187,23 @@ class _ProfileState extends State<Profile> {
 
           const SizedBox(height: 12),
 
-          /// DANH SÁCH
+          /// MENU
           Container(
             color: Colors.white,
             child: Column(
               children: [
-                _ProfileItem(title: "Đặt mật khẩu", onTap: () {}),
+                _ProfileItem(
+                  title: "Đặt mật khẩu",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChangePassword()),
+                    );
+                  },
+                ),
                 const Divider(height: 1),
 
-                if (isLoggedIn) _LogoutItem(), // 🔥 chỉ hiện khi login
+                if (isLoggedIn) _LogoutItem(),
               ],
             ),
           ),
@@ -253,7 +262,7 @@ class _LogoutItem extends StatelessWidget {
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
           (route) => false,
         );
       },

@@ -36,7 +36,7 @@ class _ChangePasswordState extends State<ChangePassword> {
         context,
       ).showSnackBar(const SnackBar(content: Text("Đổi mật khẩu thành công")));
 
-      await SessionService.logout(); // 🔥 bảo mật
+      await SessionService.logout();
 
       Navigator.pop(context);
     } else {
