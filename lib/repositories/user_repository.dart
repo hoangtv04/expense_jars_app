@@ -76,4 +76,29 @@ class UserRepository {
       whereArgs: [id],
     );
   }
+
+  Future<bool> changePassword(
+    String userId,
+    String oldPassword,
+    String newPassword,
+  ) async {
+    final db = await _db.database;
+
+    final result = await db.query(
+      'users',
+      where: 'id = ? AND password = ?',
+      whereArgs: [userId, oldPassword],
+    );
+
+    if (result.isEmpty) return false;
+
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+
+    return true;
+  }
 }
