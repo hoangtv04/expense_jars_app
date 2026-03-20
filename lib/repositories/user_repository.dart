@@ -1,31 +1,31 @@
 import 'package:flutter_application_jars/db/app_database.dart';
 import 'package:flutter_application_jars/models/user.dart';
+import 'package:uuid/uuid.dart';
 
 class UserRepository {
   final AppDatabase _db = AppDatabase.instance;
 
   Future<User?> login(String email, String password) async {
     final data = await _db.loginRaw(email, password);
+
     if (data != null) {
-      return User.fromMap(data);
+      return User.fromMap(data); // 🔥 chỗ này phải có id
     }
+
     return null;
   }
 
   Future<User?> register(String email, String password) async {
     final bool exists = await _db.isEmailExists(email);
-    if (exists) {
-      return null;
+    if (exists) return null;
+
+    await _db.registerRaw(email, password);
+
+    final data = await _db.loginRaw(email, password);
+    if (data != null) {
+      return User.fromMap(data);
     }
 
-    final int id = await _db.registerRaw(email, password);
-
-    if (id > 0) {
-      final data = await _db.getUserById(id);
-      if (data != null) {
-        return User.fromMap(data);
-      }
-    }
     return null;
   }
 

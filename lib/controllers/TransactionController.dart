@@ -1,10 +1,6 @@
-
-
-
-
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:flutter_application_jars/services/session_services.dart';
 import '../db/app_state.dart';
 import '../models/Category.dart';
 import '../models/Jar.dart';
@@ -12,7 +8,6 @@ import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Transaction.dart';
 import '../repositories/CategoryRepository.dart';
 import '../repositories/TransactionRepository.dart';
-
 
 class TransactionController {
   final TransactionRepository _repo = TransactionRepository();
@@ -27,35 +22,42 @@ class TransactionController {
     await _repo.deleteTransactions(id);
 
     AppState.jarChanged.value++;
-
   }
 
   Future<void> update(Transaction updatedTransaction) async {
     await _repo.updateTransaction(updatedTransaction);
     AppState.jarChanged.value++;
-
   }
 
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {
       throw Exception("Amount không hợp lệ");
     }
+
+    // 🔥 LẤY USER ID TỪ SESSION
+    final userId = await SessionService.getUserId();
+    if (userId == null) {
+      throw Exception("User chưa login");
+    }
+
     final jar = await _jarRepo.getJarById(transaction.jarId);
-    if(jar == null) {
+    if (jar == null) {
       throw Exception("Hũ không tồn tại");
     }
-    if(transaction.amount > jar.balance) {
+
+    if (transaction.amount > jar.balance) {
       throw Exception("Số tiền vượt quá số dư của hũ");
     }
-    if(transaction.type == CategoryType.expense) {
+
+    if (transaction.type == CategoryType.expense) {
       await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
-    } else if(transaction.type == CategoryType.income) {
+    } else if (transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
     }
 
     final newTransaction = Transaction(
       id: transaction.id ?? const Uuid().v4(),
-      userId: transaction.userId,
+      userId: userId, // 🔥 CHỈ DÙNG SESSION
       jarId: transaction.jarId,
       categoryId: transaction.categoryId,
       amount: transaction.amount,
@@ -70,26 +72,21 @@ class TransactionController {
     AppState.jarChanged.value++;
   }
 
-
-  Future<List<TransactionWithCategory>> getTransactionsWithCategory(String id) async {
-
-
+  Future<List<TransactionWithCategory>> getTransactionsWithCategory(
+    String id,
+  ) async {
     return await _cateRepo.getTransactionWithCategory(id);
-
-
   }
 
-
-
-    Future<List<Transaction>> getTransactionListById(String id) async {
+  Future<List<Transaction>> getTransactionListById(String id) async {
     final list = await _repo.getAllTransactionByJarId(id);
     print('Jar count: ${list.length}');
     return list;
   }
 
-
-
-  Future<List<TransactionWithCategory>> getTransactionWithCategory(String jarId) async {
+  Future<List<TransactionWithCategory>> getTransactionWithCategory(
+    String jarId,
+  ) async {
     print('===== TransactionController =====');
     print('jarId nhận được: $jarId');
 
@@ -101,11 +98,11 @@ class TransactionController {
     for (int i = 0; i < list.length; i++) {
       final item = list[i];
       print(
-          '[$i] '
-              'id=${item.id}, '
-              'categoryId=${item.categoryId}, '
-              'categoryName=${item.categoryName}, '
-              'amount=${item.amount}'
+        '[$i] '
+        'id=${item.id}, '
+        'categoryId=${item.categoryId}, '
+        'categoryName=${item.categoryName}, '
+        'amount=${item.amount}',
       );
     }
 
@@ -115,24 +112,24 @@ class TransactionController {
   }
 
   Future<List<Map<String, dynamic>>> getDailyReport(
-  String userId,
-  int day,
-  int month,
-  int year,
-) {
-  return _repo.getDailyReport(userId, day, month, year);
-}
+    String userId,
+    int day,
+    int month,
+    int year,
+  ) {
+    return _repo.getDailyReport(userId, day, month, year);
+  }
 
   Future<List<Map<String, dynamic>>> getWeeklyReport(
-      String userId,
-  int month,
-  int year,
-) {
-  return _repo.getWeeklyReport(userId, month, year);
-}
+    String userId,
+    int month,
+    int year,
+  ) {
+    return _repo.getWeeklyReport(userId, month, year);
+  }
 
   Future<List<Map<String, dynamic>>> getMonthlyReport(
-      String userId,
+    String userId,
     int month,
     int year,
   ) {
@@ -148,15 +145,10 @@ class TransactionController {
   }
 
   Future<double> getTransactionsTotalIncome(String jarId) async {
-
-
     return _repo.getTotalIncome(jarId);
   }
 
   Future<double> getTransactionsTotalExpense(String jarId) async {
-
-
     return _repo.getTotalExpense(jarId);
   }
-
 }

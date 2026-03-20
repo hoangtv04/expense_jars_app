@@ -15,7 +15,6 @@ class AppDatabase {
     return _database!;
   }
 
-
   Future<void> _seedData(Database db) async {
     final uuid = const Uuid();
 
@@ -209,7 +208,6 @@ class AppDatabase {
     print('🌱 Seed data inserted with UUIDs and UserID: "aaa"');
   }
 
-
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
@@ -217,24 +215,26 @@ class AppDatabase {
     final db = await openDatabase(path, version: 1, onCreate: _createDB);
 
     final tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table'"
+      "SELECT name FROM sqlite_master WHERE type='table'",
     );
     print('📦 TABLES IN DB: $tables');
 
     return db;
   }
+
   Future _createDB(Database db, int version) async {
     print(' Creating database...');
 
     // 1. Bảng users (Dùng UUID từ Supabase Auth)
     await db.execute('''
   CREATE TABLE users (
-    id TEXT PRIMARY KEY, 
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-  ''');
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE,
+    password TEXT,
+    full_name TEXT,
+    created_at TEXT
+  )
+''');
 
     // 2. Bảng jars
     await db.execute('''
@@ -355,54 +355,44 @@ class AppDatabase {
 );
   ''');
     await db.execute(
-        'CREATE INDEX idx_transactions_user ON transactions(user_id)');
+      'CREATE INDEX idx_transactions_user ON transactions(user_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_date ON transactions(date)');
+      'CREATE INDEX idx_transactions_date ON transactions(date)',
+    );
     await db.execute(
-        'CREATE INDEX idx_transactions_category ON transactions(category_id)');
+      'CREATE INDEX idx_transactions_category ON transactions(category_id)',
+    );
     await db.execute(
-        'CREATE INDEX idx_categories_parent ON categories(parent_id)');
-    await   _seedData(db);
+      'CREATE INDEX idx_categories_parent ON categories(parent_id)',
+    );
+    await _seedData(db);
     print('Database created successfully');
   }
-
 
   Future<Map<String, dynamic>?> loginRaw(String email, String password) async {
     final db = await database;
 
     final result = await db.query(
       'users',
+      columns: ['id', 'email', 'password'], // 🔥 BẮT BUỘC có id
       where: 'email = ? AND password = ?',
       whereArgs: [email, password],
-      limit: 1,
     );
 
     if (result.isNotEmpty) {
       return result.first;
     }
+
     return null;
   }
 
-  Future<int> registerRaw(String email, String password) async {
+  Future<void> registerRaw(String email, String password) async {
     final db = await database;
 
-    return await db.insert('users', {'email': email, 'password': password});
-  }
+    final id = const Uuid().v4();
 
-  Future<Map<String, dynamic>?> getUserById(int id) async {
-    final db = await database;
-
-    final result = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return result.first;
-    }
-    return null;
+    await db.insert('users', {'id': id, 'email': email, 'password': password});
   }
 
   Future<bool> isEmailExists(String email) async {
@@ -497,12 +487,11 @@ class AppDatabase {
   }
 
   Future<List<Map<String, dynamic>>> getDailyReport(
-      String userId,
-      int day,
-      int month,
-      int year,
-      ) async {
-
+    String userId,
+    int day,
+    int month,
+    int year,
+  ) async {
     final db = await database;
 
     return await db.rawQuery(
@@ -531,11 +520,10 @@ class AppDatabase {
   }
 
   Future<List<Map<String, dynamic>>> getWeeklyReport(
-      String userId,
-      int month,
-      int year,
-      ) async {
-
+    String userId,
+    int month,
+    int year,
+  ) async {
     final db = await database;
 
     return await db.rawQuery(
@@ -559,18 +547,15 @@ class AppDatabase {
     GROUP BY week
     ORDER BY week
   ''',
-      [
-        userId,
-        month.toString().padLeft(2, '0'),
-        year.toString(),
-      ],
+      [userId, month.toString().padLeft(2, '0'), year.toString()],
     );
   }
+
   Future<List<Map<String, dynamic>>> getMonthlyReport(
-      String userId,
-      int month,
-      int year,
-      ) async {
+    String userId,
+    int month,
+    int year,
+  ) async {
     final db = await database;
 
     return await db.rawQuery(
@@ -592,6 +577,7 @@ class AppDatabase {
       [userId, month.toString().padLeft(2, '0'), year.toString()],
     );
   }
+
   Future<List<Map<String, dynamic>>> getQuarterReport(String userId) async {
     final db = await database;
 

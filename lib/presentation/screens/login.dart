@@ -7,6 +7,7 @@ import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
 import 'package:flutter_application_jars/presentation/screens/home.dart';
 import 'package:flutter_application_jars/presentation/screens/forgot_password.dart';
+import 'package:flutter_application_jars/services/session_services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -137,6 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    await SessionService.saveUserId(user.id.toString());
+
+    final id = await SessionService.getUserId();
+    debugPrint("CURRENT USER ID: $id");
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Login success')));
