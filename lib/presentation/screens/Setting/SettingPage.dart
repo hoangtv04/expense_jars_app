@@ -210,6 +210,12 @@ class _SettingPageState extends State<SettingPage> {
         "isCustom": true,
       },
       {
+        "label": "Hạng mục      chi/tiêu",
+        "icon": Icons.eleven_mp,
+        "color": Colors.orange,
+        "isCustom": true,
+      },
+      {
         "label": "Xuất dữ liệu",
         "icon": Icons.upload_file,
         "color": Colors.blue,
@@ -239,7 +245,7 @@ class _SettingPageState extends State<SettingPage> {
                   builder: (context) => const SpendingLimitPage(),
                 ),
               );
-            } else if (item["label"] == "Hạng mục   chi/tiêu") {
+            } else if (item["label"] == "Hạng mục      chi/tiêu") {
               Navigator.push(
                 context,
                 MaterialPageRoute(
