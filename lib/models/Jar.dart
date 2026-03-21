@@ -16,6 +16,7 @@ class Jar {
   final String description;
   final int is_deleted;
   final DateTime created_at;
+  final int is_synced;
 
   Jar({
     this.id,
@@ -26,6 +27,7 @@ class Jar {
     this.description = '',
     this.is_deleted = 0,
     required this.created_at,
+    this.is_synced = 0,
   });
 
   factory Jar.fromMap(Map<String, dynamic> map) {
@@ -40,6 +42,7 @@ class Jar {
       balance: (map['balance'] as num).toDouble(),
       description: map['description'] ?? '',
       is_deleted: map['is_deleted'] ?? 0,
+      is_synced: map['is_synced'] ?? 0,
       created_at: map['created_at'] != null
           ? DateTime.parse(map['created_at'])
           : DateTime.now(),
@@ -55,6 +58,7 @@ class Jar {
       'balance': balance,
       'description': description,
       'is_deleted': is_deleted,
+      'is_synced': is_synced,
       'created_at': created_at.toIso8601String(), // DateTime → string
     };
   }
@@ -68,7 +72,9 @@ class Jar {
     double? balance,
     String? description,
     int? is_deleted,
+    int? isSynced,
     DateTime? created_at,
+
   }) {
     return Jar(
       id: id ?? this.id,
@@ -78,6 +84,7 @@ class Jar {
       balance: balance ?? this.balance,
       description: description ?? this.description,
       is_deleted: is_deleted ?? this.is_deleted,
+      is_synced: isSynced ?? this.is_synced,
       created_at: created_at ?? this.created_at,
     );
   }

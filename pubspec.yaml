@@ -43,6 +43,8 @@ dependencies:
   syncfusion_flutter_xlsio: ^32.2.9
   open_filex: ^4.4.0     # Để tự động mở file sau khi lưu (Excel, PDF,...)
   uuid: ^4.3.3
+  connectivity_plus: ^6.0.0
+  supabase_flutter: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
