@@ -135,8 +135,13 @@ class AppDatabase {
     id TEXT PRIMARY KEY, 
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    full_name TEXT,
+    phone TEXT,
+    birth TEXT,
+    gender TEXT,
+    is_synced INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
+);
   ''');
 
     // 2. Bảng jars
@@ -330,9 +335,29 @@ class AppDatabase {
   }
 
   Future<void> resetUsersTable() async {
-    final db = await database;
-    await db.delete('users');
-    await db.rawDelete("DELETE FROM sqlite_sequence WHERE name = 'users'");
+    final db = await instance.database;
+
+    // Sử dụng Transaction để xóa sạch mọi thứ liên quan, tránh rác dữ liệu
+    await db.transaction((txn) async {
+      print('🧹 Đang reset toàn bộ database để đón User mới...');
+
+      // Xóa theo thứ tự từ bảng con đến bảng cha
+      await txn.delete('jar_logs');
+      await txn.delete('saving_logs');
+      await txn.delete('transactions');
+      await txn.delete('spending_limits');
+      await txn.delete('jars');
+      await txn.delete('categories');
+      await txn.delete('savings');
+
+      // Cuối cùng mới xóa bảng users
+      await txn.delete('users');
+
+      // Nếu bạn dùng ID tự tăng cho các bảng transactions/jars thì reset ở đây
+      await txn.delete('sqlite_sequence');
+
+      print('✨ Database đã trống rỗng hoàn toàn.');
+    });
   }
 
   Future<List<Map<String, dynamic>>> getAllUsers() async {
@@ -596,4 +621,16 @@ class AppDatabase {
       whereArgs: [1, 1],
     );
   }
+
+  Future<void> insertFromServer(String table, Map<String, dynamic> data) async {
+    final db = await instance.database;
+    await db.insert(
+      table,
+      data,
+      // Nếu trùng ID (primary key), nó sẽ ghi đè dữ liệu mới nhất từ Server lên
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+
 }

@@ -1,19 +1,34 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_application_jars/models/user.dart';
+import 'package:flutter_application_jars/repositories/SyncService.dart';
 import 'package:flutter_application_jars/repositories/user_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+
+import '../repositories/NetworkService.dart';
+import '../services/session_services.dart';
 
 class UserController {
   final UserRepository _repository = UserRepository();
+  final _supabase = sb.Supabase.instance.client;
+  final SyncService _syncService = SyncService();
 
   String? _otpCache;
   String? _emailCache;
 
-  Future<User?> login(String email, String password) {
+  Future<User?> login(String email, String password) async {
     return _repository.login(email, password);
   }
 
   Future<User?> register(String email, String password) async {
+    // bool isOnline = await checkInternet(); // Hàm check internet của bạn
+    //
+    // if (!isOnline) {
+    //   // Thông báo cho người dùng
+    //   showSnackBar("Cần kết nối mạng để tạo tài khoản mới!");
+    //   return;
+    // }
+
     final User? user = await _repository.register(email, password);
 
     if (user != null) {
@@ -81,4 +96,47 @@ class UserController {
 
     return success;
   }
+
+  Future<void> signIn(String email, String password) async {
+    try {
+      // 1. Gọi login từ Repository (Nó đã tự check Online/Offline cho bạn rồi)
+      final User? user = await _repository.login(email, password);
+
+      if (user != null) {
+        final String? oldUserId = await SessionService.getUserId();
+
+        // 2. Check đổi tài khoản
+        if (oldUserId != null && oldUserId != user.id) {
+          print("⚠️ Đổi tài khoản, đang xóa dữ liệu cũ...");
+          await _syncService.clearAllData();
+        }
+
+        // 3. Lưu Session (Cả ID và Email)
+        await SessionService.saveSession(user.id, user.email);
+
+        // 4. Đồng bộ (Chỉ chạy khi có mạng)
+        bool isOnline = await NetworkService.isOnline();
+        if (isOnline) {
+          print("🔄 Đang đồng bộ dữ liệu đám mây...");
+          await _syncService.syncAll();
+          await _syncService.downloadAllDataFromServer(user.id);
+        }
+
+        print("✅ Đăng nhập thành công!");
+      } else {
+        print("❌ Đăng nhập thất bại: Sai email hoặc mật khẩu");
+      }
+    } catch (e) {
+      print("❌ Lỗi hệ thống khi đăng nhập: $e");
+    }
+  }
+  Future<User?> registerV2(String email, String password) async {
+    // Đăng ký bắt buộc phải có mạng
+    final User? user = await _repository.register(email, password);
+    if (user != null) {
+      await SessionService.saveSession(user.id, user.email);
+    }
+    return user;
+  }
+
 }

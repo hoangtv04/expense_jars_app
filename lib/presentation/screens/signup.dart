@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter_application_jars/controllers/user_controller.dart';
 import 'package:flutter_application_jars/presentation/screens/login.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
 import 'package:flutter_application_jars/presentation/validators/auth_validators.dart';
+import 'package:flutter_application_jars/services/session_services.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -55,7 +56,7 @@ class _SignupState extends State<Signup> {
                       icon: Icons.lock,
                       obscure: !isVisible,
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter password' : null,
+                      v == null || v.isEmpty ? 'Enter password' : null,
                       suffix: IconButton(
                         icon: Icon(
                           isVisible ? Icons.visibility : Icons.visibility_off,
@@ -72,47 +73,13 @@ class _SignupState extends State<Signup> {
                       icon: Icons.lock_outline,
                       obscure: true,
                       validator: (v) =>
-                          v != password.text ? 'Password not match' : null,
+                      v != password.text ? 'Password not match' : null,
                     ),
 
                     const SizedBox(height: 10),
 
                     AuthButton(text: 'SIGN UP', onPressed: _handleSignup),
 
-                    // if (kDebugMode)
-                    //   TextButton(
-                    //     onPressed: () async {
-                    //       await _userController.resetUsers();
-
-                    //       if (!mounted) return;
-
-                    //       ScaffoldMessenger.of(context).showSnackBar(
-                    //         const SnackBar(
-                    //           content: Text(
-                    //             'All users deleted (ID reset to 1)',
-                    //           ),
-                    //         ),
-                    //       );
-                    //     },
-                    //     child: const Text(
-                    //       'RESET DATA (TESTDATA)',
-                    //       style: TextStyle(
-                    //         color: Colors.red,
-                    //         fontWeight: FontWeight.bold,
-                    //       ),
-                    //     ),
-                    //   ),
-
-                    // if (kDebugMode)
-                    //   TextButton(
-                    //     onPressed: () async {
-                    //       await _userController.printAllUsers();
-                    //     },
-                    //     child: const Text(
-                    //       'PRINT ALL USERS (TESTDATA)',
-                    //       style: TextStyle(color: Colors.blue),
-                    //     ),
-                    //   ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -123,7 +90,7 @@ class _SignupState extends State<Signup> {
                               context,
                               PageRouteBuilder(
                                 pageBuilder: (_, __, ___) =>
-                                    const LoginScreen(),
+                                const LoginScreen(),
                                 transitionDuration: Duration.zero,
                                 reverseTransitionDuration: Duration.zero,
                               ),
@@ -143,39 +110,68 @@ class _SignupState extends State<Signup> {
     );
   }
 
+  // --- LOGIC ĐĂNG KÝ CẬP NHẬT ---
   Future<void> _handleSignup() async {
-    // reset lỗi cũ
     setState(() {
       emailErrorText = null;
     });
 
     if (!formkey.currentState!.validate()) return;
 
-    final user = await _userController.register(
-      email.text.trim(),
-      password.text.trim(),
+    // 1. Hiện Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    if (!mounted) return;
+    try {
+      // 2. Kiểm tra nếu máy đang có Session của ai đó thì dọn dẹp trước khi tạo mới
+      final String? oldUserId = await SessionService.getUserId();
+      if (oldUserId != null) {
+        // Gọi hàm clearAllData từ UserController thông qua SyncService
+        // Đảm bảo máy sạch sẽ cho User mới
+        await _userController.resetUsers();
+      }
 
-    if (user == null) {
+      // 3. Gọi hàm register (Hàm này đã được nâng cấp để dùng Supabase ID)
+      final user = await _userController.registerV2(
+        email.text.trim(),
+        password.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Tắt Loading
+
+      if (user == null) {
+        setState(() {
+          emailErrorText = 'Email already exists or connection error';
+        });
+        return;
+      }
+
+      // 4. Thông báo và chuyển hướng
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Register success! Please login.')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const LoginScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Tắt Loading
+
       setState(() {
-        emailErrorText = 'Email already exists';
+        emailErrorText = e.toString().contains('already registered')
+            ? 'This email is already taken'
+            : 'Registration failed. Try again.';
       });
-      return;
     }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Register success')));
-
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const LoginScreen(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
   }
 }
