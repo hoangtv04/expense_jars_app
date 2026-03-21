@@ -139,13 +139,16 @@ class TransactionController {
     return _repo.getMonthlyReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
-    return _repo.getQuarterReport(userId);
+  Future<List<Map<String, dynamic>>> getQuarterReport(String userId, int month, int year) {
+    return _repo.getQuarterReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(String userId) {
-    return _repo.getYearlyReport(userId);
-  }
+Future<List<Map<String, dynamic>>> getYearlyReport(
+  String userId,
+  int year,
+) {
+  return _repo.getYearlyReport(userId, year);
+}
 
   Future<double> getTransactionsTotalIncome(String jarId) async {
 

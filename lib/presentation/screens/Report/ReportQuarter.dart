@@ -2,68 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/TransactionController.dart';
 
-class ReportDaily extends StatefulWidget {
-  const ReportDaily({super.key});
+class ReportQuarter extends StatefulWidget {
+  const ReportQuarter({super.key});
 
   @override
-  State<ReportDaily> createState() => _ReportDailyState();
+  State<ReportQuarter> createState() => _ReportQuarterState();
 }
 
-class _ReportDailyState extends State<ReportDaily> {
+class _ReportQuarterState extends State<ReportQuarter> {
   final TransactionController controller = TransactionController();
 
-  List<Map<String, dynamic>> dailyData = [];
-
+  List<Map<String, dynamic>> quarterData = [];
   DateTime currentDate = DateTime.now();
+
+  int get currentQuarter => ((currentDate.month - 1) ~/ 3) + 1;
 
   @override
   void initState() {
     super.initState();
-    loadDaily();
+    loadQuarter();
   }
 
-  Future<void> loadDaily() async {
-    final data = await controller.getDailyReport(
+  Future<void> loadQuarter() async {
+    final data = await controller.getQuarterReport(
       "aaa",
-      currentDate.day,
       currentDate.month,
       currentDate.year,
     );
 
     setState(() {
-      dailyData = data;
+      quarterData = data;
     });
   }
 
-  Widget buildDateSelector() {
+  // 🔁 chuyển quý
+  void changeQuarter(int delta) {
+    setState(() {
+      currentDate = DateTime(currentDate.year, currentDate.month + (delta * 3));
+    });
+
+    loadQuarter();
+  }
+
+  Widget buildQuarterSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () {
-            setState(() {
-              currentDate = currentDate.subtract(const Duration(days: 1));
-            });
-
-            loadDaily();
-          },
+          onPressed: () => changeQuarter(-1),
         ),
-
         Text(
-          "${currentDate.day}/${currentDate.month}/${currentDate.year}",
+          "Q$currentQuarter/${currentDate.year}",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios),
-          onPressed: () {
-            setState(() {
-              currentDate = currentDate.add(const Duration(days: 1));
-            });
-
-            loadDaily();
-          },
+          onPressed: () => changeQuarter(1),
         ),
       ],
     );
@@ -74,27 +69,22 @@ class _ReportDailyState extends State<ReportDaily> {
     return Column(
       children: [
         const SizedBox(height: 10),
-
-        buildDateSelector(),
-
+        buildQuarterSelector(),
         const SizedBox(height: 10),
-
-        if (dailyData.isNotEmpty) buildDailyChart(),
-
+        if (quarterData.isNotEmpty) buildQuarterChart(),
         Expanded(
-          child: dailyData.isEmpty
-              ? const Center(child: Text("Chưa có giao dịch trong ngày này"))
+          child: quarterData.isEmpty
+              ? const Center(child: Text("Không có dữ liệu trong Quý này"))
               : ListView.builder(
-                  itemCount: dailyData.length,
+                  itemCount: quarterData.length,
                   itemBuilder: (context, index) {
-                    final item = dailyData[index];
-
+                    final item = quarterData[index];
                     return Card(
                       margin: const EdgeInsets.all(10),
                       child: ListTile(
-                        title: Text("Ngày: ${item['period']}"),
+                        title: Text(item['period']),
                         subtitle: Text(
-                          "Thu: ${item['total_income']} | Chi: ${item['total_expense']}",
+                          "Thu: ${item['total_income'] ?? 0} | Chi: ${item['total_expense'] ?? 0}",
                         ),
                       ),
                     );
@@ -105,25 +95,25 @@ class _ReportDailyState extends State<ReportDaily> {
     );
   }
 
-  Widget buildDailyChart() {
-    double income = 0;
-    double expense = 0;
+  Widget buildQuarterChart() {
+    final item = quarterData.isNotEmpty ? quarterData.first : null;
 
-    if (dailyData.isNotEmpty) {
-      income = (dailyData[0]['total_income'] as num).toDouble();
-      expense = (dailyData[0]['total_expense'] as num).toDouble();
-    }
+    double income = (item?['total_income'] ?? 0).toDouble();
+    double expense = (item?['total_expense'] ?? 0).toDouble();
+
+    double maxY = (income > expense ? income : expense) * 1.2; // scale chart
 
     return SizedBox(
       height: 250,
       child: BarChart(
         BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-
+          maxY: maxY,
+          alignment: BarChartAlignment.center,
           titlesData: const FlTitlesData(
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
-
           barGroups: [
             BarChartGroupData(
               x: 0,
@@ -131,14 +121,13 @@ class _ReportDailyState extends State<ReportDaily> {
               barRods: [
                 BarChartRodData(
                   toY: income,
-                  width: 14,
+                  width: 20,
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(2),
                 ),
-
                 BarChartRodData(
                   toY: expense,
-                  width: 14,
+                  width: 20,
                   color: Colors.red,
                   borderRadius: BorderRadius.circular(2),
                 ),

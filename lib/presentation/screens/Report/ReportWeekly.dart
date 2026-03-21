@@ -99,7 +99,7 @@ class _ReportWeeklyState extends State<ReportWeekly> {
 
         Expanded(
           child: weeklyData.isEmpty
-              ? const Center(child: Text("Chưa có giao dịch"))
+              ? const Center(child: Text("Chưa có giao dịch trong tuần này"))
               : ListView.builder(
                   itemCount: weeklyData.length,
                   itemBuilder: (context, index) {
