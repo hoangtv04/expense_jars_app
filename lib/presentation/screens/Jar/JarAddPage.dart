@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/JarController.dart';
 import '../../../models/Jar.dart';
 import '../../../models/Reponse/AddJarRespone.dart';
+import '../../../services/session_services.dart';
 
 class JarAddPage extends StatefulWidget {
   const JarAddPage({super.key});
@@ -25,8 +26,16 @@ class _AddMemberPageState extends State<JarAddPage> {
 
   void _save() async {
     try {
+      String? userId = await SessionService.getUserId();
+
+      if (userId == null) {
+
+        return;
+      }
+
+
       AddJarRespone addJarRespone = AddJarRespone(
-        user_id: "rdfghdfg",
+        user_id: userId,
         name: _selectedName!.name,
         nameJar: _nameJar.text,
         balance: double.parse(_money.text),

@@ -21,6 +21,8 @@ class JarRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+
+
   }
 
 

@@ -90,6 +90,7 @@ class SyncService {
   Future<void> syncAll() async {
     print('🔄 Bắt đầu tiến trình đồng bộ toàn cục...');
 
+    await _syncTable('users');
 
 
     // 2. Danh mục & Hũ (Level 1 - Cần users)

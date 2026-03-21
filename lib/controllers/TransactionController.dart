@@ -28,49 +28,76 @@ class TransactionController {
     if(jar == null) {
       throw Exception("Hũ không tồn tại");
     }
+
     if(transaction.type == CategoryType.expense) {
       await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
     } else if(transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
     }
-    await _repo.deleteTransaction(transaction);
+    await _repo.deleteTransactions(transaction);
     AppState.jarChanged.value++;
 
   }
   Future<void> update(Transaction updated) async {
+    // 1. Lấy dữ liệu cũ từ DB (bắt buộc để biết trạng thái trước đó)
     final old = await _repo.getById(updated.id!);
-    if (old == null) throw Exception("Transaction không tồn tại");
+    if (old == null) throw Exception("Giao dịch không tồn tại");
 
-    final jar = await _jarRepo.getJarById(old.jarId);
-    if (jar == null) throw Exception("Jar không tồn tại");
+    // 2. Lấy thông tin hũ cũ
+    final oldJar = await _jarRepo.getJarById(old.jarId);
+    if (oldJar == null) throw Exception("Hũ cũ không tồn tại");
 
-    double balance = jar.balance;
-
-    ///  1. Rollback transaction cũ
+    // --- BƯỚC A: ROLLBACK HŨ CŨ ---
+    // Trả hũ cũ về trạng thái NHƯ CHƯA CÓ giao dịch này
+    double rolledBackBalance = oldJar.balance;
     if (old.type == CategoryType.income) {
-      balance -= old.amount;
+      print('thu');
+      rolledBackBalance -= old.amount; // Nếu cũ là Thu, giờ trừ đi để trả lại
     } else {
-      balance += old.amount;
+      print('chi');
+      rolledBackBalance += old.amount; // Nếu cũ là Chi, giờ cộng lại để trả lại
     }
 
-    ///  2. Validate nếu là expense
-    if (updated.type == CategoryType.expense &&
-        updated.amount > balance) {
-      throw Exception("Số dư không đủ");
-    }
+    // --- BƯỚC B: XỬ LÝ HŨ MỚI ---
+    if (old.jarId == updated.jarId) {
+      // Trường hợp 1: Vẫn là hũ đó
+      double finalBalance = rolledBackBalance;
 
-    /// 3. Apply transaction mới
-    if (updated.type == CategoryType.income) {
-      balance += updated.amount;
+      // Áp dụng logic mới dựa trên thông tin cập nhật
+      if (updated.type == CategoryType.income) {
+        finalBalance += updated.amount;
+      } else {
+        // Kiểm tra số dư trước khi chi
+        if (updated.amount > finalBalance) throw Exception("Số dư hũ không đủ");
+        finalBalance -= updated.amount;
+      }
+
+      // Cập nhật lại số dư cuối cùng cho hũ duy nhất
+      await _jarRepo.updateJar(oldJar.id!, finalBalance);
+
     } else {
-      balance -= updated.amount;
+      // Trường hợp 2: Đã đổi sang hũ khác
+      final newJar = await _jarRepo.getJarById(updated.jarId);
+      if (newJar == null) throw Exception("Hũ mới không tồn tại");
+
+      double newJarBalance = newJar.balance;
+
+      // 1. Cập nhật hũ cũ (chỉ đơn giản là trả lại tiền)
+      await _jarRepo.updateJar(oldJar.id!, rolledBackBalance);
+
+      // 2. Cập nhật hũ mới (áp dụng giao dịch mới)
+      if (updated.type == CategoryType.income) {
+        newJarBalance += updated.amount;
+      } else {
+        if (updated.amount > newJarBalance) throw Exception("Số dư hũ mới không đủ");
+        newJarBalance -= updated.amount;
+      }
+      await _jarRepo.updateJar(newJar.id!, newJarBalance);
     }
 
-    ///  4. Update jar
-    await _jarRepo.updateJar(jar.id!, balance);
-
-    ///  5. Update transaction
+    // 4. Lưu giao dịch đã sửa vào DB
     await _repo.updateTransaction(updated);
+    AppState.jarChanged.value++;
   }
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {

@@ -21,93 +21,93 @@ class AppDatabase {
 
     // 1. TẠO USER ID CHUẨN UUID (Thay vì "aaa")
     final String userId = uuid.v4();
-
-    // Chèn một bản ghi user
-    await db.insert('users', {
-      'id': userId,
-      'email': 'duc.cuong@gmail.com',
-      'password': 'password123',
-    });
-
-    // 2. ===== JAR =====
-    final String jarId = uuid.v4();
-    await db.insert('jars', {
-      'id': jarId,
-      'user_id': userId,
-      'name': 'cash',
-      'nameJar': 'Ví tiền mặt',
-      'balance': 1000000.0,
-      'description': 'Ví chính',
-      'is_synced': 0, // Nhớ để 0 để nó bắt đầu sync lên Supabase
-      'is_deleted': 0,
-      'created_at': DateTime.now().toIso8601String(),
-    });
-
-    // 3. ===== CATEGORIES =====
-    // --- Nhóm Ăn uống ---
-    final String foodCategoryId = uuid.v4();
-    await db.insert('categories', {
-      'id': foodCategoryId,
-      'icon_id': 2,
-      'user_id': userId,
-      'name': 'Ăn uống',
-      'type': 'expense',
-      'is_synced': 0,
-    });
-
-    final List<Map<String, dynamic>> foodSubs = [
-      {'name': 'Ăn vặt', 'icon': 3},
-      {'name': 'Ăn tối', 'icon': 18},
-      {'name': 'Ăn trưa', 'icon': 41},
-    ];
-
-    for (var sub in foodSubs) {
-      await db.insert('categories', {
-        'id': uuid.v4(),
-        'icon_id': sub['icon'],
-        'user_id': userId,
-        'parent_id': foodCategoryId,
-        'name': sub['name'],
-        'type': 'expense',
-        'is_synced': 0,
-      });
-    }
-
-    // --- Nhóm Thu nhập ---
-    final String salaryCategoryId = uuid.v4();
-    await db.insert('categories', {
-      'id': salaryCategoryId,
-      'icon_id': 33,
-      'user_id': userId,
-      'name': 'Lương',
-      'type': 'income',
-      'is_synced': 0,
-    });
-
-    // 4. ===== TRANSACTIONS =====
-    final String transId = uuid.v4();
-    await db.insert('transactions', {
-      'id': transId,
-      'user_id': userId,
-      'jar_id': jarId,
-      'category_id': salaryCategoryId,
-      'amount': 12000000.0,
-      'note': 'Lương tháng 3',
-      'date': '2026-03-21',
-      'status': 'completed',
-      'is_synced': 0,
-      'created_at': DateTime.now().toIso8601String(),
-    });
-
-    // 5. ===== JAR LOG =====
-    await db.insert('jar_logs', {
-      'id': uuid.v4(),
-      'jar_id': jarId,
-      'transaction_id': transId,
-      'change_amount': 12000000.0,
-      'is_synced': 0,
-      'created_at': DateTime.now().toIso8601String(),
-    });
+    //
+    // // Chèn một bản ghi user
+    // await db.insert('users', {
+    //   'id': userId,
+    //   'email': 'duc.cuong@gmail.com',
+    //   'password': 'password123',
+    // });
+    //
+    // // 2. ===== JAR =====
+    // final String jarId = uuid.v4();
+    // await db.insert('jars', {
+    //   'id': jarId,
+    //   'user_id': userId,
+    //   'name': 'cash',
+    //   'nameJar': 'Ví tiền mặt',
+    //   'balance': 1000000.0,
+    //   'description': 'Ví chính',
+    //   'is_synced': 0, // Nhớ để 0 để nó bắt đầu sync lên Supabase
+    //   'is_deleted': 0,
+    //   'created_at': DateTime.now().toIso8601String(),
+    // });
+    //
+    // // 3. ===== CATEGORIES =====
+    // // --- Nhóm Ăn uống ---
+    // final String foodCategoryId = uuid.v4();
+    // await db.insert('categories', {
+    //   'id': foodCategoryId,
+    //   'icon_id': 2,
+    //   'user_id': userId,
+    //   'name': 'Ăn uống',
+    //   'type': 'expense',
+    //   'is_synced': 0,
+    // });
+    //
+    // final List<Map<String, dynamic>> foodSubs = [
+    //   {'name': 'Ăn vặt', 'icon': 3},
+    //   {'name': 'Ăn tối', 'icon': 18},
+    //   {'name': 'Ăn trưa', 'icon': 41},
+    // ];
+    //
+    // for (var sub in foodSubs) {
+    //   await db.insert('categories', {
+    //     'id': uuid.v4(),
+    //     'icon_id': sub['icon'],
+    //     'user_id': userId,
+    //     'parent_id': foodCategoryId,
+    //     'name': sub['name'],
+    //     'type': 'expense',
+    //     'is_synced': 0,
+    //   });
+    // }
+    //
+    // // --- Nhóm Thu nhập ---
+    // final String salaryCategoryId = uuid.v4();
+    // await db.insert('categories', {
+    //   'id': salaryCategoryId,
+    //   'icon_id': 33,
+    //   'user_id': userId,
+    //   'name': 'Lương',
+    //   'type': 'income',
+    //   'is_synced': 0,
+    // });
+    //
+    // // 4. ===== TRANSACTIONS =====
+    // final String transId = uuid.v4();
+    // await db.insert('transactions', {
+    //   'id': transId,
+    //   'user_id': userId,
+    //   'jar_id': jarId,
+    //   'category_id': salaryCategoryId,
+    //   'amount': 12000000.0,
+    //   'note': 'Lương tháng 3',
+    //   'date': '2026-03-21',
+    //   'status': 'completed',
+    //   'is_synced': 0,
+    //   'created_at': DateTime.now().toIso8601String(),
+    // });
+    //
+    // // 5. ===== JAR LOG =====
+    // await db.insert('jar_logs', {
+    //   'id': uuid.v4(),
+    //   'jar_id': jarId,
+    //   'transaction_id': transId,
+    //   'change_amount': 12000000.0,
+    //   'is_synced': 0,
+    //   'created_at': DateTime.now().toIso8601String(),
+    // });
 
     print('✅ Đã khởi tạo dữ liệu mẫu với UUID chuẩn: $userId');
   }
@@ -182,23 +182,35 @@ class AppDatabase {
     // 4. Bảng transactions
     await db.execute('''
   CREATE TABLE transactions (
-    id TEXT PRIMARY KEY, 
-    user_id TEXT NOT NULL,
-    jar_id TEXT NOT NULL,
-    category_id TEXT NOT NULL,
-    amount REAL NOT NULL,
-    note TEXT,
-    date TEXT NOT NULL,
-    
-    status TEXT DEFAULT 'completed'
-      CHECK (status IN ('completed', 'pending', 'canceled')),
-      is_synced INTEGER DEFAULT 0,
-    is_deleted INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (jar_id) REFERENCES jars(id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-  );
+  -- Các khóa chính và khóa ngoại (Dạng UUID/TEXT)
+  id TEXT PRIMARY KEY, 
+  user_id TEXT NOT NULL,
+  jar_id TEXT NOT NULL,
+  category_id TEXT NOT NULL,
+  
+  type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+  -- Thông tin giao dịch
+  amount REAL NOT NULL,
+  note TEXT,
+  date TEXT NOT NULL,            -- Ngày thực hiện giao dịch
+  status TEXT DEFAULT 'completed' 
+    CHECK (status IN ('completed', 'pending', 'canceled')),
+  
+  -- Trạng thái hệ thống
+  is_deleted INTEGER DEFAULT 0,  -- 0: False, 1: True
+  is_synced INTEGER DEFAULT 0,   -- 0: Chưa sync, 1: Đã sync
+  created_at TEXT DEFAULT (datetime('now', 'localtime')),
+  
+  -- Tính năng định kỳ (Recurring)
+  is_recurring INTEGER DEFAULT 0, -- 0: False, 1: True
+  recurring_type TEXT,            -- daily, weekly, monthly
+  next_run_date TEXT,             -- Ngày chạy tiếp theo
+  
+  -- Ràng buộc dữ liệu (Foreign Keys)
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (jar_id) REFERENCES jars(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
   ''');
 
     // 5. Bảng jar_logs
@@ -206,6 +218,7 @@ class AppDatabase {
   CREATE TABLE jar_logs (
     id TEXT PRIMARY KEY, 
     jar_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
     transaction_id TEXT,
     change_amount REAL NOT NULL,
     is_synced INTEGER DEFAULT 0,

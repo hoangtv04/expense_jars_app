@@ -14,10 +14,10 @@ class TransactionRepository {
   }
 
 
-  Future<int> deleteTransaction(Transaction transaction) async{
-    final db = await AppDatabase.instance.database;
-    return await db.insert("transactions", transaction.toMap());
-  }
+  // Future<int> deleteTransaction(Transaction transaction) async{
+  //   final db = await AppDatabase.instance.database;
+  //   return await db.insert("transactions", transaction.toMap());
+  // }
 
   Future<List<Transaction>> getAllTransactionByJarId(String jar_id) async {
     final db = await AppDatabase.instance.database;

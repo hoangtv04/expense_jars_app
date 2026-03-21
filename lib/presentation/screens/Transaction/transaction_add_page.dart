@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../../../controllers/TransactionController.dart';
 import '../../../controllers/CategoryController.dart';
 import '../../../controllers/JarController.dart';
 import '../../../models/Transaction.dart';
 import '../../../models/Category.dart';
+import '../../../services/session_services.dart';
 import '../Category/CategoryListPage.dart';
 import '../../../models/Jar.dart';
 
@@ -19,7 +21,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   final _controllerJar = JarController();
   final _controllerCategory = CategoryController();
   final _formKey = GlobalKey<FormState>();
-
+  final _uuid = const Uuid();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
 
@@ -315,8 +317,18 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       return;
                     }
 
+                    String? userId = await SessionService.getUserId();
+
+                    if (userId == null) {
+
+                      return;
+                    }
+
+
+
                     final transaction = Transaction(
-                      userId: "aaa", // 🔥 ĐÃ ĐỔI SANG "aaa"
+                      id:  _uuid.v4(),
+                      userId: userId, // 🔥 ĐÃ ĐỔI SANG "aaa"
                       jarId: _selectedJar!, // String UUID
                       categoryId: _selectedCategory!, // String UUID
                       amount: amount,

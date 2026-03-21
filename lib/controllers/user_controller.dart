@@ -97,37 +97,47 @@ class UserController {
     return success;
   }
 
-  Future<void> signIn(String email, String password) async {
+  Future<bool> signIn(String email, String password) async {
     try {
-      // 1. Gọi login từ Repository (Nó đã tự check Online/Offline cho bạn rồi)
+      // 1. Gọi login từ Repository (Nó đã tự check Online/Offline)
       final User? user = await _repository.login(email, password);
 
       if (user != null) {
         final String? oldUserId = await SessionService.getUserId();
 
-        // 2. Check đổi tài khoản
+        // 2. Check đổi tài khoản (Dùng UUID String để so sánh)
         if (oldUserId != null && oldUserId != user.id) {
-          print("⚠️ Đổi tài khoản, đang xóa dữ liệu cũ...");
+          debugPrint("⚠️ Đổi tài khoản, đang xóa dữ liệu cũ...");
           await _syncService.clearAllData();
         }
 
-        // 3. Lưu Session (Cả ID và Email)
+        // 3. Lưu Session (Cực kỳ quan trọng để các màn sau lấy được user_id)
         await SessionService.saveSession(user.id, user.email);
 
         // 4. Đồng bộ (Chỉ chạy khi có mạng)
         bool isOnline = await NetworkService.isOnline();
         if (isOnline) {
-          print("🔄 Đang đồng bộ dữ liệu đám mây...");
-          await _syncService.syncAll();
-          await _syncService.downloadAllDataFromServer(user.id);
+          debugPrint("🔄 Đang đồng bộ dữ liệu đám mây...");
+          try {
+            // Đẩy dữ liệu local lên trước
+            await _syncService.syncAll();
+            // Tải dữ liệu từ server về sau
+            await _syncService.downloadAllDataFromServer(user.id);
+          } catch (syncError) {
+            // Nếu lỗi sync thì vẫn cho vào App, nhưng báo log để debug
+            debugPrint("⚠️ Lỗi đồng bộ nhưng vẫn cho đăng nhập: $syncError");
+          }
         }
 
-        print("✅ Đăng nhập thành công!");
+        debugPrint("✅ Đăng nhập thành công!");
+        return true; // Trả về true để mở cổng MainPage
       } else {
-        print("❌ Đăng nhập thất bại: Sai email hoặc mật khẩu");
+        debugPrint("❌ Đăng nhập thất bại: Sai email hoặc mật khẩu");
+        return false; // Trả về false để hiện thông báo lỗi ở UI
       }
     } catch (e) {
-      print("❌ Lỗi hệ thống khi đăng nhập: $e");
+      debugPrint("❌ Lỗi hệ thống khi đăng nhập: $e");
+      return false; // Trả về false khi gặp lỗi crash/mạng
     }
   }
   Future<User?> registerV2(String email, String password) async {

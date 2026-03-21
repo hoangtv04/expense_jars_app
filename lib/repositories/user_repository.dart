@@ -13,61 +13,86 @@ class UserRepository {
 
   Future<User?> login(String email, String password) async {
     try {
-      // 1. Thử đăng nhập Online trước
       final authRes = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
+      // ✅ Login online thành công
       if (authRes.user != null) {
         final user = User(
           id: authRes.user!.id,
           email: email,
           password: password,
-          isSynced: 1, // Online về thì mặc định là 1
+          isSynced: 1,
         );
-        // Lưu lại vào SQLite để lần sau login offline
+
         await _syncService.insertUser(user.toMap());
         return user;
       }
+
+    } on sb.AuthException catch (e) {
+      // ❌ Sai tài khoản hoặc password → KHÔNG fallback
+      print("❌ Sai email hoặc mật khẩu: ${e.message}");
+      return null;
+
     } catch (e) {
-      print("🌐 Đang thử đăng nhập Offline do lỗi: $e");
-      // 2. Nếu lỗi mạng hoặc lỗi server, kiểm tra SQLite
+      // 🌐 Lỗi mạng / server → mới fallback offline
+      print("🌐 Lỗi mạng, thử login offline: $e");
+
       final data = await getUserByEmail(email);
+
       if (data != null && data['password'] == password) {
         return User.fromMap(data);
+      } else {
+        print("❌ Offline cũng sai luôn");
+        return null;
       }
     }
+
     return null;
   }
 
   Future<User?> register(String email, String password) async {
     try {
-      // 1. Đăng ký trên Cloud trước để lấy ID "chính chủ"
+      // 1. Đăng ký trên Auth của Supabase
       final authRes = await _supabase.auth.signUp(
         email: email,
         password: password,
       );
-
+      if (authRes.user == null) {
+        print("Step 1.1: Auth thành công nhưng User null (Check Confirm Email Provider!)");
+        return null;
+      }
       final sb.User? sbUser = authRes.user;
 
       if (sbUser != null) {
-        // 2. Tạo Model User với ID từ Supabase và isSynced = 1
+        // 🔥 BƯỚC QUAN TRỌNG: Chèn vào bảng public.users trên Supabase
+        // Nếu không có bước này, các bảng jars/transactions sau này sẽ báo lỗi Foreign Key
+        await _supabase.from('users').insert({
+          'id': sbUser.id,
+          'email': email,
+          'password': password, // Lưu ý: thực tế nên mã hóa hoặc bỏ qua cột này ở public
+        });
+
+        // 2. Tạo Model User cho SQLite
         final newUser = User(
-          id: sbUser.id, // Dùng ID của Supabase trả về
+          id: sbUser.id,
           email: email,
           password: password,
-          isSynced: 1, // Đã khớp với Server
+          isSynced: 1,
         );
 
-        // 3. Lưu vào SQLite (thay cho registerRaw cũ)
+        // 3. Lưu vào SQLite local
         await _syncService.insertUser(newUser.toMap());
 
         return newUser;
       }
     } on sb.AuthException catch (e) {
-      // Supabase sẽ tự check email tồn tại và báo lỗi ở đây
-      print("❌ Lỗi từ Supabase: ${e.message}");
+      print("❌ Lỗi Auth: ${e.message}");
+      rethrow;
+    } catch (e) {
+      print("❌ Lỗi Database: $e");
       rethrow;
     }
     return null;

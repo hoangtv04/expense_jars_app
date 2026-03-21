@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (!formkey.currentState!.validate()) return;
 
-    // Hiển thị loading để người dùng biết app đang xử lý (nhất là khi sync)
+    // 1. Hiện Loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -133,43 +133,37 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     try {
-      // Sử dụng hàm signIn trong UserController (hàm đã bao gồm sync và check mạng)
-      await _userController.signIn(
+      // 2. Gọi signIn và NHẬN KẾT QUẢ trả về (Cần sửa hàm này ở UserController)
+      bool isSuccess = await _userController.signIn(
         email.text.trim(),
         password.text.trim(),
       );
 
-      // Tắt loading
       if (!mounted) return;
-      Navigator.pop(context);
+      Navigator.pop(context); // Tắt loading
 
-      // Kiểm tra xem session đã được lưu chưa (để xác nhận đăng nhập thành công)
-      final currentId = await SessionService.getUserId();
+      if (isSuccess) {
+        // 3. Lấy ID để debug xem UUID có chuẩn không
+        final currentId = await SessionService.getUserId();
+        debugPrint("✅ LOGIN SUCCESS WITH UUID: $currentId");
 
-      if (currentId != null) {
-        debugPrint("✅ CURRENT USER ID: $currentId");
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login success!')),
-        );
-
-        // Chuyển hướng vào MainPage
+        // 4. Mở cổng vào MainPage
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const MainPage()),
               (route) => false,
         );
       } else {
-        // Trường hợp không tìm thấy user (sai pass hoặc chưa từng login offline)
+        // Sai pass hoặc lỗi gì đó mà logic trả về false
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wrong email or password')),
+          const SnackBar(content: Text('Sai Email hoặc Mật khẩu!')),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Tắt loading
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Lỗi hệ thống: $e')),
       );
     }
   }

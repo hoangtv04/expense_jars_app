@@ -98,6 +98,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     await _controller.addCategory(
       name: newName,
       type: widget.categoryType,
+
       parentId: _selectedParentCategory?.id,
       iconId: _selectedIconId,
     );

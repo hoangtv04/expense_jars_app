@@ -3,6 +3,7 @@ import 'package:flutter_application_jars/repositories/SyncService.dart';
 import 'package:intl/intl.dart'; // Nhớ thêm intl: ^0.19.0 vào pubspec.yaml
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
 import 'package:flutter_application_jars/presentation/screens/Report/Report.dart';
+import '../Transaction/periodic_transaction_add_page.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
 
@@ -220,6 +221,11 @@ class _SettingPageState extends State<SettingPage> {
         "icon": Icons.upload_file,
         "color": Colors.blue,
       },
+      {
+        "label": "Thu/Chi Định kỳ",
+        "icon": Icons.upload_file,
+        "color": Colors.blue,
+      },
       {"label": "Tiết kiệm", "icon": Icons.savings, "color": Colors.pink},
     ];
 
@@ -259,6 +265,15 @@ class _SettingPageState extends State<SettingPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ReportScreen(userId: ''),
+                ),
+              );
+            }
+
+            if (item["label"] == "Thu/Chi Định kỳ") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PeriodicTransactionAddPage(),
                 ),
               );
             }
