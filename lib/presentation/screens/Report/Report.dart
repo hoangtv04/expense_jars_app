@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../controllers/TransactionController.dart';
 import 'ReportDaily.dart';
 import 'ReportWeekly.dart';
+import 'ReportYearly.dart';
+import 'ReportQuarter.dart';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  String userId;
+  const ReportScreen({super.key} , required this.userId);
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -100,30 +103,37 @@ class _ReportScreenState extends State<ReportScreen>
   // ---------------- MONTH TAB ----------------
 
   Widget buildMonthlyTab() {
-    return Column(
-      children: [
-        const SizedBox(height: 10),
+  return Column(
+    children: [
+      const SizedBox(height: 10),
 
-        buildMonthSelector(),
+      // Selector tháng
+      buildMonthSelector(),
 
-        const SizedBox(height: 10),
+      const SizedBox(height: 10),
 
-        // Nếu có dữ liệu thì show chart
-        if (monthlyData.isNotEmpty) buildMonthlyChart(),
+      // Biểu đồ
+      if (monthlyData.isNotEmpty) buildMonthlyChart(),
 
-        // Nếu không có dữ liệu
-        if (monthlyData.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Text("Không có dữ liệu tháng này"),
+      // Nếu không có dữ liệu → nằm giữa màn hình
+      if (monthlyData.isEmpty)
+        Expanded(
+          child: Center(
+            child: Text(
+              "Chưa có giao dịch nào trong tháng này.",
+              style: const TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
           ),
+        ),
 
+      // Danh sách giao dịch
+      if (monthlyData.isNotEmpty)
         Expanded(
           child: ListView.builder(
             itemCount: monthlyData.length,
             itemBuilder: (context, index) {
               final item = monthlyData[index];
-
               return Card(
                 margin: const EdgeInsets.all(10),
                 child: ListTile(
@@ -136,9 +146,9 @@ class _ReportScreenState extends State<ReportScreen>
             },
           ),
         ),
-      ],
-    );
-  }
+    ],
+  );
+}
 
   // ---------------- BAR CHART ----------------
 
@@ -232,13 +242,11 @@ class _ReportScreenState extends State<ReportScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          ReportDaily(),
-
-          ReportWeekly(),
-
+          ReportDaily(userId: widget.userId),
+          ReportWeekly(userId: widget.userId),
           buildMonthlyTab(),
-          const Center(child: Text("Report Quý")),
-          const Center(child: Text("Report Năm")),
+          ReportQuarter(userId: widget.userId),
+          ReportYearly(userId: widget.userId),
         ],
       ),
     );

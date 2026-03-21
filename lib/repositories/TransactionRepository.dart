@@ -257,12 +257,12 @@ Future<List<Map<String, dynamic>>> getWeeklyReport(
     return _db.getMonthlyReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getQuarterReport(String userId) {
-    return _db.getQuarterReport(userId);
+  Future<List<Map<String, dynamic>>> getQuarterReport(String userId, int month, int year) {
+    return _db.getQuarterReport(userId, month, year);
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(String userId) {
-    return _db.getYearlyReport(userId);
+  Future<Map<String, dynamic>> getYearlyReport(String userId, int year) {
+    return _db.getYearlyTotal(userId, year);
   }
 
 
