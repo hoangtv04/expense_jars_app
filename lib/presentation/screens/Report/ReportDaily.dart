@@ -3,7 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/TransactionController.dart';
 
 class ReportDaily extends StatefulWidget {
-  const ReportDaily({super.key});
+  final String userId;
+  const ReportDaily({super.key, required this.userId});
 
   @override
   State<ReportDaily> createState() => _ReportDailyState();
@@ -24,7 +25,7 @@ class _ReportDailyState extends State<ReportDaily> {
 
   Future<void> loadDaily() async {
     final data = await controller.getDailyReport(
-      "aaa",
+      widget.userId,
       currentDate.day,
       currentDate.month,
       currentDate.year,

@@ -3,7 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/TransactionController.dart';
 
 class ReportYearly extends StatefulWidget {
-  const ReportYearly({super.key});
+  final String userId;
+  const ReportYearly({super.key, required this.userId});
 
   @override
   State<ReportYearly> createState() => _ReportYearlyState();
@@ -12,9 +13,9 @@ class ReportYearly extends StatefulWidget {
 class _ReportYearlyState extends State<ReportYearly> {
   final TransactionController controller = TransactionController();
 
-  List<Map<String, dynamic>> yearlyData = [];
-
+  Map<String, double> yearlyTotal = {'total_income': 0.0, 'total_expense': 0.0};
   int currentYear = DateTime.now().year;
+  bool loading = true;
 
   @override
   void initState() {
@@ -23,19 +24,14 @@ class _ReportYearlyState extends State<ReportYearly> {
   }
 
   Future<void> loadYearly() async {
-    final data = await controller.getYearlyReport(
-      "1", // userId
-      currentYear,
-    );
-
+    setState(() => loading = true);
+    final data = await controller.getYearlyReport(widget.userId, currentYear);
     setState(() {
-      yearlyData = data;
+      yearlyTotal = data.map((key, value) => MapEntry(key, value.toDouble()));
+      loading = false;
     });
-
-    print("Yearly Data: $yearlyData");
   }
 
-  // ================= YEAR SELECTOR =================
   Widget buildYearSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -43,27 +39,18 @@ class _ReportYearlyState extends State<ReportYearly> {
         IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
-            setState(() {
-              currentYear--;
-            });
+            setState(() => currentYear--);
             loadYearly();
           },
         ),
-
         Text(
           "$currentYear",
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios),
           onPressed: () {
-            setState(() {
-              currentYear++;
-            });
+            setState(() => currentYear++);
             loadYearly();
           },
         ),
@@ -71,57 +58,38 @@ class _ReportYearlyState extends State<ReportYearly> {
     );
   }
 
-  // ================= CHART =================
   Widget buildYearlyChart() {
-    if (yearlyData.isEmpty) return const SizedBox();
-
-    final item = yearlyData.first;
-
-    double income = (item['total_income'] as num).toDouble();
-    double expense = (item['total_expense'] as num).toDouble();
-
     return SizedBox(
       height: 250,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  if (value.toInt() == 0) {
-                    return const Text("Thu");
-                  } else {
-                    return const Text("Chi");
-                  }
-                },
+                getTitlesWidget: (value, meta) =>
+                    value.toInt() == 0 ? const Text("Thu") : const Text("Chi"),
               ),
             ),
           ),
-
           barGroups: [
             BarChartGroupData(
               x: 0,
               barRods: [
                 BarChartRodData(
-                  toY: income,
-                  width: 30,
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+                    toY: yearlyTotal['total_income'] ?? 0,
+                    width: 30,
+                    color: Colors.green)
               ],
             ),
             BarChartGroupData(
               x: 1,
               barRods: [
                 BarChartRodData(
-                  toY: expense,
-                  width: 30,
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+                    toY: yearlyTotal['total_expense'] ?? 0,
+                    width: 20,
+                    color: Colors.red)
               ],
             ),
           ],
@@ -130,37 +98,39 @@ class _ReportYearlyState extends State<ReportYearly> {
     );
   }
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
+    if (loading) return const Center(child: CircularProgressIndicator());
+
+    final hasData = (yearlyTotal['total_income'] ?? 0) > 0 ||
+        (yearlyTotal['total_expense'] ?? 0) > 0;
+
     return Column(
       children: [
         const SizedBox(height: 10),
-
         buildYearSelector(),
-
         const SizedBox(height: 10),
-
-        if (yearlyData.isNotEmpty) buildYearlyChart(),
-
+        if (hasData) buildYearlyChart(),
         Expanded(
-          child: yearlyData.isEmpty
-              ? const Center(child: Text("Không có dữ liệu"))
-              : ListView.builder(
-                  itemCount: yearlyData.length,
-                  itemBuilder: (context, index) {
-                    final item = yearlyData[index];
-
-                    return Card(
+          child: hasData
+              ? ListView(
+                  children: [
+                    Card(
                       margin: const EdgeInsets.all(10),
                       child: ListTile(
-                        title: Text("Năm: ${item['period']}"),
+                        title: Text("Năm: $currentYear"),
                         subtitle: Text(
-                          "Thu: ${item['total_income']} | Chi: ${item['total_expense']}",
-                        ),
+                            "Thu: ${yearlyTotal['total_income']} | Chi: ${yearlyTotal['total_expense']}"),
                       ),
-                    );
-                  },
+                    ),
+                  ],
+                )
+              : const Center(
+                  child: Text(
+                    "Chưa có giao dịch nào trong năm này.",
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
         ),
       ],

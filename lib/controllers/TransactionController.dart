@@ -143,7 +143,7 @@ class TransactionController {
     return _repo.getQuarterReport(userId, month, year);
   }
 
-Future<List<Map<String, dynamic>>> getYearlyReport(
+Future<Map<String, dynamic>> getYearlyReport(
   String userId,
   int year,
 ) {

@@ -7,7 +7,8 @@ import 'ReportYearly.dart';
 import 'ReportQuarter.dart';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  String userId;
+  const ReportScreen({super.key} , required this.userId);
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -241,11 +242,11 @@ class _ReportScreenState extends State<ReportScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          ReportDaily(),
-          ReportWeekly(),
+          ReportDaily(userId: widget.userId),
+          ReportWeekly(userId: widget.userId),
           buildMonthlyTab(),
-          ReportQuarter(),
-          ReportYearly(),
+          ReportQuarter(userId: widget.userId),
+          ReportYearly(userId: widget.userId),
         ],
       ),
     );

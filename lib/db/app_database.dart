@@ -615,27 +615,32 @@ class AppDatabase {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getYearlyReport(
-    String userId,
-    int year,
-  ) async {
-    final db = await database;
+  Future<Map<String, dynamic>> getYearlyTotal(String userId, int year) async {
+  final db = await database; // connection SQLite
 
-    return await db.rawQuery(
-      '''
-    SELECT 
-      strftime('%Y', t.date) as period,
-      SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) as total_income,
-      SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) as total_expense
+  final result = await db.rawQuery(
+    '''
+    SELECT
+      COALESCE(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END), 0) AS total_income,
+      COALESCE(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS total_expense
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
     WHERE t.user_id = ?
       AND t.status = 'completed'
       AND t.is_deleted = 0
       AND strftime('%Y', t.date) = ?
-    GROUP BY period
-  ''',
-      [userId, year.toString()],
-    );
+    ''',
+    [userId, year.toString()],
+  );
+
+  if (result.isNotEmpty) {
+    final row = result.first;
+    return {
+      'total_income': row['total_income'] != null ? (row['total_income'] as num).toDouble() : 0.0,
+      'total_expense': row['total_expense'] != null ? (row['total_expense'] as num).toDouble() : 0.0,
+    };
   }
+
+  return {'total_income': 0.0, 'total_expense': 0.0};
+}
 }

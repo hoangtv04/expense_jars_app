@@ -3,7 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/TransactionController.dart';
 
 class ReportQuarter extends StatefulWidget {
-  const ReportQuarter({super.key});
+  final String userId;
+  const ReportQuarter({super.key, required this.userId});
 
   @override
   State<ReportQuarter> createState() => _ReportQuarterState();
@@ -25,7 +26,7 @@ class _ReportQuarterState extends State<ReportQuarter> {
 
   Future<void> loadQuarter() async {
     final data = await controller.getQuarterReport(
-      "aaa",
+      widget.userId,
       currentDate.month,
       currentDate.year,
     );

@@ -3,7 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/TransactionController.dart';
 
 class ReportWeekly extends StatefulWidget {
-  const ReportWeekly({super.key});
+  final String userId;
+  const ReportWeekly({super.key, required this.userId});
 
   @override
   State<ReportWeekly> createState() => _ReportWeeklyState();
@@ -26,7 +27,7 @@ class _ReportWeeklyState extends State<ReportWeekly> {
   Future<void> loadWeekly() async {
 
     final data = await controller.getWeeklyReport(
-      "aaa",
+      widget.userId,
       currentMonth.month,
       currentMonth.year,
     );
