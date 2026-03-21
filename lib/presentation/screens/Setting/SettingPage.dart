@@ -21,6 +21,7 @@ class _SettingPageState extends State<SettingPage> {
   String _lastSyncTime = "21/03/2026 14:00:32";
 
   final _controllerJar = SyncService();
+
   // Hàm xử lý đồng bộ dữ liệu
   Future<void> _handleSync() async {
     if (_isSyncing) return;
@@ -31,11 +32,12 @@ class _SettingPageState extends State<SettingPage> {
       // await SyncService().syncAll();
       await _controllerJar.syncAll();
 
-
       await Future.delayed(const Duration(seconds: 2));
 
       setState(() {
-        _lastSyncTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now());
+        _lastSyncTime = DateFormat(
+          'dd/MM/yyyy HH:mm:ss',
+        ).format(DateTime.now());
       });
 
       if (mounted) {
@@ -119,20 +121,39 @@ class _SettingPageState extends State<SettingPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Profile())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Profile()),
+                ),
                 child: Row(
                   children: [
                     const CircleAvatar(
                       radius: 22,
                       backgroundColor: Colors.white,
-                      child: Text("DC", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                      child: Text(
+                        "DC",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Xin chào!", style: TextStyle(color: Colors.white70, fontSize: 14)),
-                        Text("duc cuong", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Xin chào!",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                        Text(
+                          "duc cuong",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -145,9 +166,19 @@ class _SettingPageState extends State<SettingPage> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(12),
+            ),
             alignment: Alignment.center,
-            child: const Text("Nâng cấp Vip", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: const Text(
+              "Nâng cấp Vip",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ),
         ],
       ),
@@ -160,7 +191,10 @@ class _SettingPageState extends State<SettingPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -169,8 +203,17 @@ class _SettingPageState extends State<SettingPage> {
   Widget _buildGrid(BuildContext context, String type) {
     final List<Map<String, dynamic>> items = [
       {"label": "Báo cáo", "icon": Icons.bar_chart, "color": Colors.green},
-      {"label": "Hạn mức chi", "icon": Icons.speed, "color": Colors.orange, "isCustom": true},
-      {"label": "Xuất dữ liệu", "icon": Icons.upload_file, "color": Colors.blue},
+      {
+        "label": "Hạn mức chi",
+        "icon": Icons.speed,
+        "color": Colors.orange,
+        "isCustom": true,
+      },
+      {
+        "label": "Xuất dữ liệu",
+        "icon": Icons.upload_file,
+        "color": Colors.blue,
+      },
       {"label": "Tiết kiệm", "icon": Icons.savings, "color": Colors.pink},
     ];
 
@@ -179,19 +222,59 @@ class _SettingPageState extends State<SettingPage> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 0.85),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 0.85,
+      ),
       itemBuilder: (context, index) {
         final item = items[index];
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: item["color"].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: Icon(item["icon"], color: item["color"]),
-            ),
-            const SizedBox(height: 4),
-            Text(item["label"], style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
-          ],
+        return GestureDetector(
+          onTap: () {
+            if (item["label"] == "Hạn mức chi") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SpendingLimitPage(),
+                ),
+              );
+            } else if (item["label"] == "Hạng mục   chi/tiêu") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const EditCategoryPage(customTitle: 'Hạng mục thu/chi'),
+                ),
+              );
+            }
+            if (item["label"] == "Báo cáo") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ReportScreen(userId: ''),
+                ),
+              );
+            }
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: item["color"].withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(item["icon"], color: item["color"]),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item["label"],
+                style: const TextStyle(fontSize: 11),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -219,19 +302,36 @@ class _SettingPageState extends State<SettingPage> {
               onPressed: _handleSync,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFF2E86DE), width: 1.2),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 backgroundColor: Colors.white,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _isSyncing
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2E86DE)))
-                      : const Icon(Icons.sync, color: Color(0xFF2E86DE), size: 20),
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF2E86DE),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.sync,
+                          color: Color(0xFF2E86DE),
+                          size: 20,
+                        ),
                   const SizedBox(width: 8),
                   Text(
                     _isSyncing ? "Đang đồng bộ..." : "Đồng bộ dữ liệu",
-                    style: const TextStyle(color: Color(0xFF2E86DE), fontWeight: FontWeight.w600, fontSize: 15),
+                    style: const TextStyle(
+                      color: Color(0xFF2E86DE),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -240,7 +340,11 @@ class _SettingPageState extends State<SettingPage> {
           const SizedBox(height: 10),
           Text(
             "Đồng bộ lần cuối lúc: $_lastSyncTime",
-            style: TextStyle(color: Colors.grey[600], fontSize: 12, fontStyle: FontStyle.italic),
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ),

@@ -69,7 +69,7 @@ class _ReportYearlyState extends State<ReportYearly> {
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (value, meta) =>
-                    value.toInt() == 0 ? const Text("Thu") : const Text("Chi"),
+                value.toInt() == 0 ? const Text("Thu") : const Text("Chi"),
               ),
             ),
           ),
@@ -114,24 +114,24 @@ class _ReportYearlyState extends State<ReportYearly> {
         Expanded(
           child: hasData
               ? ListView(
-                  children: [
-                    Card(
-                      margin: const EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text("Năm: $currentYear"),
-                        subtitle: Text(
-                            "Thu: ${yearlyTotal['total_income']} | Chi: ${yearlyTotal['total_expense']}"),
-                      ),
-                    ),
-                  ],
-                )
-              : const Center(
-                  child: Text(
-                    "Chưa có giao dịch nào trong năm này.",
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
+            children: [
+              Card(
+                margin: const EdgeInsets.all(10),
+                child: ListTile(
+                  title: Text("Năm: $currentYear"),
+                  subtitle: Text(
+                      "Thu: ${yearlyTotal['total_income']} | Chi: ${yearlyTotal['total_expense']}"),
                 ),
+              ),
+            ],
+          )
+              : const Center(
+            child: Text(
+              "Chưa có giao dịch nào trong năm này.",
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ],
     );

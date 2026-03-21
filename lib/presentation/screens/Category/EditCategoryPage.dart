@@ -26,7 +26,6 @@ class _EditCategoryPageState extends State<EditCategoryPage>
   List<Category> _filteredExpenseCategories = [];
   List<Category> _filteredIncomeCategories = [];
 
-  // 🔥 Chuyển sang String cho UUID
   Map<String, List<Category>> _subcategoriesMap = {};
   Set<String> _expandedCategories = {};
 

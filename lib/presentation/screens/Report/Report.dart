@@ -7,8 +7,8 @@ import 'ReportYearly.dart';
 import 'ReportQuarter.dart';
 
 class ReportScreen extends StatefulWidget {
-  String userId;
-  const ReportScreen({super.key} , required this.userId);
+  final String userId;
+  const ReportScreen({super.key, required this.userId});
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
