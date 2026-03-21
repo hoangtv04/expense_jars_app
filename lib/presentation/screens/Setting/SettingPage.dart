@@ -4,6 +4,11 @@ import 'package:flutter_application_jars/presentation/screens/Report/Report.dart
 import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
 
+// 🔥 thêm
+import '../../../services/session_services.dart';
+import '../../../repositories/user_repository.dart';
+import '../../../models/user.dart';
+
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
@@ -12,18 +17,51 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+  String name = "User";
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  /// 🔥 format tên đẹp
+  String formatName(String raw) {
+    return raw
+        .replaceAll(RegExp(r'[0-9]'), '')
+        .replaceAll('.', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
+        .join(' ');
+  }
+
+  /// 🔥 load user từ session
+  Future<void> loadUser() async {
+    final userId = await SessionService.getUserId();
+    if (userId == null) return;
+
+    final user = await UserRepository().getUserById(userId);
+
+    if (!mounted) return;
+
+    if (user != null) {
+      setState(() {
+        name = (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : formatName(user.email.split('@')[0]);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
 
-
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             /// ===== HEADER XANH =====
             Container(
               width: double.infinity,
@@ -38,13 +76,10 @@ class _SettingPageState extends State<SettingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
-                      /// Avatar + Name
-                      /// Avatar + Name (Click để sang Profile)
+                      /// 🔥 Avatar + Name
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -52,37 +87,49 @@ class _SettingPageState extends State<SettingPage> {
                             MaterialPageRoute(
                               builder: (context) => const Profile(),
                             ),
-                          );
+                          ).then((_) {
+                            loadUser(); // 🔥 reload khi quay lại
+                          });
                         },
                         child: Row(
                           children: [
                             CircleAvatar(
                               radius: 22,
-                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surface,
                               child: Text(
-                                "DC",
+                                name.isNotEmpty ? name[0].toUpperCase() : "?",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                               ),
                             ),
+
                             const SizedBox(width: 12),
+
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   "Xin chào!",
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary.withOpacity(0.7),
                                     fontSize: 14,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "duc cuong",
+                                  name,
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -98,7 +145,10 @@ class _SettingPageState extends State<SettingPage> {
                         children: [
                           Stack(
                             children: [
-                              Icon(Icons.refresh, color: Theme.of(context).colorScheme.onPrimary),
+                              Icon(
+                                Icons.refresh,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -162,7 +212,9 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                           child: Text(
                             "100 xu",
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -176,7 +228,9 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                           child: Text(
                             "Mã: 123456",
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -213,9 +267,9 @@ class _SettingPageState extends State<SettingPage> {
         child: Text(
           title,
           style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -257,7 +311,7 @@ class _SettingPageState extends State<SettingPage> {
         itemBuilder: (context, index) {
           final item = items[index];
           final isCustomIcon = item["isCustom"] == true;
-          
+
           return GestureDetector(
             onTap: () {
               if (item["label"] == "Hạn mức chi") {
@@ -267,16 +321,16 @@ class _SettingPageState extends State<SettingPage> {
                     builder: (context) => const SpendingLimitPage(),
                   ),
                 );
-              } else if (item["label"] == "Hạng mục   chi/tiêu") {
+              } else if (item["label"] == "Hạng mục chi/tiêu") {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EditCategoryPage(
-                      customTitle: 'Hạng mục thu/chi',
-                    ),
+                    builder: (context) =>
+                        const EditCategoryPage(customTitle: 'Hạng mục thu/chi'),
                   ),
                 );
               }
+
               if (item["label"] == "Báo cáo") {
                 Navigator.push(
                   context,
@@ -304,8 +358,8 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                         )
                       : isCustomIcon
-                          ? _buildHandMoneyIcon()
-                          : Icon(item["icon"], color: item["color"]),
+                      ? _buildHandMoneyIcon()
+                      : Icon(item["icon"], color: item["color"]),
                 ),
                 const SizedBox(height: 8),
                 Text(

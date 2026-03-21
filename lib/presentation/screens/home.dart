@@ -4,6 +4,11 @@ import '../../controllers/DashboardController.dart';
 import 'package:intl/intl.dart';
 import '../../db/app_state.dart';
 
+// 🔥 thêm
+import '../../services/session_services.dart';
+import '../../repositories/user_repository.dart';
+import '../../models/user.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -17,19 +22,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Future<Map<String, double>> summaryFuture;
 
+  // 🔥 USER DATA
+  String userId = "";
+  String name = "User";
+  String avatar = "?";
+
   @override
   void initState() {
     super.initState();
+    initAll();
+  }
+
+  /// 🔥 INIT
+  Future<void> initAll() async {
+    await loadUser();
     loadData();
   }
 
-  void loadData() {
-    summaryFuture = controller.getSummary("aaa");
+  /// 🔥 LOAD USER
+  Future<void> loadUser() async {
+    final id = await SessionService.getUserId();
+    if (id == null) return;
+
+    final user = await UserRepository().getUserById(id);
+
+    if (user != null && mounted) {
+      setState(() {
+        userId = id;
+
+        name = (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : formatName(user.email.split('@')[0]);
+
+        avatar = name.isNotEmpty ? name[0].toUpperCase() : "?";
+      });
+    }
   }
 
+  /// 🔥 FORMAT TÊN
+  String formatName(String raw) {
+    return raw
+        .replaceAll(RegExp(r'[0-9]'), '')
+        .replaceAll('.', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
+        .join(' ');
+  }
+
+  /// 🔥 LOAD DATA
+  void loadData() {
+    if (userId.isEmpty) return;
+    summaryFuture = controller.getSummary(userId);
+  }
+
+  /// 🔥 REFRESH
   void refreshData() {
     setState(() {
-      summaryFuture = controller.getSummary("aaa");
+      summaryFuture = controller.getSummary(userId);
     });
   }
 
@@ -41,9 +91,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ValueListenableBuilder(
         valueListenable: AppState.jarChanged,
         builder: (context, value, child) {
-          return FutureBuilder<Map<String, double>>(
-            future: controller.getSummary("aaa"),
+          // 🔥 reload user + data khi có thay đổi
+          loadUser();
+          loadData();
 
+          return FutureBuilder<Map<String, double>>(
+            future: summaryFuture,
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -58,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 onRefresh: () async {
                   refreshData();
                 },
-
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
@@ -100,14 +152,15 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              /// USER INFO
               Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.white,
                     child: Text(
-                      "DC",
-                      style: TextStyle(
+                      avatar,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
                       ),
@@ -116,19 +169,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(width: 12),
 
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Xin chào!",
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
 
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
 
                       Text(
-                        "duc cuong",
-                        style: TextStyle(
+                        name,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -139,13 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
 
+              /// ACTION
               Row(
                 children: [
                   IconButton(
                     icon: const Icon(Icons.refresh, color: Colors.white),
                     onPressed: refreshData,
                   ),
-
                   const Icon(Icons.notifications_none, color: Colors.white),
                 ],
               ),
@@ -188,146 +241,114 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ================= CARD =================
 
- Widget _buildOverviewCard(double income, double expense) {
+  Widget _buildOverviewCard(double income, double expense) {
+    final diff = income - expense;
+    final maxValue = income > expense ? income : expense;
 
-  final diff = income - expense;
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(25),
+      ),
 
-  final maxValue = income > expense ? income : expense;
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Tình hình thu chi",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
 
-  return Container(
-    margin: const EdgeInsets.only(top: 20),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.grey.shade100,
-      borderRadius: BorderRadius.circular(25),
-    ),
+          const SizedBox(height: 25),
 
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        const Text(
-          "Tình hình thu chi",
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 25),
-
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            // ================= BAR CHART =================
-
-            Column(
-              children: [
-
-                SizedBox(
-                  height: 120,
-                  width: 90,
-
-                  child: BarChart(
-                    BarChartData(
-
-                      maxY: maxValue + 200,
-
-                      gridData: FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      titlesData: FlTitlesData(show: false),
-
-                      barGroups: [
-
-                        BarChartGroupData(
-                          x: 0,
-                          barsSpace: 8,
-
-                          barRods: [
-
-                            BarChartRodData(
-                              toY: income,
-                              width: 14,
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-
-                            BarChartRodData(
-                              toY: expense,
-                              width: 14,
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-
-                          ],
-                        ),
-
-                      ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 120,
+                    width: 90,
+                    child: BarChart(
+                      BarChartData(
+                        maxY: maxValue + 200,
+                        gridData: FlGridData(show: false),
+                        borderData: FlBorderData(show: false),
+                        titlesData: FlTitlesData(show: false),
+                        barGroups: [
+                          BarChartGroupData(
+                            x: 0,
+                            barsSpace: 8,
+                            barRods: [
+                              BarChartRodData(
+                                toY: income,
+                                width: 14,
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              BarChartRodData(
+                                toY: expense,
+                                width: 14,
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
-                Row(
-                  children: [
-                    _legend(Colors.green, "Thu"),
-                    const SizedBox(width: 10),
-                    _legend(Colors.red, "Chi"),
-                  ],
-                )
-
-              ],
-            ),
-
-            const SizedBox(width: 20),
-
-            // ================= MONEY INFO =================
-
-            Expanded(
-              child: Column(
-                children: [
-
-                  _moneyRow("Thu", income.toInt(), Colors.green),
-
-                  const SizedBox(height: 15),
-
-                  _moneyRow("Chi", expense.toInt(), Colors.red),
-
-                  const Divider(),
-
-                  _moneyRow("Chênh lệch", diff.toInt(), Colors.blue),
-
+                  Row(
+                    children: [
+                      _legend(Colors.green, "Thu"),
+                      const SizedBox(width: 10),
+                      _legend(Colors.red, "Chi"),
+                    ],
+                  ),
                 ],
               ),
-            )
 
-          ],
-        ),
+              const SizedBox(width: 20),
 
-        const SizedBox(height: 30),
-
-        Center(
-          child: OutlinedButton(
-            onPressed: () {},
-            child: const Text("Lịch sử ghi chép"),
+              Expanded(
+                child: Column(
+                  children: [
+                    _moneyRow("Thu", income.toInt(), Colors.green),
+                    const SizedBox(height: 15),
+                    _moneyRow("Chi", expense.toInt(), Colors.red),
+                    const Divider(),
+                    _moneyRow("Chênh lệch", diff.toInt(), Colors.blue),
+                  ],
+                ),
+              ),
+            ],
           ),
-        )
 
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 30),
+
+          Center(
+            child: OutlinedButton(
+              onPressed: () {},
+              child: const Text("Lịch sử ghi chép"),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _moneyRow(String title, int value, Color color) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: const TextStyle(fontSize: 16)),
-
         Text(
           "${formatter.format(value)} đ",
-
           style: TextStyle(
             color: color,
             fontSize: 16,
