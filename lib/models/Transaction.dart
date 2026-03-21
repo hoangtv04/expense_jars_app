@@ -13,6 +13,9 @@ class Transaction {
   final int isSynced; // THÊM: 0 = chưa sync, 1 = đã sync
   final String? createdAt;
   final CategoryType? type;
+  final bool isRecurring;
+  final String? recurringType; // daily, weekly, monthly
+  final String? nextRunDate;
 
   Transaction({
     this.id,
@@ -27,6 +30,9 @@ class Transaction {
     this.isSynced = 0, // Mặc định là 0 khi tạo mới tại local
     this.createdAt,
     this.type,
+    this.isRecurring = false,
+    this.recurringType,
+    this.nextRunDate,
   });
 
   factory Transaction.fromMap(Map<String, dynamic> map) {
@@ -46,6 +52,9 @@ class Transaction {
             (e) => e.name.toLowerCase() == (map['type']?.toString().toLowerCase().trim() ?? ""),
         orElse: () => CategoryType.expense,
       ),
+      isRecurring: map['is_recurring'] == 1,
+      recurringType: map['recurring_type'],
+      nextRunDate: map['next_run_date'],
     );
   }
 
@@ -62,6 +71,9 @@ class Transaction {
       'is_deleted': isDeleted,
       'is_synced': isSynced, // THÊM: Để lưu vào SQLite
       'created_at': createdAt,
+      'is_recurring': isRecurring ? 1 : 0,
+      'recurring_type': recurringType,
+      'next_run_date': nextRunDate,
     };
   }
 

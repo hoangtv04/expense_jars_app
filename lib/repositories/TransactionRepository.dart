@@ -69,129 +69,40 @@ ORDER BY t.created_at DESC
     return await db.insert('transactions', transaction.toMap());
   }
 
-  Future<int> deleteTransactions(String id) async {
+  Future<int> deleteTransactions(Transaction transaction) async {
     final db = await AppDatabase.instance.database;
-
-    return await db.transaction((txn) async {
-
-      // Lấy transaction cần xóa
-      final result = await txn.query(
-        'transactions',
-        where: 'id = ? AND is_deleted = 0',
-        whereArgs: [id],
-      );
-
-      if (result.isEmpty) return 0;
-
-      final transaction = Transaction.fromMap(result.first);
-
-      // Lấy jar tương ứng
-      final jarResult = await txn.query(
-        'jars',
-        where: 'id = ?',
-        whereArgs: [transaction.jarId],
-      );
-
-      double currentBalance = jarResult.first['balance'] as double;
-      double newBalance = currentBalance;
-
-      print(transaction.type!.name + " ");
-      print(transaction.type);
-      //  Rollback balance
-      if (transaction.type?.name == 'income') {
-        newBalance -= transaction.amount;   // Xóa thu → trừ lại
-      } else {
-        newBalance += transaction.amount;   // Xóa chi → cộng lại
-      }
-
-      //  Update jar balance
-      await txn.update(
-        'jars',
-        {'balance': newBalance},
-        where: 'id = ?',
-        whereArgs: [transaction.jarId],
-      );
-
-      // Soft delete transaction
-      return await txn.update(
-        'transactions',
-        {'is_deleted': 1},
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    });
-  }
-
-  Future<int> updateTransaction(Transaction updatedTransaction) async {
-    final db = await AppDatabase.instance.database;
-
-    return await db.transaction((txn) async {
-
-      //  Lấy transaction cũ
-      final oldResult = await txn.query(
-        'transactions',
-        where: 'id = ? AND is_deleted = 0',
-        whereArgs: [updatedTransaction.id],
-      );
-
-      if (oldResult.isEmpty) return 0;
-
-      final oldTransaction = Transaction.fromMap(oldResult.first);
-
-      //  Lấy jar
-      final jarResult = await txn.query(
-        'jars',
-        where: 'id = ?',
-        whereArgs: [oldTransaction.jarId],
-      );
-
-      double currentBalance = jarResult.first['balance'] as double;
-      double newBalance = currentBalance;
-
-      //  Rollback transaction cũ
-      if (oldTransaction.type?.name == 'income') {
-        newBalance -= oldTransaction.amount;
-      } else {
-        newBalance += oldTransaction.amount;
-      }
-
-      //  Apply transaction mới
-      if (updatedTransaction.type == 'income') {
-        newBalance += updatedTransaction.amount;
-      } else {
-        newBalance -= updatedTransaction.amount;
-      }
-
-      //  Update jar balance
-      await txn.update(
-        'jars',
-        {'balance': newBalance},
-        where: 'id = ?',
-        whereArgs: [oldTransaction.jarId],
-      );
-
-      // 6️⃣ Update transaction
-      return await txn.update(
-        'transactions',
-        updatedTransaction.toMap(),
-        where: 'id = ?',
-        whereArgs: [updatedTransaction.id],
-      );
-    });
-  }
-
-  Future<Transaction?> getTransactionById(int id) async {
-    final db = await AppDatabase.instance.database;
-    final maps = await db.query(
+    return await db.update(
       'transactions',
+      {'is_deleted': 1},
       where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
+  }
+
+  Future<int> updateTransaction(Transaction transaction) async {
+    final db = await AppDatabase.instance.database;
+
+    return await db.update(
+      'transactions',
+      transaction.toMap(),
+      where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
+  }
+
+
+  Future<Transaction?> getById(String id) async {
+    final db = await AppDatabase.instance.database;
+
+    final result = await db.query(
+      'transactions',
+      where: 'id = ? AND is_deleted = 0',
       whereArgs: [id],
     );
 
-    if (maps.isNotEmpty) {
-      return Transaction.fromMap(maps.first);
-    }
-    return null;
+    if (result.isEmpty) return null;
+
+    return Transaction.fromMap(result.first);
   }
 
   Future<List<Transaction>> getAllTransactions() async {
@@ -298,6 +209,32 @@ Future<List<Map<String, dynamic>>> getWeeklyReport(
     final total = result.first['total'];
 
     return total == null ? 0.0 : (total as num).toDouble();
+  }
+
+
+  Future<List<Transaction>> getRecurringDueTransactions() async {
+    final db = await AppDatabase.instance.database;
+
+    final now = DateTime.now().toIso8601String();
+
+    final maps = await db.query(
+      'transactions',
+      where: 'is_recurring = 1 AND next_run_date <= ?',
+      whereArgs: [now],
+    );
+
+    return maps.map((e) => Transaction.fromMap(e)).toList();
+  }
+
+  Future<void> updateNextRunDate(String id, String nextDate) async {
+    final db = await AppDatabase.instance.database;
+
+    await db.update(
+      'transactions',
+      {'next_run_date': nextDate},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
 }

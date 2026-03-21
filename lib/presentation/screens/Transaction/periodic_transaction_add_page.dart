@@ -7,14 +7,17 @@ import '../../../models/Category.dart';
 import '../Category/CategoryListPage.dart';
 import '../../../models/Jar.dart';
 
-class TransactionAddPage extends StatefulWidget {
-  const TransactionAddPage({super.key});
+
+class PeriodicTransactionAddPage extends StatefulWidget {
+  const PeriodicTransactionAddPage({super.key});
 
   @override
-  State<TransactionAddPage> createState() => _TransactionAddPageState();
+  State<PeriodicTransactionAddPage> createState() =>
+      _PeriodicTransactionAddPageState();
 }
 
-class _TransactionAddPageState extends State<TransactionAddPage> {
+class _PeriodicTransactionAddPageState
+    extends State<PeriodicTransactionAddPage> {
   final _controller = TransactionController();
   final _controllerJar = JarController();
   final _controllerCategory = CategoryController();
@@ -28,6 +31,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   String? _selectedCategory;
   Category? _selectedCategoryObject;
   Jar? _selectedJarObject;
+  String _recurringType = "none";
 
   // Fallback icon mapping by category name
   int _fallbackIconIdByName(String categoryName) {
@@ -177,7 +181,7 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thêm giao dịch'), centerTitle: true),
+      appBar: AppBar(title: const Text('giao dịch định kỳ'), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -261,6 +265,42 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                 ),
               ),
 
+              const SizedBox(height: 20),
+
+              DropdownButtonFormField<String>(
+                value: _recurringType,
+                decoration: InputDecoration(
+                  labelText: 'Định kỳ',
+                  prefixIcon: const Icon(Icons.repeat),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: "none",
+                    child: Text("Không lặp"),
+                  ),
+                  DropdownMenuItem(
+                    value: "daily",
+                    child: Text("Hàng ngày"),
+                  ),
+                  DropdownMenuItem(
+                    value: "weekly",
+                    child: Text("Hàng tuần"),
+                  ),
+                  DropdownMenuItem(
+                    value: "monthly",
+                    child: Text("Hàng tháng"),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _recurringType = value!;
+                  });
+                },
+              ),
+
               const SizedBox(height: 32),
 
               SizedBox(
@@ -325,6 +365,9 @@ class _TransactionAddPageState extends State<TransactionAddPage> {
                       date: DateTime.now().toIso8601String(),
                       createdAt: DateTime.now().toIso8601String(),
                       isDeleted: 0,
+                      isRecurring: _recurringType != "none",
+                      recurringType: _recurringType,
+                      nextRunDate: DateTime.now().toIso8601String(),
                     );
 
                     print("check type" + _selectedCategoryObject!.type.name);

@@ -1,3 +1,7 @@
+
+
+
+
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_application_jars/services/session_services.dart';
@@ -9,6 +13,7 @@ import '../models/Transaction.dart';
 import '../repositories/CategoryRepository.dart';
 import '../repositories/TransactionRepository.dart';
 
+
 class TransactionController {
   final TransactionRepository _repo = TransactionRepository();
   final CategoryRepository _cateRepo = CategoryRepository();
@@ -18,17 +23,55 @@ class TransactionController {
     return await _repo.getAllTransactions();
   }
 
-  Future<void> delete(String id) async {
-    await _repo.deleteTransactions(id);
-
+  Future<void> delete(Transaction transaction) async {
+    final jar = await _jarRepo.getJarById(transaction.jarId);
+    if(jar == null) {
+      throw Exception("Hũ không tồn tại");
+    }
+    if(transaction.type == CategoryType.expense) {
+      await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
+    } else if(transaction.type == CategoryType.income) {
+      await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
+    }
+    await _repo.deleteTransaction(transaction);
     AppState.jarChanged.value++;
-  }
 
-  Future<void> update(Transaction updatedTransaction) async {
-    await _repo.updateTransaction(updatedTransaction);
-    AppState.jarChanged.value++;
   }
+  Future<void> update(Transaction updated) async {
+    final old = await _repo.getById(updated.id!);
+    if (old == null) throw Exception("Transaction không tồn tại");
 
+    final jar = await _jarRepo.getJarById(old.jarId);
+    if (jar == null) throw Exception("Jar không tồn tại");
+
+    double balance = jar.balance;
+
+    ///  1. Rollback transaction cũ
+    if (old.type == CategoryType.income) {
+      balance -= old.amount;
+    } else {
+      balance += old.amount;
+    }
+
+    ///  2. Validate nếu là expense
+    if (updated.type == CategoryType.expense &&
+        updated.amount > balance) {
+      throw Exception("Số dư không đủ");
+    }
+
+    /// 3. Apply transaction mới
+    if (updated.type == CategoryType.income) {
+      balance += updated.amount;
+    } else {
+      balance -= updated.amount;
+    }
+
+    ///  4. Update jar
+    await _jarRepo.updateJar(jar.id!, balance);
+
+    ///  5. Update transaction
+    await _repo.updateTransaction(updated);
+  }
   Future<void> add(Transaction transaction) async {
     if (transaction.amount <= 0) {
       throw Exception("Amount không hợp lệ");
@@ -41,23 +84,21 @@ class TransactionController {
     }
 
     final jar = await _jarRepo.getJarById(transaction.jarId);
-    if (jar == null) {
+    if(jar == null) {
       throw Exception("Hũ không tồn tại");
     }
-
-    if (transaction.amount > jar.balance) {
+    if(transaction.amount > jar.balance) {
       throw Exception("Số tiền vượt quá số dư của hũ");
     }
-
-    if (transaction.type == CategoryType.expense) {
+    if(transaction.type == CategoryType.expense) {
       await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
-    } else if (transaction.type == CategoryType.income) {
+    } else if(transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
     }
 
     final newTransaction = Transaction(
       id: transaction.id ?? const Uuid().v4(),
-      userId: userId, // 🔥 CHỈ DÙNG SESSION
+      userId: userId,
       jarId: transaction.jarId,
       categoryId: transaction.categoryId,
       amount: transaction.amount,
@@ -66,6 +107,9 @@ class TransactionController {
       date: transaction.date,
       createdAt: transaction.createdAt,
       isDeleted: transaction.isDeleted,
+      isRecurring: transaction.isRecurring,
+      recurringType: transaction.recurringType,
+      nextRunDate: transaction.nextRunDate,
     );
 
     await _repo.insertTransactions(newTransaction);
@@ -76,7 +120,11 @@ class TransactionController {
     String id,
   ) async {
     return await _cateRepo.getTransactionWithCategory(id);
+
+
   }
+
+
 
   Future<List<Transaction>> getTransactionListById(String id) async {
     final list = await _repo.getAllTransactionByJarId(id);
@@ -148,10 +196,53 @@ Future<Map<String, dynamic>> getYearlyReport(
 }
 
   Future<double> getTransactionsTotalIncome(String jarId) async {
+
+
     return _repo.getTotalIncome(jarId);
   }
 
   Future<double> getTransactionsTotalExpense(String jarId) async {
+
+
     return _repo.getTotalExpense(jarId);
   }
+
+  Future<void> runRecurringTransactions() async {
+    final list = await _repo.getRecurringDueTransactions();
+
+    for (var old in list) {
+
+      // 1. tạo transaction mới
+      final newTransaction = old.copyWith(
+        id: null,
+        date: DateTime.now().toIso8601String(),
+        createdAt: DateTime.now().toIso8601String(),
+      );
+
+      await add(newTransaction); // dùng lại logic add
+
+      // 2. tính ngày tiếp theo
+      DateTime nextDate = DateTime.parse(old.nextRunDate!);
+
+      switch (old.recurringType) {
+        case "daily":
+          nextDate = nextDate.add(const Duration(days: 1));
+          break;
+        case "weekly":
+          nextDate = nextDate.add(const Duration(days: 7));
+          break;
+        case "monthly":
+          nextDate = DateTime(
+            nextDate.year,
+            nextDate.month + 1,
+            nextDate.day,
+          );
+          break;
+      }
+
+      // 3. update next_run_date
+      await _repo.updateNextRunDate(old.id!, nextDate.toIso8601String());
+    }
+  }
+
 }

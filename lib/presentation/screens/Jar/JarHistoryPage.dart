@@ -27,18 +27,29 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
 
   late Future<double> _incomeFuture;
   late Future<double> _expenseFuture;
+  late Future<List<TransactionWithCategory>> _transactionFuture;
 
   @override
   void initState() {
     super.initState();
-    print("HISTORY JAR ID = ${widget.jarId}");
+    _initData();
+  }
 
-    // 🔥 GỌI 1 LẦN DUY NHẤT KHI MỞ PAGE
-    _incomeFuture =
-        _controller.getTransactionsTotalIncome(widget.jarId!);
+  Future<void> _initData() async {
+    //  CHẠY GIAO DỊCH ĐỊNH KỲ
+    await _controller.runRecurringTransactions();
 
-    _expenseFuture =
-        _controller.getTransactionsTotalExpense(widget.jarId!);
+    //  LOAD LẠI DATA SAU KHI RUN
+    setState(() {
+      _incomeFuture =
+          _controller.getTransactionsTotalIncome(widget.jarId!);
+
+      _expenseFuture =
+          _controller.getTransactionsTotalExpense(widget.jarId!);
+
+      _transactionFuture =
+          _controller.getTransactionsWithCategory(widget.jarId!);
+    });
   }
 
   @override
@@ -130,8 +141,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
           /// ===== DANH SÁCH GIAO DỊCH =====
           Expanded(
             child: FutureBuilder<List<TransactionWithCategory>>(
-              future: _controller
-                  .getTransactionsWithCategory(widget.jarId!),
+            future: _transactionFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting){
