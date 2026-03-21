@@ -81,4 +81,15 @@ class UserController {
 
     return success;
   }
+
+  String getDisplayName(User user) {
+    String rawName = user.fullName ?? user.email.split('@')[0];
+
+    return rawName
+        .replaceAll(RegExp(r'[^a-zA-Z]'), ' ')
+        .split(' ')
+        .where((e) => e.isNotEmpty)
+        .map((e) => e[0].toUpperCase() + e.substring(1).toLowerCase())
+        .join(' ');
+  }
 }

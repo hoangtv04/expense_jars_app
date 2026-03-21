@@ -5,6 +5,7 @@ import 'package:flutter_application_jars/services/session_services.dart';
 import 'package:flutter_application_jars/repositories/user_repository.dart';
 import 'package:flutter_application_jars/models/user.dart';
 import 'package:flutter_application_jars/presentation/screens/Setting/ChangePassword.dart';
+import 'package:flutter_application_jars/controllers/user_controller.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -18,21 +19,12 @@ class _ProfileState extends State<Profile> {
   String email = "Đăng nhập";
   bool isLoggedIn = false;
 
+  final UserController _userController = UserController();
+
   @override
   void initState() {
     super.initState();
     loadUser();
-  }
-
-  /// 🔥 FORMAT TÊN ĐẸP
-  String formatName(String raw) {
-    return raw
-        .replaceAll(RegExp(r'[0-9]'), '')
-        .replaceAll('.', ' ')
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
-        .join(' ');
   }
 
   Future<void> loadUser() async {
@@ -57,12 +49,7 @@ class _ProfileState extends State<Profile> {
     if (user != null) {
       setState(() {
         email = user.email;
-
-        // 🔥 ƯU TIÊN fullName → fallback email
-        name = (user.fullName != null && user.fullName!.isNotEmpty)
-            ? user.fullName!
-            : formatName(user.email.split('@')[0]);
-
+        name = _userController.getDisplayName(user); // 🔥 gọi controller
         isLoggedIn = true;
       });
     } else {
@@ -97,7 +84,7 @@ class _ProfileState extends State<Profile> {
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ).then((result) {
                   if (result == true) {
-                    loadUser(); // 🔥 bỏ delay
+                    loadUser();
                   }
                 });
               }
@@ -160,7 +147,7 @@ class _ProfileState extends State<Profile> {
                 MaterialPageRoute(builder: (_) => const EditProfile()),
               ).then((result) {
                 if (result == true) {
-                  loadUser(); // 🔥 bỏ delay
+                  loadUser();
                 }
               });
             },

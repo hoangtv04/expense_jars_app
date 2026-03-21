@@ -66,12 +66,18 @@ class UserRepository {
     return true;
   }
 
-  Future<void> updateProfile(String id, String fullName) async {
+  Future<void> updateProfile(
+    String id,
+    String fullName,
+    String phone,
+    String gender,
+    String birth,
+  ) async {
     final db = await _db.database;
 
     await db.update(
       'users',
-      {'full_name': fullName},
+      {'full_name': fullName, 'phone': phone, 'gender': gender, 'birth': birth},
       where: 'id = ?',
       whereArgs: [id],
     );
