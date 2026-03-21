@@ -231,7 +231,7 @@ class _SettingPageState extends State<SettingPage> {
       itemBuilder: (context, index) {
         final item = items[index];
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (item["label"] == "Hạn mức chi") {
               Navigator.push(
                 context,
@@ -252,7 +252,7 @@ class _SettingPageState extends State<SettingPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ReportScreen(userId: ''),
+                  builder: (context) => ReportScreen(),
                 ),
               );
             }
