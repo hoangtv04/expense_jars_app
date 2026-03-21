@@ -90,7 +90,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () async {
-                        await _controller.delete(t.id!);
+                        await _controller.delete(t);
                         widget.onChanged();
                         setState(() {
                           _futureTransactions = _controller.getAll();

@@ -12,6 +12,9 @@ class Transaction {
   final int isDeleted;
   final String? createdAt;
   final CategoryType? type;
+  final bool isRecurring;
+  final String? recurringType; // daily, weekly, monthly
+  final String? nextRunDate;
 
   Transaction({
     this.id,
@@ -25,6 +28,9 @@ class Transaction {
     this.isDeleted = 0,
     this.createdAt,
     this.type,
+    this.isRecurring = false,
+    this.recurringType,
+    this.nextRunDate,
   });
 
   factory Transaction.fromMap(Map<String, dynamic> map) {
@@ -43,6 +49,9 @@ class Transaction {
             (e) => e.name.toLowerCase() == (map['type']?.toString().toLowerCase().trim() ?? ""),
         orElse: () => CategoryType.expense,
       ),
+      isRecurring: map['is_recurring'] == 1,
+      recurringType: map['recurring_type'],
+      nextRunDate: map['next_run_date'],
     );
   }
 
@@ -58,6 +67,9 @@ class Transaction {
       'status': status,
       'is_deleted': isDeleted,
       'created_at': createdAt,
+      'is_recurring': isRecurring ? 1 : 0,
+      'recurring_type': recurringType,
+      'next_run_date': nextRunDate,
     };
   }
 

@@ -3,7 +3,7 @@ import 'package:flutter_application_jars/presentation/screens/Setting/profile.da
 import 'package:flutter_application_jars/presentation/screens/Report/Report.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
-
+import 'package:flutter_application_jars/presentation/screens/Transaction/periodic_transaction_add_page.dart';
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
@@ -231,7 +231,7 @@ class _SettingPageState extends State<SettingPage> {
         "color": const Color(0xFFFFA500),
       },
       {"label": "Xuất dữ liệu", "icon": Icons.book, "color": Colors.blue},
-      {"label": "dd", "icon": Icons.star, "color": Colors.blue},
+      {"label": "Giao dịch định kỳ", "icon": Icons.star, "color": Colors.blue},
       {"label": "ee", "icon": Icons.star, "color": Colors.blue},
       {"label": "ff", "icon": Icons.star, "color": Colors.blue},
       {"label": "gg", "icon": Icons.star, "color": Colors.blue},
@@ -283,6 +283,12 @@ class _SettingPageState extends State<SettingPage> {
                   MaterialPageRoute(builder: (context) => const ReportScreen()),
                 );
               }
+             if (item["label"] == "Giao dịch định kỳ") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PeriodicTransactionAddPage()),
+                );
+             }
             },
             child: Column(
               children: [
