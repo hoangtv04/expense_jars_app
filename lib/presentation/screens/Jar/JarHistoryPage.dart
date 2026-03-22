@@ -39,10 +39,19 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   }
 
   Future<void> _initData() async {
-    //  CHẠY GIAO DỊCH ĐỊNH KỲ
-    await _controller.runRecurringTransactions();
+    final newTransactions = await _controller.runRecurringTransactions();
 
-    //  LOAD LẠI DATA SAU KHI RUN
+    // 🔥 THÔNG BÁO ĐƠN GIẢN
+    if (newTransactions.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Có ${newTransactions.length} giao dịch định kỳ mới",
+          ),
+        ),
+      );
+    }
+
     setState(() {
       _incomeFuture =
           _controller.getTransactionsTotalIncome(widget.jarId!);

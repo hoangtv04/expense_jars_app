@@ -201,8 +201,10 @@ class TransactionController {
     return _repo.getTotalExpense(jarId);
   }
 
-  Future<void> runRecurringTransactions() async {
+  Future<List<Transaction>> runRecurringTransactions() async {
     final list = await _repo.getRecurringDueTransactions();
+
+    List<Transaction> newTransactions = [];
 
     for (var old in list) {
 
@@ -213,7 +215,9 @@ class TransactionController {
         createdAt: DateTime.now().toIso8601String(),
       );
 
-      await add(newTransaction); // dùng lại logic add
+      await add(newTransaction);
+
+      newTransactions.add(newTransaction); //  lưu lại để trả về
 
       // 2. tính ngày tiếp theo
       DateTime nextDate = DateTime.parse(old.nextRunDate!);
@@ -235,8 +239,13 @@ class TransactionController {
       }
 
       // 3. update next_run_date
-      await _repo.updateNextRunDate(old.id!, nextDate.toIso8601String());
+      await _repo.updateNextRunDate(
+        old.id!,
+        nextDate.toIso8601String(),
+      );
     }
+
+    return newTransactions;
   }
 
 }
