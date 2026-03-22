@@ -4,13 +4,20 @@ import 'package:flutter_application_jars/repositories/SyncService.dart';
 import 'package:intl/intl.dart'; // Nhớ thêm intl: ^0.19.0 vào pubspec.yaml
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
 import 'package:flutter_application_jars/presentation/screens/Report/Report.dart';
+import 'package:intl/intl.dart';
 import '../Transaction/periodic_transaction_add_page.dart';
+import '../../../repositories/SyncService.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
 import '../Setting/SpendingLimt/Information.dart';
 import '../Setting/Feedback.dart' as Feedback;
 // Import Service của bạn
 // import 'package:flutter_application_jars/services/sync_service.dart';
+
+// 🔥 thêm
+import '../../../services/session_services.dart';
+import '../../../repositories/user_repository.dart';
+import '../../../models/user.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -59,6 +66,42 @@ class _SettingPageState extends State<SettingPage> {
       }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+  String name = "User";
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  /// 🔥 format tên đẹp
+  String formatName(String raw) {
+    return raw
+        .replaceAll(RegExp(r'[0-9]'), '')
+        .replaceAll('.', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
+        .join(' ');
+  }
+
+  /// 🔥 load user từ session
+  Future<void> loadUser() async {
+    final userId = await SessionService.getUserId();
+    if (userId == null) return;
+
+    final user = await UserRepository().getUserById(userId);
+
+    if (!mounted) return;
+
+    if (user != null) {
+      setState(() {
+        name = (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : formatName(user.email.split('@')[0]);
+      });
     }
   }
 
@@ -184,6 +227,199 @@ class _SettingPageState extends State<SettingPage> {
             ),
           ),
         ],
+            /// ===== HEADER XANH =====
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 50, 16, 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF2E86DE), Color(0xFF48C9B0)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      /// 🔥 Avatar + Name
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Profile(),
+                            ),
+                          ).then((_) {
+                            loadUser(); // 🔥 reload khi quay lại
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surface,
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : "?",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Xin chào!",
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary.withOpacity(0.7),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  name,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      /// Icons bên phải
+                      Row(
+                        children: [
+                          Stack(
+                            children: [
+                              Icon(
+                                Icons.refresh,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Text(
+                                    "3",
+                                    style: TextStyle(
+                                      fontSize: 8,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 16),
+                          Icon(
+                            Icons.notifications_none,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "Nâng cấp Vip ",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "100 xu",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "Mã: 123456",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            /// ===== TÍNH NĂNG =====
+            _buildSectionTitle("Tính năng"),
+            _buildGrid(),
+
+            const SizedBox(height: 20),
+
+            /// ===== TIỆN ÍCH =====
+            _buildSectionTitle("Tiện ích"),
+            _buildGrid(),
+
+            const SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }
@@ -395,6 +631,18 @@ class _SettingPageState extends State<SettingPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHandMoneyIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Image.asset(
+        'lib/assets/income.png',
+        width: 40,
+        height: 40,
+        fit: BoxFit.contain,
       ),
     );
   }

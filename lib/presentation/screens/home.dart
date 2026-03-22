@@ -3,7 +3,11 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../controllers/DashboardController.dart';
 import 'package:intl/intl.dart';
 import '../../db/app_state.dart';
+
+// 🔥 thêm
 import '../../services/session_services.dart';
+import '../../repositories/user_repository.dart';
+import '../../models/user.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,13 +20,50 @@ class _HomeScreenState extends State<HomeScreen> {
   final DashboardController controller = DashboardController();
   final formatter = NumberFormat('#,###', 'vi_VN');
 
-  String? userId;
-  Future<Map<String, double>>? summaryFuture;
+  late Future<Map<String, double>> summaryFuture;
+
+  // 🔥 USER DATA
+  String userId = "";
+  String name = "User";
+  String avatar = "?";
 
   @override
   void initState() {
     super.initState();
+    initAll();
+  }
+  Future<void> loadUser() async {
+    final id = await SessionService.getUserId();
+    if (id == null) return;
+
+    final user = await UserRepository().getUserById(id);
+
+    if (user != null && mounted) {
+      setState(() {
+        userId = id;
+
+        name = (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : formatName(user.email.split('@')[0]);
+
+        avatar = name.isNotEmpty ? name[0].toUpperCase() : "?";
+      });
+    }
+  }
+  /// 🔥 INIT
+  Future<void> initAll() async {
+    await loadUser();
     initUser();
+  }
+
+  String formatName(String raw) {
+    return raw
+        .replaceAll(RegExp(r'[0-9]'), '')
+        .replaceAll('.', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
+        .join(' ');
   }
 
   Future<void> initUser() async {
@@ -33,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+
     if (!mounted) return;
 
     setState(() {
@@ -40,7 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
       summaryFuture = controller.getSummary(userId!);
     });
   }
-
+  void loadData() {
+    if (userId.isEmpty) return;
+    summaryFuture = controller.getSummary(userId);
+  }
   void refreshData() {
     if (userId == null) return;
 
@@ -65,7 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ValueListenableBuilder(
         valueListenable: AppState.jarChanged,
         builder: (context, value, child) {
-
+          loadUser();
+          loadData();
           return FutureBuilder<Map<String, double>>(
             future: summaryFuture,
 
@@ -138,12 +184,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.white,
                     child: Text(
-                      "DC",
-                      style: TextStyle(
+                      avatar,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
                       ),
@@ -152,17 +198,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(width: 12),
 
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Xin chào!",
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
-                      SizedBox(height: 4),
+
+                      const SizedBox(height: 4),
+
                       Text(
-                        "duc cuong",
-                        style: TextStyle(
+                        name,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -179,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: const Icon(Icons.refresh, color: Colors.white),
                     onPressed: refreshData,
                   ),
+
                   const Icon(Icons.notifications_none, color: Colors.white),
                 ],
               ),
@@ -204,7 +253,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(width: 8),
+
               const Icon(
                 Icons.visibility_outlined,
                 color: Colors.white70,
@@ -325,8 +376,10 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: const TextStyle(fontSize: 16)),
+
         Text(
           "${formatter.format(value)} đ",
+
           style: TextStyle(
             color: color,
             fontSize: 16,
