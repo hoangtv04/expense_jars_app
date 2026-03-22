@@ -7,6 +7,7 @@ import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
 import '../Setting/SpendingLimt/Information.dart';
 import '../Setting/Feedback.dart' as Feedback;
+import 'SendingStar.dart';
 // Import Service của bạn
 // import 'package:flutter_application_jars/services/sync_service.dart';
 
@@ -301,6 +302,14 @@ class _SettingPageState extends State<SettingPage> {
             context,
             MaterialPageRoute(
               builder: (context) => const Feedback.Feedback(),
+            ),
+          );
+        }
+        if (title == "Bạn thích ứng dụng này?") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SendingStar(),
             ),
           );
         }

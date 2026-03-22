@@ -5,7 +5,7 @@ class Feedback extends StatelessWidget {
   const Feedback({super.key});
 
   // Link Google Form 
-  final String formUrl = "https://forms.gle/wwdhGeB1pduKjYh66"; // Thay bằng link thật
+  final String formUrl = "https://forms.gle/wwdhGeB1pduKjYh66"; 
 
   // Hàm mở link
   Future<void> _openForm() async {
