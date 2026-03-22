@@ -3,11 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../controllers/DashboardController.dart';
 import 'package:intl/intl.dart';
 import '../../db/app_state.dart';
-
-// 🔥 thêm
 import '../../services/session_services.dart';
 import '../../repositories/user_repository.dart';
-import '../../models/user.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,136 +17,99 @@ class _HomeScreenState extends State<HomeScreen> {
   final DashboardController controller = DashboardController();
   final formatter = NumberFormat('#,###', 'vi_VN');
 
-  late Future<Map<String, double>> summaryFuture;
-
-  // 🔥 USER DATA
-  String userId = "";
-  String name = "User";
-  String avatar = "?";
+  Future<Map<String, double>>? _summaryFuture;
+  String? _userId;
+  String _name = "User";
+  String _avatar = "?";
 
   @override
   void initState() {
     super.initState();
-    initAll();
+    _initAll();
   }
-  Future<void> loadUser() async {
+
+  // Khởi tạo tất cả dữ liệu lần đầu
+  Future<void> _initAll() async {
+    await _loadUser();
+    _refreshSummary();
+  }
+
+  Future<void> _loadUser() async {
     final id = await SessionService.getUserId();
     if (id == null) return;
 
     final user = await UserRepository().getUserById(id);
 
-    if (user != null && mounted) {
+    if (mounted && user != null) {
       setState(() {
-        userId = id;
-
-        name = (user.fullName != null && user.fullName!.isNotEmpty)
+        _userId = id;
+        _name = (user.fullName != null && user.fullName!.isNotEmpty)
             ? user.fullName!
-            : formatName(user.email.split('@')[0]);
-
-        avatar = name.isNotEmpty ? name[0].toUpperCase() : "?";
+            : _formatName(user.email.split('@')[0]);
+        _avatar = _name.isNotEmpty ? _name[0].toUpperCase() : "?";
       });
     }
   }
-  /// 🔥 INIT
-  Future<void> initAll() async {
-    await loadUser();
-    initUser();
+
+  // Hàm này chỉ để cập nhật lại số liệu Dashboard
+  void _refreshSummary() {
+    if (_userId == null) return;
+    setState(() {
+      _summaryFuture = controller.getSummary(_userId!);
+    });
   }
 
-  String formatName(String raw) {
+  String _formatName(String raw) {
     return raw
         .replaceAll(RegExp(r'[0-9]'), '')
-        .replaceAll('.', ' ')
-        .replaceAll('_', ' ')
+        .replaceAll(RegExp(r'[._]'), ' ')
         .split(' ')
         .map((e) => e.isNotEmpty ? e[0].toUpperCase() + e.substring(1) : '')
         .join(' ');
   }
 
-  Future<void> initUser() async {
-    final id = await SessionService.getUserId();
-
-    if (id == null) {
-      debugPrint("❌ Không có userId");
-      return;
-    }
-
-
-    if (!mounted) return;
-
-    setState(() {
-      userId = id;
-      summaryFuture = controller.getSummary(userId!);
-    });
-  }
-  void loadData() {
-    if (userId.isEmpty) return;
-    summaryFuture = controller.getSummary(userId);
-  }
-  void refreshData() {
-    if (userId == null) return;
-
-    setState(() {
-      summaryFuture = controller.getSummary(userId!);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-
-    // ✅ CHẶN build khi chưa có data
-    if (userId == null || summaryFuture == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xfff4f6f9),
-
       body: ValueListenableBuilder(
         valueListenable: AppState.jarChanged,
         builder: (context, value, child) {
-          loadUser();
-          loadData();
+          // KHÔNG gọi setState hay loadData ở đây.
+          // Chỉ trả về Widget sử dụng FutureBuilder.
           return FutureBuilder<Map<String, double>>(
-            future: summaryFuture,
-
+            future: _summaryFuture,
             builder: (context, snapshot) {
-
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              if (_userId == null || snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
-                return Center(
-                  child: Text("❌ Lỗi: ${snapshot.error}"),
-                );
+                return Center(child: Text("❌ Lỗi: ${snapshot.error}"));
               }
 
-              if (!snapshot.hasData) {
-                return const Center(child: Text("Không có dữ liệu"));
-              }
-
-              final data = snapshot.data!;
-              final income = data['income'] ?? 0;
-              final expense = data['expense'] ?? 0;
-              final balance = data['balance'] ?? 0;
+              final data = snapshot.data ?? {'income': 0.0, 'expense': 0.0, 'balance': 0.0};
+              final income = data['income'] ?? 0.0;
+              final expense = data['expense'] ?? 0.0;
+              final balance = data['balance'] ?? 0.0;
 
               return RefreshIndicator(
                 onRefresh: () async {
-                  refreshData();
+                  await _loadUser();
+                  _refreshSummary();
                 },
-
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
                       _buildHeader(balance),
-
-                      Transform.translate(
-                        offset: const Offset(0, -30),
-                        child: _buildOverviewCard(income, expense),
+                      // Đưa nội dung vào Card cho đẹp
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Transform.translate(
+                          offset: const Offset(0, -30),
+                          child: _buildOverviewCard(income, expense),
+                        ),
                       ),
                     ],
                   ),
@@ -162,20 +122,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ================= HEADER =================
+  // ================= CÁC WIDGET GIAO DIỆN =================
 
   Widget _buildHeader(double balance) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 25),
+      padding: const EdgeInsets.fromLTRB(20, 50, 20, 60), // Tăng bottom padding
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF3FA9F5), Color(0xFF2B7CD3)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -187,185 +150,91 @@ class _HomeScreenState extends State<HomeScreen> {
                   CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.white,
-                    child: Text(
-                      avatar,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
+                    child: Text(_avatar, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
                   ),
-
                   const SizedBox(width: 12),
-
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Xin chào!",
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const Text("Xin chào!", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      Text(_name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ],
               ),
-
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    onPressed: refreshData,
-                  ),
-
-                  const Icon(Icons.notifications_none, color: Colors.white),
-                ],
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: _refreshSummary,
               ),
             ],
           ),
-
           const SizedBox(height: 25),
-
-          const Text(
-            "Tổng số dư",
-            style: TextStyle(color: Colors.white70, fontSize: 15),
-          ),
-
-          const SizedBox(height: 8),
-
-          Row(
-            children: [
-              Text(
-                "${formatter.format(balance)} đ",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              const Icon(
-                Icons.visibility_outlined,
-                color: Colors.white70,
-                size: 20,
-              ),
-            ],
+          const Text("Tổng số dư", style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 5),
+          Text(
+            "${formatter.format(balance)} đ",
+            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  // ================= CARD =================
-
   Widget _buildOverviewCard(double income, double expense) {
     final diff = income - expense;
     final maxValue = income > expense ? income : expense;
 
     return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(25),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Tình hình thu chi",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 25),
-
+          const Text("Tình hình thu chi", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                children: [
-                  SizedBox(
-                    height: 120,
-                    width: 90,
-                    child: BarChart(
-                      BarChartData(
-                        maxY: maxValue + 200,
-                        gridData: FlGridData(show: false),
-                        borderData: FlBorderData(show: false),
-                        titlesData: FlTitlesData(show: false),
-                        barGroups: [
-                          BarChartGroupData(
-                            x: 0,
-                            barsSpace: 8,
-                            barRods: [
-                              BarChartRodData(
-                                toY: income,
-                                width: 14,
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              BarChartRodData(
-                                toY: expense,
-                                width: 14,
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ],
-                          ),
+              // Biểu đồ cột
+              SizedBox(
+                height: 120,
+                width: 80,
+                child: BarChart(
+                  BarChartData(
+                    maxY: maxValue == 0 ? 100 : maxValue * 1.2,
+                    gridData: FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(show: false),
+                    barGroups: [
+                      BarChartGroupData(
+                        x: 0,
+                        barRods: [
+                          BarChartRodData(toY: income, width: 12, color: Colors.green, borderRadius: BorderRadius.circular(4)),
+                          BarChartRodData(toY: expense, width: 12, color: Colors.red, borderRadius: BorderRadius.circular(4)),
                         ],
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      _legend(Colors.green, "Thu"),
-                      const SizedBox(width: 10),
-                      _legend(Colors.red, "Chi"),
                     ],
                   ),
-                ],
+                ),
               ),
-
               const SizedBox(width: 20),
-
+              // Thông tin chi tiết
               Expanded(
                 child: Column(
                   children: [
                     _moneyRow("Thu", income.toInt(), Colors.green),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 12),
                     _moneyRow("Chi", expense.toInt(), Colors.red),
-                    const Divider(),
-                    _moneyRow("Chênh lệch", diff.toInt(), Colors.blue),
+                    const Divider(height: 24),
+                    _moneyRow("Còn lại", diff.toInt(), Colors.blue),
                   ],
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 30),
-
-          Center(
-            child: OutlinedButton(
-              onPressed: () {},
-              child: const Text("Lịch sử ghi chép"),
-            ),
-          )
         ],
       ),
     );
@@ -375,34 +244,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16)),
-
-        Text(
-          "${formatter.format(value)} đ",
-
-          style: TextStyle(
-            color: color,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _legend(Color color, String text) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(text),
+        Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text("${formatter.format(value)} đ", style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold)),
       ],
     );
   }
