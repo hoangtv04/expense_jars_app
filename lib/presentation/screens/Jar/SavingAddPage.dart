@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/controllers/SavingController.dart';
 import 'package:flutter_application_jars/models/Reponse/SavingRespone.dart';
 
+import '../../../services/session_services.dart';
+
 class SavingAddPage extends StatefulWidget {
   const SavingAddPage({super.key});
 
@@ -53,9 +55,14 @@ class _SavingAddPageState extends State<SavingAddPage> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
+      String? userId = await SessionService.getUserId();
 
+      if (userId == null) {
+
+        return;
+      }
       print("Name: ${_name.text}");
       print("Money: ${_money.text}");
       print("Interest: ${_interest.text}");
@@ -64,7 +71,7 @@ class _SavingAddPageState extends State<SavingAddPage> {
       print("Note: ${_note.text}");
 
       SavingRespone savingRespone = SavingRespone(
-       userId: "aaa",
+       userId: userId,
         name: _name.text,
         principal: double.parse(_money.text),
         startDate: _startDate.toString().split(" ")[0],
