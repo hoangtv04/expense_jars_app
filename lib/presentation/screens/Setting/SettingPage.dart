@@ -12,6 +12,10 @@ import '../Setting/SpendingLimt/SpendingLimitPage.dart';
 import '../Setting/SpendingLimt/Information.dart';
 import '../Setting/Feedback.dart' as CustomFeedback;
 import '../Setting/profile.dart';
+import '../Setting/Feedback.dart' as Feedback;
+import 'SendingStar.dart';
+// Import Service của bạn
+// import 'package:flutter_application_jars/services/sync_service.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -60,6 +64,7 @@ class _SettingPageState extends State<SettingPage> {
 
   Future<void> _handleSync() async {
     if (_isSyncing) return;
+
     setState(() => _isSyncing = true);
 
     try {
@@ -68,6 +73,7 @@ class _SettingPageState extends State<SettingPage> {
       setState(() {
         _lastSyncTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now());
       });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("✅ Đồng bộ thành công!"), backgroundColor: Colors.green),
@@ -91,19 +97,31 @@ class _SettingPageState extends State<SettingPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            /// ===== HEADER GRADIENT =====
             _buildHeader(context),
+
             const SizedBox(height: 16),
+
+            /// ===== TÍNH NĂNG =====
             _buildSectionTitle("Tính năng"),
             _buildGrid(context, "Feature"),
             const SizedBox(height: 16),
             _buildSectionTitle("Tiện ích"),
             _buildGrid(context, "Utility"),
+
             const SizedBox(height: 20),
+
+            /// ===== DANH SÁCH CÀI ĐẶT (LIST VIEW STYLE) =====
             _buildListSetting(Icons.settings, "Cài đặt chung"),
             _buildListSetting(Icons.storage, "Cài đặt dữ liệu"),
+            _buildListSetting(Icons.reply, "Giới thiệu cho bạn"),
+            _buildListSetting(Icons.star, "Bạn thích ứng dụng này?"),
             _buildListSetting(Icons.mail, "Góp ý với nhà phát triển"),
             _buildListSetting(Icons.info, "Thông tin"),
+
             const SizedBox(height: 30),
+
+            /// ===== NÚT ĐỒNG BỘ DỮ LIỆU (GIỐNG ẢNH MẪU) =====
             _buildSyncButton(),
             const SizedBox(height: 40),
           ],
@@ -112,10 +130,11 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  // Widget Header
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 50, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 50, 16, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF2E86DE), Color(0xFF48C9B0)],
@@ -170,6 +189,7 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  // Widget Tiêu đề mục
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -223,14 +243,37 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  // Widget Danh sách cài đặt (Icon xanh bên trái)
   Widget _buildListSetting(IconData icon, String title) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF2E86DE), size: 22),
       title: Text(title, style: const TextStyle(fontSize: 14)),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
       onTap: () {
-        if (title == "Thông tin") Navigator.push(context, MaterialPageRoute(builder: (context) => const Information()));
-        if (title == "Góp ý với nhà phát triển") Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomFeedback.Feedback()));
+        if(title == "Thông tin"){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Information(),
+            ),
+          );
+        }
+        if(title == "Góp ý với nhà phát triển"){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Feedback.Feedback(),
+            ),
+          );
+        }
+        if (title == "Bạn thích ứng dụng này?") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SendingStar(),
+            ),
+          );
+        }
       },
     );
   }
