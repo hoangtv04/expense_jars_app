@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_application_jars/models/Reponse/SavingRespone.dart';
 import 'package:flutter_application_jars/repositories/SavingRepository.dart';
 import 'package:flutter_application_jars/repositories/TransactionRepository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import '../db/app_database.dart';
@@ -145,4 +146,17 @@ class SavingController {
 
      return list;
    }
+
+  Future<void> deleteSaving(String id) async {
+    try {
+
+      await _repo.softDelete(id);
+
+      print("✅ Xóa thành công sổ: $id");
+    } catch (e) {
+      print("❌ Lỗi xóa sổ: $e");
+      // Fallback: Vẫn xóa local nếu lỗi mạng để User không thấy sổ đó nữa
+      await _repo.softDelete(id);
+    }
+  }
 }

@@ -38,7 +38,6 @@ class _JarListPageState extends State<JarListPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               Container(
                 width: 40,
                 height: 5,
@@ -48,7 +47,6 @@ class _JarListPageState extends State<JarListPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-
               ListTile(
                 leading: const Icon(Icons.edit),
                 title: const Text("Sửa tên hũ"),
@@ -63,7 +61,6 @@ class _JarListPageState extends State<JarListPage> {
                   });
                 },
               ),
-
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text(
@@ -84,7 +81,44 @@ class _JarListPageState extends State<JarListPage> {
     );
   }
 
-  /// ===== UI Saving Item =====
+  /// ===== Hàm xác nhận xóa Sổ tiết kiệm =====
+  void _confirmDeleteSaving(BuildContext context, Saving saving) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Xác nhận xóa"),
+        content: Text("Bạn có chắc chắn muốn xóa sổ tiết kiệm '${saving.name}' không?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Hủy"),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (saving.id != null) {
+                // Gọi hàm xóa từ controller
+                await _savingController.deleteSaving(saving.id!);
+
+                if (context.mounted) Navigator.pop(context);
+
+                // Cập nhật AppState để các Tab tự load lại dữ liệu
+                AppState.jarChanged.value++;
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Đã xóa sổ tiết kiệm thành công")),
+                  );
+                }
+              }
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ===== UI Saving Item (Tab 2) =====
   Widget savingItem(Saving saving) {
     return Column(
       children: [
@@ -108,12 +142,23 @@ class _JarListPageState extends State<JarListPage> {
           subtitle: Text(
             "${saving.principal.toStringAsFixed(0)} đ",
           ),
-          trailing: Text(
-            "${saving.interestRate ?? 0}%",
-            style: const TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
+          // Sửa phần trailing để có cả lãi suất và nút xóa
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "${saving.interestRate ?? 0}%",
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                onPressed: () => _confirmDeleteSaving(context, saving),
+              ),
+            ],
           ),
         ),
         const Divider(height: 1),
@@ -121,7 +166,7 @@ class _JarListPageState extends State<JarListPage> {
     );
   }
 
-  /// ===== UI Jar Item =====
+  /// ===== UI Jar Item (Tab 1) =====
   Widget jarItem(Jar jar) {
     return Column(
       children: [
@@ -187,14 +232,12 @@ class _JarListPageState extends State<JarListPage> {
           builder: (context, value, child) {
             return Column(
               children: [
-
                 /// ===== HEADER =====
                 Container(
                   color: Colors.white,
                   padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
                   child: Column(
                     children: [
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
@@ -215,9 +258,7 @@ class _JarListPageState extends State<JarListPage> {
                           )
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       const TabBar(
                         labelColor: Colors.blue,
                         unselectedLabelColor: Colors.black54,
@@ -236,20 +277,16 @@ class _JarListPageState extends State<JarListPage> {
                 Expanded(
                   child: TabBarView(
                     children: [
-
                       /// ===== TAB 1 JAR =====
                       FutureBuilder<List<Jar>>(
                         future: _jarController.getJar(),
                         builder: (context, snapshot) {
-
                           if (!snapshot.hasData) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
-
                           final jars = snapshot.data!;
-
                           return ListView.builder(
                             itemCount: jars.length,
                             itemBuilder: (context, index) {
@@ -262,10 +299,9 @@ class _JarListPageState extends State<JarListPage> {
                       /// ===== TAB 2 SAVING =====
                       Column(
                         children: [
-
                           Padding(
                             padding: const EdgeInsets.all(16),
-                            child: ElevatedButton(
+                            child: ElevatedButton.icon(
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -274,29 +310,25 @@ class _JarListPageState extends State<JarListPage> {
                                   ),
                                 );
                               },
-                              child: const Text("Thêm sổ tiết kiệm"),
+                              icon: const Icon(Icons.add),
+                              label: const Text("Thêm sổ tiết kiệm"),
                             ),
                           ),
-
                           Expanded(
                             child: FutureBuilder<List<Saving>>(
                               future: _savingController.getSaving(),
                               builder: (context, snapshot) {
-
                                 if (!snapshot.hasData) {
                                   return const Center(
                                     child: CircularProgressIndicator(),
                                   );
                                 }
-
                                 final savings = snapshot.data!;
-
                                 if (savings.isEmpty) {
                                   return const Center(
                                     child: Text("Chưa có sổ tiết kiệm"),
                                   );
                                 }
-
                                 return ListView.builder(
                                   itemCount: savings.length,
                                   itemBuilder: (context, index) {
