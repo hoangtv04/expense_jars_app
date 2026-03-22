@@ -21,32 +21,53 @@ class _EditProfileState extends State<EditProfile> {
   void initState() {
     super.initState();
     loadUser();
+
+    nameController.addListener(() {
+      setState(() {});
+    });
   }
 
-  /// 🔥 LOAD USER TỪ SESSION + DB
   Future<void> loadUser() async {
     final userId = await SessionService.getUserId();
     if (userId == null) return;
 
-    final repo = UserRepository();
-    final User? user = await repo.getUserById(userId);
+    final user = await UserRepository().getUserById(userId);
 
-    if (user != null) {
+    if (user != null && mounted) {
       setState(() {
+        /// 🔥 TÊN: ưu tiên fullName → fallback email
         nameController.text =
-            user.fullName ?? user.email.split('@')[0]; // ưu tiên tên thật
+            (user.fullName != null && user.fullName!.isNotEmpty)
+            ? user.fullName!
+            : _formatNameFromEmail(user.email);
+
+        /// 🔥 CÁC FIELD KHÁC: để trống nếu chưa có
+        phoneController.text = user.phone ?? '';
+        birthController.text = user.birth ?? '';
+        gender = user.gender; // có thì hiện, không thì null
       });
     }
   }
 
-  /// 🔥 SAVE PROFILE
+  /// 🔥 SAVE PROFILE (BƯỚC 6 FIX)
   Future<void> updateProfile() async {
     final userId = await SessionService.getUserId();
     if (userId == null) return;
 
-    await UserRepository().updateProfile(userId, nameController.text.trim());
+    await UserRepository().updateProfile(
+      userId,
+      nameController.text.trim(),
+      phoneController.text.trim(),
+      gender ?? "Nam",
+      birthController.text.trim(),
+    );
 
-    Navigator.pop(context, true); // báo về Profile reload
+    /// 🔥 QUAN TRỌNG: reload lại data trước khi thoát
+    await loadUser();
+
+    if (!mounted) return;
+
+    Navigator.pop(context, true); // báo Profile reload
   }
 
   @override
@@ -73,7 +94,7 @@ class _EditProfileState extends State<EditProfile> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Avatar
+            /// Avatar (🔥 update realtime)
             Center(
               child: Stack(
                 children: [
@@ -116,11 +137,11 @@ class _EditProfileState extends State<EditProfile> {
             /// Tên hiển thị
             const Text("Tên hiển thị"),
             const SizedBox(height: 6),
-            _buildInput(nameController),
+            _buildInput(nameController, hint: "Nhập tên hiển thị của bạn"),
 
             const SizedBox(height: 16),
 
-            /// Số điện thoại (chưa lưu DB)
+            /// Số điện thoại
             const Text("Số điện thoại"),
             const SizedBox(height: 6),
             _buildInput(phoneController, hint: "Nhập số điện thoại của bạn"),
@@ -134,6 +155,7 @@ class _EditProfileState extends State<EditProfile> {
               controller: birthController,
               readOnly: true,
               decoration: InputDecoration(
+                hintText: "Chọn ngày sinh của bạn",
                 suffixIcon: const Icon(Icons.calendar_today),
                 filled: true,
                 fillColor: Colors.white,
@@ -204,14 +226,13 @@ class _EditProfileState extends State<EditProfile> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: updateProfile, // 🔥 gọi save thật
+                onPressed: updateProfile,
                 child: const Text("Cập nhật", style: TextStyle(fontSize: 16)),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            /// Xóa tài khoản (chưa xử lý)
             Center(
               child: TextButton(
                 onPressed: () {},
@@ -225,6 +246,10 @@ class _EditProfileState extends State<EditProfile> {
         ),
       ),
     );
+  }
+
+  String _formatNameFromEmail(String email) {
+    return email.split('@')[0];
   }
 
   Widget _buildInput(TextEditingController controller, {String? hint}) {

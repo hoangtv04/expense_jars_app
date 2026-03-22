@@ -2,7 +2,12 @@
 
 
 
+import 'dart:io';
+
+import 'package:excel/excel.dart';
 import 'package:flutter_application_jars/repositories/JarRepository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_application_jars/services/session_services.dart';
 import '../db/app_state.dart';
@@ -139,7 +144,7 @@ class TransactionController {
       nextRunDate: transaction.nextRunDate,
     );
 
-    await _repo.insertTransactions(newTransaction);
+    await _repo.insertTransaction(newTransaction);
     AppState.jarChanged.value++;
   }
 
@@ -186,6 +191,26 @@ class TransactionController {
     return list;
   }
 
+  Future<void> exportAllTransactionsTest() async {
+    print('--- Đang lấy toàn bộ dữ liệu để test Export ---');
+
+    try {
+      // 1. Lấy sạch sành sanh dữ liệu
+      final List<TransactionWithCategory> list = await _repo.getAllTransactionForTest();
+
+      if (list.isEmpty) {
+        print('Chưa có giao dịch nào trong DB để xuất file!');
+        return;
+      }
+
+
+      await exportTransactionsToExcel(list);
+
+      print('--- Xuất file thành công: ${list.length} dòng ---');
+    } catch (e) {
+      print('Lỗi khi test Export: $e');
+    }
+  }
   Future<List<Map<String, dynamic>>> getDailyReport(
     String userId,
     int day,
@@ -270,6 +295,51 @@ Future<Map<String, dynamic>> getYearlyReport(
       // 3. update next_run_date
       await _repo.updateNextRunDate(old.id!, nextDate.toIso8601String());
     }
+  }
+  Future<void> exportTransactionsToExcel(List<Transaction> transactions) async {
+    // 1. Khởi tạo file Excel
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Báo cáo chi tiêu']; // Tên Sheet
+
+    // 2. Tạo dòng tiêu đề (Header)
+    List<CellValue> headers = [
+      TextCellValue("ID"),
+      TextCellValue("Ngày tháng"),
+      TextCellValue("Số tiền"),
+      TextCellValue("Loại"),
+      TextCellValue("Ghi chú"),
+    ];
+    sheetObject.appendRow(headers);
+
+    for (var t in transactions) {
+      String safeId = t.id ?? "";
+      String displayId = safeId.length >= 8 ? safeId.substring(0, 8) : safeId;
+
+      sheetObject.appendRow([
+        TextCellValue(displayId), // Dùng biến đã xử lý an toàn
+        TextCellValue(t.date ?? ""),
+        DoubleCellValue(t.amount),
+        TextCellValue(t.type == CategoryType.income ? "Thu nhập" : "Chi tiêu"),
+        TextCellValue(t.note ?? ""),
+      ]);
+    }
+
+    // 4. Lưu file vào bộ nhớ tạm của điện thoại
+    var fileBytes = excel.save();
+    final directory = await getTemporaryDirectory(); // Dùng thư mục tạm
+    final filePath = "${directory.path}/BaoCao_ChiTieu_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+
+    File(filePath)
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(fileBytes!);
+
+    await Share.shareXFiles([XFile(filePath)], text: 'Gửi báo cáo chi tiêu từ ứng dụng');
+  }
+
+  Future<List<TransactionWithCategory>> getAllTransactionForExport() async {
+
+
+    return _repo.getAllTransactionForTest() ;
   }
 
 }

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../../../controllers/JarController.dart';
 import '../../../controllers/SavingController.dart';
 import '../../../db/app_state.dart';
-
 import '../../../models/Jar.dart';
 import '../../../models/Saving.dart';
-
 import 'JarAddPage.dart';
 import 'JarHistoryPage.dart';
 import 'SavingAddPage.dart';
@@ -25,55 +22,128 @@ class _JarListPageState extends State<JarListPage> {
   final _jarController = JarController();
   final _savingController = SavingController();
 
-  /// ===== BottomSheet Jar =====
-  void _showJarOptions(BuildContext context, Jar jar) {
+  /// ===== 1. DIALOG NẠP/RÚT TIẾT KIỆM (Tối giản) =====
+  void _showSavingActionDialog(BuildContext context, Saving saving, bool isDeposit) {
+    final TextEditingController amountController = TextEditingController();
+    String? selectedJarId;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isDeposit ? "Gửi thêm" : "Rút tiền"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Số tiền (đ)", border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 12),
+            FutureBuilder<List<Jar>>(
+              future: _jarController.getJar(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const LinearProgressIndicator();
+                final jars = snapshot.data!;
+                return DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: "Chọn hũ trích/nhận", border: OutlineInputBorder()),
+                  items: jars.map((j) => DropdownMenuItem(value: j.id, child: Text(j.nameJar))).toList(),
+                  onChanged: (val) => selectedJarId = val,
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Hủy")),
+          ElevatedButton(
+            onPressed: () async {
+              if (amountController.text.isEmpty || selectedJarId == null) return;
+              try {
+                if (isDeposit) {
+                  await _savingController.depositToSaving(
+                    savingId: saving.id!,
+                    amount: double.parse(amountController.text),
+                    fromJarId: selectedJarId!,
+                  );
+                } else {
+
+                  await _savingController.withdrawFromSaving(
+                    savingId: saving.id!,
+                    amount: double.parse(amountController.text),
+                    toJarId: selectedJarId!,
+                  );
+
+
+                }
+                if (context.mounted) Navigator.pop(context);
+                AppState.jarChanged.value++;
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
+              }
+            },
+            child: const Text("Xác nhận"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ===== 2. OPTIONS CHO CẢ HŨ VÀ SỔ (SỬA/XÓA) =====
+  void _showOptions(BuildContext context, {Jar? jar, Saving? saving}) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 5,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
+              if (jar != null) ...[
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text("Sửa tên hũ"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => UpdateJarPage(jar: jar)));
+                  },
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text("Sửa tên hũ"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => UpdateJarPage(jar: jar),
-                    ),
-                  ).then((_) {
-                    widget.onChanged();
-                  });
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  "Xóa hũ",
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () {
-                  if (jar.id != null) {
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text("Xóa hũ", style: TextStyle(color: Colors.red)),
+                  onTap: () {
                     _jarController.deleteJar(jar.id!);
-                  }
-                  Navigator.pop(context);
-                },
-              ),
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+              if (saving != null) ...[
+                ListTile(
+                  leading: const Icon(Icons.add_circle_outline, color: Colors.green),
+                  title: const Text("Gửi thêm tiền"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSavingActionDialog(context, saving, true);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.remove_circle_outline, color: Colors.orange),
+                  title: const Text("Rút tiền"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSavingActionDialog(context, saving, false);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text("Xóa sổ", style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _confirmDeleteSaving(context, saving);
+                  },
+                ),
+              ]
             ],
           ),
         );
@@ -81,35 +151,45 @@ class _JarListPageState extends State<JarListPage> {
     );
   }
 
-  /// ===== Hàm xác nhận xóa Sổ tiết kiệm =====
+  /// ===== 3. UI ITEM TỐI GIẢN (Dùng chung style ListTile) =====
+  Widget _buildSimpleItem({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+    required VoidCallback onMore,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: iconColor.withOpacity(0.1),
+            child: Icon(icon, color: iconColor),
+          ),
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: Text(subtitle),
+          trailing: IconButton(icon: const Icon(Icons.more_vert), onPressed: onMore),
+          onTap: onTap,
+        ),
+        const Divider(height: 1),
+      ],
+    );
+  }
+
   void _confirmDeleteSaving(BuildContext context, Saving saving) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Xác nhận xóa"),
-        content: Text("Bạn có chắc chắn muốn xóa sổ tiết kiệm '${saving.name}' không?"),
+        content: Text("Xóa sổ '${saving.name}'?"),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Hủy")),
           TextButton(
             onPressed: () async {
-              if (saving.id != null) {
-                // Gọi hàm xóa từ controller
-                await _savingController.deleteSaving(saving.id!);
-
-                if (context.mounted) Navigator.pop(context);
-
-                // Cập nhật AppState để các Tab tự load lại dữ liệu
-                AppState.jarChanged.value++;
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Đã xóa sổ tiết kiệm thành công")),
-                  );
-                }
-              }
+              await _savingController.deleteSaving(saving.id!);
+              if (context.mounted) Navigator.pop(context);
+              AppState.jarChanged.value++;
             },
             child: const Text("Xóa", style: TextStyle(color: Colors.red)),
           ),
@@ -118,232 +198,93 @@ class _JarListPageState extends State<JarListPage> {
     );
   }
 
-  /// ===== UI Saving Item (Tab 2) =====
-  Widget savingItem(Saving saving) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.orange[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.savings,
-              color: Colors.orange,
-            ),
-          ),
-          title: Text(
-            saving.name,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text(
-            "${saving.principal.toStringAsFixed(0)} đ",
-          ),
-          // Sửa phần trailing để có cả lãi suất và nút xóa
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "${saving.interestRate ?? 0}%",
-                style: const TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                onPressed: () => _confirmDeleteSaving(context, saving),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-      ],
-    );
-  }
-
-  /// ===== UI Jar Item (Tab 1) =====
-  Widget jarItem(Jar jar) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.blue[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.account_balance_wallet,
-              color: Colors.blue,
-            ),
-          ),
-          title: Text(
-            jar.nameJar,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text("${jar.balance.toStringAsFixed(0)} đ"),
-          trailing: IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              _showJarOptions(context, jar);
-            },
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => JarHistoryPage(jarId: jar.id),
-              ),
-            );
-          },
-        ),
-        const Divider(height: 1),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.grey[100],
-
-        /// ===== FAB =====
+        backgroundColor: Colors.white,
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blue,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const JarAddPage()),
-            );
-          },
-          child: const Icon(Icons.add),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const JarAddPage())),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
-
         body: ValueListenableBuilder(
           valueListenable: AppState.jarChanged,
           builder: (context, value, child) {
             return Column(
               children: [
-                /// ===== HEADER =====
                 Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
+                  padding: const EdgeInsets.fromLTRB(16, 50, 16, 0),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          SizedBox(width: 24),
-                          Text(
-                            "Tài khoản",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Icon(Icons.search),
-                              SizedBox(width: 16),
-                              Icon(Icons.tune),
-                            ],
-                          )
-                        ],
-                      ),
+                      const Text("Tài khoản", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       const TabBar(
                         labelColor: Colors.blue,
                         unselectedLabelColor: Colors.black54,
                         indicatorColor: Colors.blue,
-                        tabs: [
-                          Tab(text: "Tài khoản"),
-                          Tab(text: "Sổ tiết kiệm"),
-                          Tab(text: "Tích lũy"),
-                        ],
+                        tabs: [Tab(text: "Hũ tiền"), Tab(text: "Sổ tiết kiệm"), Tab(text: "Tích lũy")],
                       ),
                     ],
                   ),
                 ),
-
-                /// ===== BODY =====
                 Expanded(
                   child: TabBarView(
                     children: [
-                      /// ===== TAB 1 JAR =====
+                      // Tab 1: Hũ tiền
                       FutureBuilder<List<Jar>>(
                         future: _jarController.getJar(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          final jars = snapshot.data!;
+                          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                           return ListView.builder(
-                            itemCount: jars.length,
+                            itemCount: snapshot.data!.length,
                             itemBuilder: (context, index) {
-                              return jarItem(jars[index]);
+                              final jar = snapshot.data![index];
+                              return _buildSimpleItem(
+                                title: jar.nameJar,
+                                subtitle: "${jar.balance.toStringAsFixed(0)} đ",
+                                icon: Icons.account_balance_wallet,
+                                iconColor: Colors.blue,
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => JarHistoryPage(jarId: jar.id))),
+                                onMore: () => _showOptions(context, jar: jar),
+                              );
                             },
                           );
                         },
                       ),
-
-                      /// ===== TAB 2 SAVING =====
-                      Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const SavingAddPage(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.add),
-                              label: const Text("Thêm sổ tiết kiệm"),
-                            ),
-                          ),
-                          Expanded(
-                            child: FutureBuilder<List<Saving>>(
-                              future: _savingController.getSaving(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                                final savings = snapshot.data!;
-                                if (savings.isEmpty) {
-                                  return const Center(
-                                    child: Text("Chưa có sổ tiết kiệm"),
-                                  );
-                                }
-                                return ListView.builder(
-                                  itemCount: savings.length,
-                                  itemBuilder: (context, index) {
-                                    return savingItem(savings[index]);
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      // Tab 2: Sổ tiết kiệm
+                      FutureBuilder<List<Saving>>(
+                        future: _savingController.getSaving(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                          if (snapshot.data!.isEmpty) return const Center(child: Text("Chưa có sổ tiết kiệm"));
+                          return ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              final sv = snapshot.data![index];
+                              return _buildSimpleItem(
+                                title: sv.name,
+                                subtitle: "Số dư: ${sv.principal.toStringAsFixed(0)} đ",
+                                icon: Icons.savings,
+                                iconColor: Colors.orange,
+                                onTap: () {}, // Có thể mở trang chi tiết sổ nếu muốn
+                                onMore: () => _showOptions(context, saving: sv),
+                              );
+                            },
+                          );
+                        },
                       ),
-
-                      /// ===== TAB 3 =====
-                      const Center(
-                        child: Text("Danh sách mục tiêu tích lũy"),
+                      // Tab 3: Tích lũy (Đang phát triển)
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.construction, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text("Tính năng đang phát triển", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
