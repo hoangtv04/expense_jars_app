@@ -79,7 +79,7 @@ class _EditCategoryPageState extends State<EditCategoryPage>
     final expense = await _controller.getCategoriesByType(CategoryType.expense);
     final income = await _controller.getCategoriesByType(CategoryType.income);
 
-    // 🔥 Load subcategories dùng String ID
+    //Load subcategories dùng String ID
     Map<String, List<Category>> subcatsMap = {};
     for (var cat in [...expense, ...income]) {
       if (cat.id != null) {

@@ -25,23 +25,7 @@ class _SelectParentCategoryPageState extends State<SelectParentCategoryPage> {
     _selectedCategory = widget.currentSelectedParent;
   }
 
-  String _getCategoryEmoji(String name) {
-    final emojiMap = {
-      'Ăn uống': '🍎',
-      'Dịch vụ sinh hoạt': '🏠',
-      'Đi lại': '📍',
-      'Con cái': '👶',
-      'Trang phục': '👔',
-      'Hiếu hỉ': '🌾',
-      'Sức khỏe': '❤️',
-      'Nhà cửa': '🏠',
-      'Hưởng thụ': '🎁',
-      'Phát triển bản thân': '👨',
-      'Ngân hàng': '🏦',
-      'Tiền ra': '💸',
-    };
-    return emojiMap[name] ?? '📁';
-  }
+  // removed _getCategoryEmoji - using a default icon string instead
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +66,7 @@ class _SelectParentCategoryPageState extends State<SelectParentCategoryPage> {
           ...widget.parentCategories.map((category) {
             final isSelected = _selectedCategory?.id == category.id;
             return _buildCategoryItem(
-              icon: _getCategoryEmoji(category.name),
+              icon: '📁',
               backgroundColor: Colors.lightBlue[100]!,
               title: category.name,
               isSelected: isSelected,

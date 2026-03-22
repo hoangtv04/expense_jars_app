@@ -94,7 +94,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       return;
     }
 
-    // 🔥 parentId truyền vào bây giờ sẽ là String? (từ _selectedParentCategory.id)
+    // parentId truyền vào từ _selectedParentCategory.id
     await _controller.addCategory(
       name: newName,
       type: widget.categoryType,

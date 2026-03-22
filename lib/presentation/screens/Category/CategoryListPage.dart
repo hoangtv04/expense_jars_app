@@ -26,7 +26,7 @@ class _CategoryListPageState extends State<CategoryListPage>
   List<Category> _filteredExpenseCategories = [];
   List<Category> _filteredIncomeCategories = [];
 
-  // 🔥 Chuyển sang String cho UUID
+  // Chuyển sang String cho UUID
   Map<String, List<Category>> _subcategoriesMap = {};
   Set<String> _expandedCategories = {};
 
@@ -86,7 +86,7 @@ class _CategoryListPageState extends State<CategoryListPage>
     final expense = await _controller.getCategoriesByType(CategoryType.expense);
     final income = await _controller.getCategoriesByType(CategoryType.income);
 
-    // 🔥 Load subcategories dùng String ID
+    // Load subcategories dùng String ID
     Map<String, List<Category>> subcatsMap = {};
     for (var cat in [...expense, ...income]) {
       if (cat.id != null) {
