@@ -1,174 +1,105 @@
 import 'package:uuid/uuid.dart';
+import 'package:flutter_application_jars/services/session_services.dart';
+import 'package:flutter_application_jars/repositories/SpendingLimitRepository.dart';
 
 import '../models/SpendingLimit.dart';
-import '../repositories/SpendingLimitRepository.dart';
 
 class SpendingLimitController {
-  final SpendingLimitRepository _repo = SpendingLimitRepository();
-  final _uuid = const Uuid();
-  Future<void> addSpendingLimit({
-    required String name,
-    required double amount,
-    required String categories,
-    required String accounts,
-    required String repeatFrequency,
-    required String startDate,
-    String? endDate,
-    required bool carryForward,
-  }) async {
-    final limit = SpendingLimit(
-      id: _uuid.v4(),
-      user_id: "aaa", // TODO: Get from logged user
-      name: name,
-      amount: amount,
-      categories: categories,
-      accounts: accounts,
-      repeat_frequency: repeatFrequency,
-      start_date: startDate,
-      end_date: endDate,
-      carry_forward: carryForward ? 1 : 0,
-      created_at: DateTime.now(),
-    );
+	final SpendingLimitRepository _repo = SpendingLimitRepository();
 
-    await _repo.insertSpendingLimit(limit);
-  }
+	Future<List<SpendingLimit>> getSpendingLimits() async {
+		final userId = await SessionService.getUserId();
+		if (userId == null) throw Exception('User chưa login');
+		return await _repo.getSpendingLimitsByUserId(userId);
+	}
 
-  Future<List<SpendingLimit>> getSpendingLimits() async {
-    final limits = await _repo.getSpendingLimitsByUserId("aaa");
+	Future<void> addSpendingLimit({
+		required String name,
+		required double amount,
+		String categories = '',
+		String accounts = '',
+		String repeatFrequency = 'Hàng tháng',
+		required String startDate,
+		String? endDate,
+		bool carryForward = false,
+	}) async {
+		final userId = await SessionService.getUserId();
+		if (userId == null) throw Exception('User chưa login');
 
-    // 🔥 Hiển thị ID ra console để kiểm tra
-    print('--- Danh sách Hạn mức chi tiêu ---');
-    for (var l in limits) {
-      print('Hạn mức: ${l.name} | ID: ${l.id}');
-    }
+		final id = const Uuid().v4();
+		final now = DateTime.now().toIso8601String();
 
-    return limits;
-  }
-  Future<void> updateSpendingLimit(SpendingLimit limit) async {
-    await _repo.updateSpendingLimit(limit);
-  }
+		final limit = SpendingLimit(
+			id: id,
+			user_id: userId,
+			name: name,
+			amount: amount,
+			categories: categories,
+			accounts: accounts,
+			repeat_frequency: repeatFrequency,
+			start_date: startDate,
+			end_date: endDate,
+			carry_forward: carryForward ? 1 : 0,
+			is_deleted: 0,
+			created_at: now,
+		);
 
-  Future<void> deleteSpendingLimit(String id) async {
-    await _repo.deleteSpendingLimit(id);
-  }
+		await _repo.insertSpendingLimit(limit);
+	}
 
-  Future<bool> checkNameExists(String name, {String? excludeId}) async {
-    return await _repo.isNameExists(
-      userId: "aaa", // TODO: Get from logged user
-      name: name,
-      excludeId: excludeId,
-    );
-  }
+	Future<void> updateSpendingLimit(SpendingLimit limit) async {
+		await _repo.updateSpendingLimit(limit);
+	}
 
-  DateTime _dateOnly(DateTime value) {
-    return DateTime(value.year, value.month, value.day);
-  }
+	Future<void> deleteSpendingLimit(String id) async {
+		await _repo.deleteSpendingLimit(id);
+	}
 
-  DateTime _addCycle(DateTime value, String repeatFrequency) {
-    switch (repeatFrequency) {
-      case 'Hàng ngày':
-        return value.add(const Duration(days: 1));
-      case 'Hàng tuần':
-        return value.add(const Duration(days: 7));
-      case 'Hàng quý':
-        return DateTime(value.year, value.month + 3, value.day);
-      case 'Hàng năm':
-        return DateTime(value.year + 1, value.month, value.day);
-      case 'Không lặp lại':
-      case 'Hàng tháng':
-      default:
-        return DateTime(value.year, value.month + 1, value.day);
-    }
-  }
+	Future<bool> checkNameExists(String name, {String? excludeId}) async {
+		final userId = await SessionService.getUserId();
+		if (userId == null) throw Exception('User chưa login');
+		return await _repo.isNameExists(userId: userId, name: name, excludeId: excludeId);
+	}
 
-  ({DateTime cycleStart, DateTime cycleEnd}) _resolveCycleRange(
-    SpendingLimit limit,
-    DateTime now,
-  ) {
-    final start = _dateOnly(DateTime.parse(limit.start_date));
+	/// Returns a map with keys used by UI: 'limit', 'cycleStart', 'cycleEnd', 'spent',
+	/// 'amountRemaining', 'remainingDays', 'actualDailySpend', 'shouldDailySpend', 'projectedSpending'
+	Future<Map<String, dynamic>?> getSpendingLimitDetailMetrics(String limitId) async {
+		final limit = await _repo.getSpendingLimitById(limitId);
+		if (limit == null) return null;
 
-    if (limit.end_date != null && limit.end_date!.trim().isNotEmpty) {
-      final end = _dateOnly(DateTime.parse(limit.end_date!));
-      return (cycleStart: start, cycleEnd: end);
-    }
+		final cycleStart = DateTime.parse(limit.start_date);
+		final cycleEnd = limit.end_date != null
+				? DateTime.parse(limit.end_date!)
+				: cycleStart.add(const Duration(days: 30));
 
-    final today = _dateOnly(now);
-    if (today.isBefore(start)) {
-      final end = _dateOnly(
-        _addCycle(
-          start,
-          limit.repeat_frequency,
-        ).subtract(const Duration(days: 1)),
-      );
-      return (cycleStart: start, cycleEnd: end);
-    }
+		final spent = await _repo.getSpentAmountForLimit(
+			userId: limit.user_id,
+			limit: limit,
+			fromDate: cycleStart,
+			toDate: cycleEnd,
+		);
 
-    var cycleStart = start;
-    var cycleEnd = _dateOnly(
-      _addCycle(
-        cycleStart,
-        limit.repeat_frequency,
-      ).subtract(const Duration(days: 1)),
-    );
+		final amountRemaining = limit.amount - spent;
 
-    while (today.isAfter(cycleEnd)) {
-      cycleStart = _addCycle(cycleStart, limit.repeat_frequency);
-      cycleEnd = _dateOnly(
-        _addCycle(
-          cycleStart,
-          limit.repeat_frequency,
-        ).subtract(const Duration(days: 1)),
-      );
-    }
+		final totalDays = cycleEnd.difference(cycleStart).inDays;
+		final daysElapsed = DateTime.now().difference(cycleStart).inDays.clamp(0, totalDays == 0 ? 1 : totalDays);
+		final remainingDays = cycleEnd.difference(DateTime.now()).inDays;
 
-    return (cycleStart: cycleStart, cycleEnd: cycleEnd);
-  }
+		final actualDailySpend = daysElapsed <= 0 ? spent : spent / (daysElapsed == 0 ? 1 : daysElapsed);
+		final shouldDailySpend = totalDays <= 0 ? limit.amount : limit.amount / (totalDays == 0 ? 1 : totalDays);
+		final projectedSpending = actualDailySpend * (totalDays == 0 ? 1 : totalDays);
 
-  Future<Map<String, dynamic>?> getSpendingLimitDetailMetrics(
-    String limitId,
-  ) async {
-    final limit = await _repo.getSpendingLimitById(limitId);
-    if (limit == null) return null;
-
-    final now = _dateOnly(DateTime.now());
-    final cycle = _resolveCycleRange(limit, now);
-    final cycleStart = cycle.cycleStart;
-    final cycleEnd = cycle.cycleEnd;
-
-    final effectiveToday = now.isAfter(cycleEnd) ? cycleEnd : now;
-    final spent = await _repo.getSpentAmountForLimit(
-      userId: limit.user_id,
-      limit: limit,
-      fromDate: cycleStart,
-      toDate: effectiveToday,
-    );
-
-    final totalDays = cycleEnd.difference(cycleStart).inDays + 1;
-    final elapsedDays = effectiveToday.isBefore(cycleStart)
-        ? 0
-        : effectiveToday.difference(cycleStart).inDays + 1;
-    final remainingDays = cycleEnd.difference(effectiveToday).inDays;
-
-    final amountRemaining = limit.amount - spent;
-
-    final actualDailySpend = elapsedDays > 0 ? spent / elapsedDays : 0.0;
-    final shouldDailySpend = remainingDays > 0
-        ? amountRemaining / remainingDays
-        : amountRemaining;
-    final projectedSpending = (actualDailySpend * remainingDays) + spent;
-
-    return {
-      'limit': limit,
-      'cycleStart': cycleStart,
-      'cycleEnd': cycleEnd,
-      'spent': spent,
-      'amountRemaining': amountRemaining,
-      'totalDays': totalDays,
-      'elapsedDays': elapsedDays,
-      'remainingDays': remainingDays,
-      'actualDailySpend': actualDailySpend,
-      'shouldDailySpend': shouldDailySpend,
-      'projectedSpending': projectedSpending,
-    };
-  }
+		return {
+			'limit': limit,
+			'cycleStart': cycleStart,
+			'cycleEnd': cycleEnd,
+			'spent': spent,
+			'amountRemaining': amountRemaining,
+			'remainingDays': remainingDays < 0 ? 0 : remainingDays,
+			'actualDailySpend': actualDailySpend,
+			'shouldDailySpend': shouldDailySpend,
+			'projectedSpending': projectedSpending,
+		};
+	}
 }
+
