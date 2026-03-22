@@ -5,23 +5,17 @@ import 'package:flutter_application_jars/controllers/JarController.dart';
 import '../../../controllers/TransactionController.dart';
 import '../../../models/Category.dart';
 import '../../../models/Reponse/TransactionWithCategory.dart';
-
-
-
-
+import '../../../models/Transaction.dart';
+import '../Transaction/transaction_edit_page.dart';
 
 class JarHistoryPage extends StatefulWidget {
   final String? jarId;
 
-  const JarHistoryPage({
-    super.key,
-    this.jarId,
-  });
+  const JarHistoryPage({super.key, this.jarId});
 
   @override
   State<JarHistoryPage> createState() => _JarHistoryPageState();
 }
-
 
 class _JarHistoryPageState extends State<JarHistoryPage> {
   final _controller = TransactionController();
@@ -45,43 +39,47 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
 
     if (mounted) {
       setState(() {
-        _incomeFuture = _controller.getTransactionsTotalIncome(widget.jarId ?? '');
-        _expenseFuture = _controller.getTransactionsTotalExpense(widget.jarId ?? '');
-        _transactionFuture = _controller.getTransactionsWithCategory(widget.jarId ?? '');
+        _incomeFuture = _controller.getTransactionsTotalIncome(
+          widget.jarId ?? '',
+        );
+        _expenseFuture = _controller.getTransactionsTotalExpense(
+          widget.jarId ?? '',
+        );
+        _transactionFuture = _controller.getTransactionsWithCategory(
+          widget.jarId ?? '',
+        );
         // Lấy số dư thật từ hũ
         _balanceFuture = _controllerJar.getJarBalance(widget.jarId ?? '');
       });
     }
-    // 🔥 THÔNG BÁO ĐƠN GIẢN
+    //  THÔNG BÁO ĐƠN GIẢN
     if (newTransactions.isNotEmpty && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            "Có ${newTransactions.length} giao dịch định kỳ mới",
-          ),
+          content: Text("Có ${newTransactions.length} giao dịch định kỳ mới"),
         ),
       );
     }
 
     setState(() {
-      _incomeFuture =
-          _controller.getTransactionsTotalIncome(widget.jarId!);
+      _incomeFuture = _controller.getTransactionsTotalIncome(widget.jarId!);
 
-      _expenseFuture =
-          _controller.getTransactionsTotalExpense(widget.jarId!);
+      _expenseFuture = _controller.getTransactionsTotalExpense(widget.jarId!);
 
-      _transactionFuture =
-          _controller.getTransactionsWithCategory(widget.jarId!);
+      _transactionFuture = _controller.getTransactionsWithCategory(
+        widget.jarId!,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     // Check thêm _balanceFuture ở đây
-    if (_incomeFuture == null || _expenseFuture == null || _transactionFuture == null || _balanceFuture == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    if (_incomeFuture == null ||
+        _expenseFuture == null ||
+        _transactionFuture == null ||
+        _balanceFuture == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -91,9 +89,14 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
           /// ===== TỔNG QUAN (THU - CHI - DƯ) =====
           FutureBuilder<List<dynamic>>(
             // Đưa cả 3 Future vào đây để đợi cùng lúc
-            future: Future.wait([_incomeFuture!, _expenseFuture!, _balanceFuture!]),
+            future: Future.wait([
+              _incomeFuture!,
+              _expenseFuture!,
+              _balanceFuture!,
+            ]),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  !snapshot.hasData) {
                 return const SizedBox(
                   height: 150,
                   child: Center(child: CircularProgressIndicator()),
@@ -102,7 +105,8 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
 
               final income = snapshot.data![0] as double;
               final expense = snapshot.data![1] as double;
-              final currentJarBalance = snapshot.data![2] as double; // Đây là số dư thật từ hũ
+              final currentJarBalance =
+                  snapshot.data![2] as double; // Đây là số dư thật từ hũ
 
               return Container(
                 padding: const EdgeInsets.all(16),
@@ -123,8 +127,16 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _SummaryItem(label: 'Tổng thu', value: income, color: Colors.green),
-                        _SummaryItem(label: 'Tổng chi', value: expense, color: Colors.red),
+                        _SummaryItem(
+                          label: 'Tổng thu',
+                          value: income,
+                          color: Colors.green,
+                        ),
+                        _SummaryItem(
+                          label: 'Tổng chi',
+                          value: expense,
+                          color: Colors.red,
+                        ),
                       ],
                     ),
                     const Divider(height: 24),
@@ -133,14 +145,19 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                       children: [
                         const Text(
                           'Số dư hũ hiện tại',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         Text(
                           '${currentJarBalance.toStringAsFixed(0)} đ',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: currentJarBalance >= 0 ? Colors.green : Colors.red,
+                            color: currentJarBalance >= 0
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         ),
                       ],
@@ -165,7 +182,11 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.history_toggle_off, size: 60, color: Colors.grey),
+                        Icon(
+                          Icons.history_toggle_off,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 10),
                         Text('Chưa có giao dịch nào trong hũ này'),
                       ],
@@ -189,14 +210,25 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                       child: Row(
                         children: [
                           // Giữ nguyên CircleAvatar và Column thông tin
-                          CircleAvatar( /* ... */ ),
+                          CircleAvatar(/* ... */),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.categoryName ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                Text(item.note ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                Text(
+                                  item.categoryName ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  item.note ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -207,7 +239,10 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                             children: [
                               Text(
                                 '${isIncome ? '+' : '-'}${item.amount.toStringAsFixed(0)} đ',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isIncome ? Colors.green : Colors.red,
+                                ),
                               ),
 
                               Row(
@@ -217,7 +252,11 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                                   IconButton(
                                     constraints: const BoxConstraints(),
                                     padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
                                     onPressed: () async {
                                       // Chuyển TransactionWithCategory về Transaction model để dùng cho trang Edit
                                       final transactionToEdit = Transaction(
@@ -234,7 +273,10 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                                       final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => TransactionEditPage(transaction: transactionToEdit),
+                                          builder: (context) =>
+                                              TransactionEditPage(
+                                                transaction: transactionToEdit,
+                                              ),
                                         ),
                                       );
 
@@ -248,21 +290,34 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                                   IconButton(
                                     constraints: const BoxConstraints(),
                                     padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
                                     onPressed: () async {
                                       final confirm = await showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
                                           title: const Text("Xác nhận"),
-                                          content: const Text("Bạn có chắc muốn xóa giao dịch này không?"),
+                                          content: const Text(
+                                            "Bạn có chắc muốn xóa giao dịch này không?",
+                                          ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context, false),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
                                               child: const Text("Hủy"),
                                             ),
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context, true),
-                                              child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              child: const Text(
+                                                "Xóa",
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -280,11 +335,17 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                                           date: item.date,
                                         );
 
-                                        await _controller.delete(transactionToDelete);
+                                        await _controller.delete(
+                                          transactionToDelete,
+                                        );
 
                                         if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Đã xóa giao dịch")),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Đã xóa giao dịch"),
+                                            ),
                                           );
                                         }
 
@@ -293,7 +354,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                                     },
                                   ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         ],
@@ -309,8 +370,6 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
     );
   }
 }
-
-
 
 // ===== WIDGET PHỤ =====
 class _SummaryItem extends StatelessWidget {

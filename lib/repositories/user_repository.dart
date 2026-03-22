@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_application_jars/db/app_database.dart' ;
 import 'package:flutter_application_jars/models/user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
@@ -154,12 +155,13 @@ class UserRepository {
   }
 
   Future<bool> changePassword(
-    String userId,
-    String oldPassword,
-    String newPassword,
-  ) async {
+      String userId,
+      String oldPassword,
+      String newPassword,
+      ) async {
     final db = await _db.database;
 
+    // 1. Kiểm tra mật khẩu cũ ở Local xem có khớp không
     final result = await db.query(
       'users',
       where: 'id = ? AND password = ?',
@@ -168,21 +170,33 @@ class UserRepository {
 
     if (result.isEmpty) return false;
 
-    await db.update(
-      'users',
-      {'password': newPassword},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-
-
     try {
-      await _supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
-      await db.update('users', {'is_synced': 1}, where: 'id = ?', whereArgs: [userId]);
+      // 2. 🔥 ƯU TIÊN: Cập nhật lên Supabase Auth trước
+      // Nếu bước này lỗi (do mạng hoặc pass cũ sai trên cloud), nó sẽ nhảy xuống catch
+      await _supabase.auth.updateUser(
+        sb.UserAttributes(password: newPassword),
+      );
+
+      // 3. Nếu Cloud xong xuôi, mới cập nhật Local và set is_synced = 1
+      await db.update(
+        'users',
+        {
+          'password': newPassword,
+          'is_synced': 1 // Đã khớp với Cloud 100%
+        },
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+
+      return true;
     } catch (e) {
-      print("⚠️ Chưa cập nhật pass lên Cloud được, sẽ sync sau.");
+      // Nếu lỗi (ví dụ: mật khẩu mới quá ngắn, hoặc mất mạng)
+      debugPrint("❌ Lỗi đổi mật khẩu: $e");
+
+      // Tùy Cường: Bạn có thể vẫn muốn cập nhật Local và để is_synced = 0
+      // để sau này SyncService tự đẩy lên lại, nhưng với Mật khẩu thì nên làm online cho chắc.
+      return false;
     }
-    return true;
   }
 
   Future<Map<String, dynamic>?> getUserByEmail(String email) async {

@@ -258,20 +258,51 @@ class _JarListPageState extends State<JarListPage> {
                         future: _savingController.getSaving(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                          if (snapshot.data!.isEmpty) return const Center(child: Text("Chưa có sổ tiết kiệm"));
-                          return ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            itemBuilder: (context, index) {
-                              final sv = snapshot.data![index];
-                              return _buildSimpleItem(
-                                title: sv.name,
-                                subtitle: "Số dư: ${sv.principal.toStringAsFixed(0)} đ",
-                                icon: Icons.savings,
-                                iconColor: Colors.orange,
-                                onTap: () {}, // Có thể mở trang chi tiết sổ nếu muốn
-                                onMore: () => _showOptions(context, saving: sv),
-                              );
-                            },
+
+                          // 1. Lấy dữ liệu ra một biến để dễ xử lý
+                          final savings = snapshot.data ?? [];
+
+                          // 2. Luôn trả về Stack để cái nút Positioned lúc nào cũng được vẽ
+                          return Stack(
+                            children: [
+                              // Kiểm tra trống ở ĐÂY để hiện chữ thông báo mà không làm mất nút
+                              savings.isEmpty
+                                  ? const Center(child: Text("Chưa có sổ tiết kiệm"))
+                                  : ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 80),
+                                itemCount: savings.length,
+                                itemBuilder: (context, index) {
+                                  final sv = savings[index];
+                                  return _buildSimpleItem(
+                                    title: sv.name,
+                                    subtitle: "Số dư: ${sv.principal.toStringAsFixed(0)} đ",
+                                    icon: Icons.savings,
+                                    iconColor: Colors.orange,
+                                    onTap: () {},
+                                    onMore: () => _showOptions(context, saving: sv),
+                                  );
+                                },
+                              ),
+
+                              // 3. Nút này nằm ngoài lệnh IF nên danh sách trống hay có data đều hiện
+                              Positioned(
+                                bottom: 16,
+                                right: 80,
+                                child: FloatingActionButton(
+                                  heroTag: "btn_add_saving",
+                                  backgroundColor: Colors.orange,
+                                  onPressed: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const SavingAddPage()),
+                                    );
+                                    // Sau khi thêm xong quay lại thì báo cho ValueListenableBuilder load lại
+                                    AppState.jarChanged.value++;
+                                  },
+                                  child: const Icon(Icons.add, color: Colors.white),
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),

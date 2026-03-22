@@ -120,11 +120,14 @@ class TransactionController {
     if(jar == null) {
       throw Exception("Hũ không tồn tại");
     }
-    if(transaction.amount > jar.balance) {
-      throw Exception("Số tiền vượt quá số dư của hũ");
-    }
+
     if(transaction.type == CategoryType.expense) {
+      if(transaction.amount > jar.balance) {
+        throw Exception("Số tiền vượt quá số dư của hũ");
+      }
+
       await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
+
     } else if(transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance + transaction.amount);
     }

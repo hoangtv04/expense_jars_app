@@ -4,7 +4,7 @@ import '../models/Reponse/TransactionWithCategory.dart';
 import '../models/Reponse/TransactionjoinCategory.dart';
 
 class CategoryRepository {
-  
+
   Future<int> insertCategory(Category category) async {
     final db = await AppDatabase.instance.database;
     return await db.insert("categories", category.toMap());
@@ -14,7 +14,8 @@ class CategoryRepository {
     final db = await AppDatabase.instance.database;
     return await db.update(
       'categories',
-      {'is_deleted': 1},
+      // 🔥 Thêm is_synced = 0 để đánh dấu cần đồng bộ việc xóa này
+      {'is_deleted': 1, 'is_synced': 0},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -25,6 +26,9 @@ class CategoryRepository {
     final updateMap = category.toMap();
     // Giữ created_at không thay đổi, chỉ cập nhật các trường khác
     updateMap.remove('created_at');
+    // 🔥 Thêm is_synced = 0 để đánh dấu dữ liệu đã thay đổi, cần sync lại
+    updateMap['is_synced'] = 0;
+
     return await db.update(
       'categories',
       updateMap,
@@ -122,9 +126,30 @@ class CategoryRepository {
   /// Returns the number of rows updated.
   Future<int> transferTransactions(String fromCategoryId, String toCategoryId) async {
     final db = await AppDatabase.instance.database;
-    return await db.rawUpdate(
-      'UPDATE transactions SET category_id = ? WHERE category_id = ?',
-      [toCategoryId, fromCategoryId],
+
+    // 1. Lấy thông tin của Category mới để biết 'type' (Thu/Chi) của nó là gì
+    final List<Map<String, dynamic>> toCategoryMap = await db.query(
+      'categories',
+      columns: ['type'],
+      where: 'id = ?',
+      whereArgs: [toCategoryId],
+      limit: 1,
     );
+
+    if (toCategoryMap.isEmpty) {
+      print(" Không tìm thấy Category đích để lấy Type");
+      return 0;
+    }
+
+    final String newType = toCategoryMap.first['type'];
+
+    // 2. Thực hiện update đồng loạt: Đổi ID danh mục, đổi loại (Type) và đánh dấu chưa Sync
+    return await db.rawUpdate('''
+    UPDATE transactions 
+    SET category_id = ?, 
+        type = ?, 
+        is_synced = 0 
+    WHERE category_id = ?
+  ''', [toCategoryId, newType, fromCategoryId]);
   }
 }

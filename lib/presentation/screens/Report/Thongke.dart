@@ -23,12 +23,11 @@ class _ThongkeState extends State<Thongke> {
     initUser();
   }
 
+  // Hàm này sẽ dùng chung cho cả lúc khởi tạo và lúc bấm nút Reload
   Future<void> initUser() async {
     final id = await SessionService.getUserId();
 
     if (id == null) {
-      debugPrint("❌ Không có userId, redirect sang Login");
-      // Nếu chưa login thì push sang Login
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -40,31 +39,50 @@ class _ThongkeState extends State<Thongke> {
 
     setState(() {
       userId = id;
+      // Gọi lại getSummary để làm mới dữ liệu
       summaryFuture = controller.getSummary(userId!);
     });
   }
 
-  double get balance => 0; // sẽ tính sau khi load data
-
   @override
   Widget build(BuildContext context) {
-    // Nếu chưa có userId hoặc summaryFuture đang null → loading
+    return Scaffold(
+      // 🔥 THÊM APPBAR CÓ NÚT RELOAD
+      appBar: AppBar(
+        title: const Text("Thống kê"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              // Khi bấm nút refresh thì gọi lại initUser
+              initUser();
+            },
+          ),
+        ],
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  // Tách phần body ra cho code sạch sẽ
+  Widget _buildBody() {
     if (userId == null || summaryFuture == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return ValueListenableBuilder<int>(
       valueListenable: AppState.jarChanged,
       builder: (context, value, child) {
         return FutureBuilder<Map<String, double>>(
+          // Mỗi khi initUser gọi setState, summaryFuture mới sẽ được truyền vào đây
           future: summaryFuture,
           builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
             if (!snapshot.hasData) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+              return const Center(child: Text("Không có dữ liệu"));
             }
 
             final income = snapshot.data!['income'] ?? 0;
@@ -73,51 +91,35 @@ class _ThongkeState extends State<Thongke> {
 
             final percent = (income + expense == 0) ? 0.0 : income / (income + expense);
 
-            return Scaffold(
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Báo cáo tổng quan",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Báo cáo tổng quan",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildBalanceCard(balance, income, expense),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Biểu đồ thu / chi",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: SizedBox(
+                      height: 200,
+                      width: 200,
+                      child: CustomPaint(
+                        painter: PieChartPainter(incomePercent: percent),
                       ),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    _buildBalanceCard(balance, income, expense),
-
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      "Biểu đồ thu / chi",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: CustomPaint(
-                          painter: PieChartPainter(incomePercent: percent),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Center(child: LegendWidget()),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Center(child: LegendWidget()),
+                ],
               ),
             );
           },
