@@ -241,7 +241,7 @@ Future<Map<String, dynamic>> getYearlyReport(
 
       // 1. tạo transaction mới
       final newTransaction = old.copyWith(
-        id: null,
+        id: const Uuid().v4(),
         date: DateTime.now().toIso8601String(),
         createdAt: DateTime.now().toIso8601String(),
       );

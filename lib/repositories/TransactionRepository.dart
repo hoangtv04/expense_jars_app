@@ -1,5 +1,6 @@
 
 
+import 'package:sqflite/sqflite.dart' as sqflite;
 import '../db/app_database.dart';
 import '../models/Category.dart';
 import '../models/Jar.dart';
@@ -236,5 +237,45 @@ Future<List<Map<String, dynamic>>> getWeeklyReport(
       whereArgs: [id],
     );
   }
+
+  Future<void> insertInTxn(sqflite.Transaction txn, Transaction transaction) async {
+    await txn.insert(
+      'transactions',
+      transaction.toMap(),
+      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+    );
+
+    // 🔥 QUAN TRỌNG: Cập nhật luôn số dư của Hũ ngay lập tức trong cùng txn
+    // Bạn cần gọi logic cập nhật balance của hũ ở đây hoặc trong Controller
+    await _updateJarBalance(txn, transaction);
+  }
+
+  Future<void> _updateJarBalance(sqflite.Transaction txn, Transaction t) async {
+    // Lấy số dư hiện tại của hũ
+    final List<Map<String, dynamic>> jarRes = await txn.query(
+        'jars',
+        where: 'id = ?',
+        whereArgs: [t.jarId]
+    );
+
+    if (jarRes.isNotEmpty) {
+      double currentBalance = (jarRes.first['balance'] as num).toDouble();
+      double newBalance;
+
+      if (t.type == CategoryType.expense) {
+        newBalance = currentBalance - t.amount;
+      } else {
+        newBalance = currentBalance + t.amount;
+      }
+
+      await txn.update(
+        'jars',
+        {'balance': newBalance},
+        where: 'id = ?',
+        whereArgs: [t.jarId],
+      );
+    }
+  }
+
 
 }

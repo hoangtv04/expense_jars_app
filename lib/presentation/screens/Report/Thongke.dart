@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../controllers/DashBoardController.dart';
 import '../../../db/app_state.dart';
+import '../../../services/session_services.dart';
+import '../../screens/login.dart';// chắc là path LoginScreen
 
 class Thongke extends StatefulWidget {
   const Thongke({super.key});
@@ -12,53 +14,53 @@ class Thongke extends StatefulWidget {
 
 class _ThongkeState extends State<Thongke> {
   final DashboardController controller = DashboardController();
-
-  double income = 0;
-  double expense = 0;
-  bool isLoading = true;
-
-  double get balance => income - expense;
-
-  double get percent {
-    if (income + expense == 0) return 0;
-    return income / (income + expense);
-  }
+  String? userId;
+  Future<Map<String, double>>? summaryFuture;
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    initUser();
   }
 
-  Future<void> loadData() async {
-    try {
-      const userId = "aaa";
+  Future<void> initUser() async {
+    final id = await SessionService.getUserId();
 
-      final summary = await controller.getSummary(userId);
-
-      setState(() {
-        income = summary['income'] ?? 0;
-        expense = summary['expense'] ?? 0;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      debugPrint("Lỗi loadData: $e");
+    if (id == null) {
+      debugPrint("❌ Không có userId, redirect sang Login");
+      // Nếu chưa login thì push sang Login
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+      return;
     }
+
+    setState(() {
+      userId = id;
+      summaryFuture = controller.getSummary(userId!);
+    });
   }
+
+  double get balance => 0; // sẽ tính sau khi load data
 
   @override
   Widget build(BuildContext context) {
+    // Nếu chưa có userId hoặc summaryFuture đang null → loading
+    if (userId == null || summaryFuture == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ValueListenableBuilder<int>(
       valueListenable: AppState.jarChanged,
       builder: (context, value, child) {
-
         return FutureBuilder<Map<String, double>>(
-          future: controller.getSummary("aaa"),
+          future: summaryFuture,
           builder: (context, snapshot) {
-
             if (!snapshot.hasData) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
@@ -69,8 +71,7 @@ class _ThongkeState extends State<Thongke> {
             final expense = snapshot.data!['expense'] ?? 0;
             final balance = snapshot.data!['balance'] ?? 0;
 
-            final percent =
-            income + expense == 0 ? 0.0 : income / (income + expense);
+            final percent = (income + expense == 0) ? 0.0 : income / (income + expense);
 
             return Scaffold(
               body: SingleChildScrollView(
@@ -78,7 +79,6 @@ class _ThongkeState extends State<Thongke> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     const Text(
                       "Báo cáo tổng quan",
                       style: TextStyle(
@@ -108,18 +108,14 @@ class _ThongkeState extends State<Thongke> {
                         height: 200,
                         width: 200,
                         child: CustomPaint(
-                          painter: PieChartPainter(
-                            incomePercent: percent,
-                          ),
+                          painter: PieChartPainter(incomePercent: percent),
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
-                    const Center(
-                      child: LegendWidget(),
-                    ),
+                    const Center(child: LegendWidget()),
                   ],
                 ),
               ),
@@ -131,7 +127,6 @@ class _ThongkeState extends State<Thongke> {
   }
 
   Widget _buildBalanceCard(double balance, double income, double expense) {
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -194,10 +189,7 @@ class _ThongkeState extends State<Thongke> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
           ),
         ],
       ),
