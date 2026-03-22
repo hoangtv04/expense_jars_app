@@ -23,7 +23,7 @@ class TransactionController {
     return await _repo.getAllTransactions();
   }
 
-  Future<void> delete(Transaction transaction) async {
+  Future<Transaction> delete(Transaction transaction) async {
     final jar = await _jarRepo.getJarById(transaction.jarId);
     if(jar == null) {
       throw Exception("Hũ không tồn tại");
@@ -33,9 +33,10 @@ class TransactionController {
     } else if(transaction.type == CategoryType.income) {
       await _jarRepo.updateJar(jar.id!, jar.balance - transaction.amount);
     }
-    await _repo.deleteTransaction(transaction);
+    await _repo.deleteTransactions(transaction);
     AppState.jarChanged.value++;
 
+    return transaction;
   }
 
   Future<void> update(Transaction updated) async {

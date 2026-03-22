@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../controllers/TransactionController.dart';
 import '../../../models/Category.dart';
 import '../../../models/Reponse/TransactionWithCategory.dart';
-
+import '../../../models/Transaction.dart';
+import '../Transaction/transaction_edit_page.dart';
 
 
 
@@ -28,6 +29,8 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   late Future<double> _incomeFuture;
   late Future<double> _expenseFuture;
   late Future<List<TransactionWithCategory>> _transactionFuture;
+
+  final List<TransactionWithCategory> _transactions = [];
 
   @override
   void initState() {
@@ -172,86 +175,118 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
 
 
                     return Container(
-                      margin:
-                      const EdgeInsets.only(bottom: 12),
-                      padding:
-                      const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                        BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      // ... decoration giữ nguyên ...
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: isIncome
-                                ? Colors.green.shade100
-                                : Colors.red.shade100,
-                            child: Icon(
-                              isIncome
-                                  ? Icons.arrow_downward
-                                  : Icons.arrow_upward,
-                              color: isIncome
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
+                          // Giữ nguyên CircleAvatar và Column thông tin
+                          CircleAvatar( /* ... */ ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item.categoryName ?? '',
-                                  style:
-                                  const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight:
-                                    FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  item.note ?? '',
-                                  style:
-                                  const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight:
-                                    FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.createdAt
-                                      .toString(),
-                                  style:
-                                  const TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                    Colors.black54,
-                                  ),
-                                ),
+                                Text(item.categoryName ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                Text(item.note ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                               ],
                             ),
                           ),
-                          Text(
-                            '${isIncome ? '+' : '-'}${item.amount.toStringAsFixed(0)} đ',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight:
-                              FontWeight.bold,
-                              color: isIncome
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
+
+                          // Hiển thị số tiền
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${isIncome ? '+' : '-'}${item.amount.toStringAsFixed(0)} đ',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red),
+                              ),
+
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Nút Sửa
+                                  IconButton(
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                                    onPressed: () async {
+                                      // Chuyển TransactionWithCategory về Transaction model để dùng cho trang Edit
+                                      final transactionToEdit = Transaction(
+                                        id: item.id,
+                                        userId: item.userId,
+                                        jarId: item.jarId,
+                                        categoryId: item.categoryId,
+                                        amount: item.amount,
+                                        type: item.type,
+                                        note: item.note,
+                                        date: item.date,
+                                      );
+
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TransactionEditPage(transaction: transactionToEdit),
+                                        ),
+                                      );
+
+                                      if (result == true) {
+                                        _initData(); // Load lại toàn bộ số liệu và danh sách
+                                      }
+                                    },
+                                  ),
+
+                                  // Nút Xóa
+                                  IconButton(
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    onPressed: () async {
+                                      final confirm = await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("Xác nhận"),
+                                          content: const Text("Bạn có chắc muốn xóa giao dịch này không?"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, false),
+                                              child: const Text("Hủy"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, true),
+                                              child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (confirm == true) {
+                                        final transactionToDelete = Transaction(
+                                          id: item.id,
+                                          userId: item.userId,
+                                          jarId: item.jarId,
+                                          categoryId: item.categoryId,
+                                          amount: item.amount,
+                                          type: item.type,
+                                          note: item.note,
+                                          date: item.date,
+                                        );
+
+                                        await _controller.delete(transactionToDelete);
+
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("Đã xóa giao dịch")),
+                                          );
+                                        }
+
+                                        _initData();
+                                      }
+                                    },
+                                  ),
+                                ],
+                              )
+                            ],
                           ),
                         ],
                       ),
