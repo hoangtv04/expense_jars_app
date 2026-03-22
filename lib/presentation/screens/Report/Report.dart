@@ -5,10 +5,10 @@ import 'ReportDaily.dart';
 import 'ReportWeekly.dart';
 import 'ReportYearly.dart';
 import 'ReportQuarter.dart';
+import '../../../services/session_services.dart';
 
 class ReportScreen extends StatefulWidget {
-  final String userId;
-  const ReportScreen({super.key, required this.userId});
+  const ReportScreen({super.key});
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -16,9 +16,9 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen>
     with SingleTickerProviderStateMixin {
-
   late TabController _tabController;
 
+  String? userId; // ✅ FIX: nullable
   final TransactionController controller = TransactionController();
 
   List<Map<String, dynamic>> monthlyData = [];
@@ -31,21 +31,41 @@ class _ReportScreenState extends State<ReportScreen>
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
 
-    loadMonthly();
+    initUser();
+  }
+
+  // ================= LOAD USER =================
+  Future<void> initUser() async {
+    final id = await SessionService.getUserId();
+
+    print("🔥 GET USER ID: $id");
+
+    if (id == null) {
+      print("❌ Không có userId → cần login lại");
+      return;
+    }
+
+    setState(() {
+      userId = id;
+    });
+
+    await loadMonthly();
   }
 
   Future<void> loadMonthly() async {
+    if (userId == null) return;
+
     final data = await controller.getMonthlyReport(
-      "aaa", // userId
-      currentMonth, // tháng đang chọn
-      currentYear, // năm
+      userId!,
+      currentMonth,
+      currentYear,
     );
 
     setState(() {
       monthlyData = data;
     });
 
-    print("Monthly Data: $monthlyData");
+    print("📊 Monthly Data: $monthlyData");
   }
 
   @override
@@ -54,7 +74,7 @@ class _ReportScreenState extends State<ReportScreen>
     super.dispose();
   }
 
-  // ---------------- MONTH SELECTOR ----------------
+  // ================= MONTH SELECTOR =================
 
   Widget buildMonthSelector() {
     return Row(
@@ -75,12 +95,10 @@ class _ReportScreenState extends State<ReportScreen>
             loadMonthly();
           },
         ),
-
         Text(
           "Tháng $currentMonth / $currentYear",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios),
           onPressed: () {
@@ -100,69 +118,58 @@ class _ReportScreenState extends State<ReportScreen>
     );
   }
 
-  // ---------------- MONTH TAB ----------------
+  // ================= MONTH TAB =================
 
   Widget buildMonthlyTab() {
-  return Column(
-    children: [
-      const SizedBox(height: 10),
+    return Column(
+      children: [
+        const SizedBox(height: 10),
+        buildMonthSelector(),
+        const SizedBox(height: 10),
 
-      // Selector tháng
-      buildMonthSelector(),
+        if (monthlyData.isNotEmpty) buildMonthlyChart(),
 
-      const SizedBox(height: 10),
-
-      // Biểu đồ
-      if (monthlyData.isNotEmpty) buildMonthlyChart(),
-
-      // Nếu không có dữ liệu → nằm giữa màn hình
-      if (monthlyData.isEmpty)
-        Expanded(
-          child: Center(
-            child: Text(
-              "Chưa có giao dịch nào trong tháng này.",
-              style: const TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
+        if (monthlyData.isEmpty)
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Chưa có giao dịch nào trong tháng này.",
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
-        ),
 
-      // Danh sách giao dịch
-      if (monthlyData.isNotEmpty)
-        Expanded(
-          child: ListView.builder(
-            itemCount: monthlyData.length,
-            itemBuilder: (context, index) {
-              final item = monthlyData[index];
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  title: Text("Tháng: ${item['period']}"),
-                  subtitle: Text(
-                    "Thu: ${item['total_income']} | Chi: ${item['total_expense']}",
+        if (monthlyData.isNotEmpty)
+          Expanded(
+            child: ListView.builder(
+              itemCount: monthlyData.length,
+              itemBuilder: (context, index) {
+                final item = monthlyData[index];
+
+                return Card(
+                  margin: const EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text("Tháng: ${item['period']}"),
+                    subtitle: Text(
+                      "Thu: ${item['total_income']} | Chi: ${item['total_expense']}",
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-  // ---------------- BAR CHART ----------------
+  // ================= CHART =================
 
   Widget buildMonthlyChart() {
-    if (monthlyData.isEmpty) {
-      return const SizedBox();
-    }
-
     return SizedBox(
       height: 250,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -175,7 +182,6 @@ class _ReportScreenState extends State<ReportScreen>
                   }
 
                   String period = monthlyData[index]['period'];
-
                   String month = period.split('-')[1];
 
                   return Padding(
@@ -186,31 +192,19 @@ class _ReportScreenState extends State<ReportScreen>
               ),
             ),
           ),
-
           barGroups: monthlyData.asMap().entries.map((entry) {
             int index = entry.key;
             var item = entry.value;
 
-            double income = (item['total_income'] as num).toDouble();
-            double expense = (item['total_expense'] as num).toDouble();
+            double income = (item['total_income'] ?? 0).toDouble();
+            double expense = (item['total_expense'] ?? 0).toDouble();
 
             return BarChartGroupData(
               x: index,
               barsSpace: 6,
               barRods: [
-                BarChartRodData(
-                  toY: income,
-                  width: 10,
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-
-                BarChartRodData(
-                  toY: expense,
-                  width: 10,
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                BarChartRodData(toY: income, width: 10, color: Colors.green),
+                BarChartRodData(toY: expense, width: 10, color: Colors.red),
               ],
             );
           }).toList(),
@@ -219,14 +213,22 @@ class _ReportScreenState extends State<ReportScreen>
     );
   }
 
-  // ---------------- MAIN UI ----------------
+  // ================= MAIN UI =================
 
   @override
   Widget build(BuildContext context) {
+    // ✅ FIX: loading trước khi có userId
+    if (userId == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Báo Cáo"),
-
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -242,11 +244,11 @@ class _ReportScreenState extends State<ReportScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          ReportDaily(userId: widget.userId),
-          ReportWeekly(userId: widget.userId),
+          ReportDaily(userId: userId!),
+          ReportWeekly(userId: userId!),
           buildMonthlyTab(),
-          ReportQuarter(userId: widget.userId),
-          ReportYearly(userId: widget.userId),
+          ReportQuarter(userId: userId!),
+          ReportYearly(userId: userId!),
         ],
       ),
     );

@@ -6,7 +6,8 @@ import 'package:flutter_application_jars/presentation/screens/Report/Report.dart
 import '../Transaction/periodic_transaction_add_page.dart';
 import 'SpendingLimt/SpendingLimitPage.dart';
 import '../Category/EditCategoryPage.dart';
-
+import '../Setting/SpendingLimt/Information.dart';
+import '../Setting/Feedback.dart' as Feedback;
 // Import Service của bạn
 // import 'package:flutter_application_jars/services/sync_service.dart';
 
@@ -90,7 +91,7 @@ class _SettingPageState extends State<SettingPage> {
             _buildListSetting(Icons.reply, "Giới thiệu cho bạn"),
             _buildListSetting(Icons.star, "Bạn thích ứng dụng này?"),
             _buildListSetting(Icons.mail, "Góp ý với nhà phát triển"),
-            _buildListSetting(Icons.info, "Trợ giúp & thông tin"),
+            _buildListSetting(Icons.info, "Thông tin"),
 
             const SizedBox(height: 30),
 
@@ -243,7 +244,7 @@ class _SettingPageState extends State<SettingPage> {
       itemBuilder: (context, index) {
         final item = items[index];
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (item["label"] == "Hạn mức chi") {
               Navigator.push(
                 context,
@@ -264,7 +265,7 @@ class _SettingPageState extends State<SettingPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ReportScreen(userId: ''),
+                  builder: (context) => ReportScreen(),
                 ),
               );
             }
@@ -307,7 +308,24 @@ class _SettingPageState extends State<SettingPage> {
       leading: Icon(icon, color: const Color(0xFF2E86DE)),
       title: Text(title, style: const TextStyle(fontSize: 15)),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-      onTap: () {},
+      onTap: () {
+        if(title == "Thông tin"){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Information(),
+            ),
+          );
+        }
+        if(title == "Góp ý với nhà phát triển"){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Feedback.Feedback(),
+            ),
+          );
+        }
+      },
     );
   }
 
