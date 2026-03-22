@@ -311,30 +311,7 @@ class _CategoryListPageState extends State<CategoryListPage>
       ),
     );
   }
-  String _getEmojiForCategory(String name) {
-    final emojiMap = {
-      'Ăn vặt': '🍿',
-      'Ăn tối': '🍖',
-      'Ăn trưa': '🥗',
-      'Ăn sáng': '🍩',
-      'Cafe': '☕',
-      'Ăn tiệm': '🍜',
-      'Đi chợ/siêu thị': '🛍️',
-      'Thuê người giúp việc': '🧹',
-      'Điện thoại cố định': '☎️',
-      'Truyền hình': '📺',
-      'Gas': '🔥',
-      'Điện thoại di động': '📱',
-      'Internet': '📡',
-      'Nước': '💧',
-      'Điện': '💡',
-      'Taxi/thuê xe': '🚗',
-      'Rửa xe': '🚿',
-      'Gửi xe': '🅿️',
-      'Sửa chữa, bảo dưỡng xe': '🔧',
-    };
-    return emojiMap[name] ?? '📁';
-  }
+  
   Widget _buildCategoryItem(Category category, bool hasSubcategories, bool isExpanded) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

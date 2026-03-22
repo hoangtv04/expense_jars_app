@@ -202,13 +202,13 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildGrid(BuildContext context, String type) {
     final List<Map<String, dynamic>> items = type == "Feature" ? [
-      {"label": "Báo cáo", "icon": Icons.bar_chart, "color": Colors.green, "page": ReportScreen()},
-      {"label": "Hạn mức chi", "icon": Icons.speed, "color": Colors.orange, "page": const SpendingLimitPage()},
-      {"label": "Hạng mục", "icon": Icons.category, "color": Colors.blueAccent, "page": const EditCategoryPage(customTitle: 'Hạng mục thu/chi')},
-      {"label": "Xuất Excel", "icon": Icons.description, "color": Colors.blue, "page": const ExportPage()},
+      {"label": "Báo cáo", "icon": Icons.bar_chart, "color": Colors.green, "asset": "lib/assets/report.png", "page": ReportScreen()},
+            {"label": "Hạn mức chi", "icon": Icons.speed, "color": Colors.orange, "asset": "lib/assets/income.png", "page": const SpendingLimitPage()},
+            {"label": "Hạng mục", "icon": Icons.category, "color": Colors.blueAccent, "asset": "lib/assets/price-list.png", "page": const EditCategoryPage(customTitle: 'Hạng mục thu/chi')},
+            {"label": "Xuất Excel", "icon": Icons.description, "color": Colors.blue, "asset": "lib/assets/export.png", "page": const ExportPage()},
     ] : [
-      {"label": "Định kỳ", "icon": Icons.update, "color": Colors.purple, "page": const PeriodicTransactionAddPage()},
-      {"label": "Tiết kiệm", "icon": Icons.savings, "color": Colors.pink, "page": null},
+            {"label": "Định kỳ", "icon": Icons.update, "color": Colors.purple, "asset": "lib/assets/schedule.png", "page": const PeriodicTransactionAddPage()},
+            {"label": "Tiết kiệm", "icon": Icons.savings, "color": Colors.pink, "asset": "lib/assets/piggy-bank.png", "page": null},
     ];
 
     return GridView.builder(
@@ -232,7 +232,14 @@ class _SettingPageState extends State<SettingPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(color: item["color"].withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
-                child: Icon(item["icon"], color: item["color"]),
+                child: item.containsKey('asset') && item['asset'] != null
+                    ? Image.asset(
+                        item['asset'],
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(item["icon"], color: item["color"]),
               ),
               const SizedBox(height: 6),
               Text(item["label"], style: const TextStyle(fontSize: 11), textAlign: TextAlign.center, maxLines: 1),
