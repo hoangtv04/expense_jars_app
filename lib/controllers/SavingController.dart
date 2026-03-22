@@ -2,6 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application_jars/models/Reponse/SavingRespone.dart';
+import 'package:flutter_application_jars/repositories/JarRepository.dart';
 import 'package:flutter_application_jars/repositories/SavingRepository.dart';
 import 'package:flutter_application_jars/repositories/TransactionRepository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,11 +17,14 @@ import '../models/Transaction.dart';
 import '../services/session_services.dart';
 
 class SavingController {
-  // Dùng đúng UUID này xuyên suốt
+  // Dùng đúng UUID này xuyên suốtcategoryWithdrawSavingId
   static const String categoryOpenSavingId = "550e8400-e29b-41d4-a716-446655440000";
+  static const String categoryWithdrawSavingId = "660e8400-e29b-41d4-a716-446655440000";
 
   final SavingRepository _repo = SavingRepository();
   final TransactionRepository _transactionRepo = TransactionRepository();
+  final JarRepository _repoJar = JarRepository();
+
   final _uuid = const Uuid();
 
   Future<void> addSaving(SavingRespone res) async {
@@ -94,8 +98,14 @@ class SavingController {
      final saving = await _repo.getById(savingId);
      if (saving == null) throw Exception("Không tìm thấy sổ");
 
-     // BƯỚC 2: Tạo một Giao dịch (Transaction) để trừ tiền ở Hũ
-     // (Vì gửi vào tiết kiệm thì tiền ở hũ phải mất đi)
+
+     final jar = await _repoJar.getJarById(fromJarId);
+     if (jar == null) throw Exception("Không tìm thấy hũ trích tiền");
+
+     if (jar.balance < amount) {
+       throw Exception("Số dư hũ '${jar.nameJar}' không đủ để gửi tiết kiệm (Hiện có: ${jar.balance.toStringAsFixed(0)}đ)");
+     }
+     // -------------------------------
      final tx = Transaction(
        id: const Uuid().v4(),
        userId: saving.userId,
@@ -126,9 +136,58 @@ class SavingController {
        double newPrincipal = saving.principal + amount;
        await _repo.updatePrincipalInTxn(txn, savingId, newPrincipal);
      });
+     AppState.jarChanged.value++;
+
    }
 
+  Future<void> withdrawFromSaving({
+    required String savingId,
+    required double amount,
+    required String toJarId, // Hũ nhận tiền rút ra
+  }) async {
+    final database = await AppDatabase.instance.database;
 
+    // Bước 1: Lấy thông tin sổ
+    final saving = await _repo.getById(savingId);
+    if (saving == null) throw Exception("Không tìm thấy sổ tiết kiệm");
+    if (saving.principal < amount) throw Exception("Số dư trong sổ không đủ để rút");
+
+    // Bước 2: Tạo giao dịch (Transaction) để CỘNG tiền vào Hũ
+    // Khi rút từ sổ vào hũ, hũ sẽ nhận được một khoản "Thu nhập"
+    final tx = Transaction(
+      id: const Uuid().v4(),
+      userId: saving.userId,
+      jarId: toJarId,
+      amount: amount,
+      type: CategoryType.income, // Rút về hũ nên hũ tăng tiền (Income)
+      note: "Rút tiền từ sổ: ${saving.name}",
+      date: DateTime.now().toIso8601String(),
+      categoryId: categoryWithdrawSavingId, // Bạn nên định nghĩa ID hạng mục "Rút tiết kiệm"
+
+    );
+
+    // Bước 3: Tạo Log cho sổ tiết kiệm
+    final log = SavingLog(
+      id: const Uuid().v4(),
+      userId: saving.userId,
+      savingId: savingId,
+      changeAmount: -amount, // Số âm vì là rút ra
+      type: 'withdraw',
+      createdAt: DateTime.now().toIso8601String(),
+    );
+
+    await database.transaction((txn) async {
+      await _transactionRepo.insertInTxn(txn, tx);
+
+      // await _savingLogRepo.insertInTxn(txn, log);
+
+      double newPrincipal = saving.principal - amount;
+      await _repo.updatePrincipalInTxn(txn, savingId, newPrincipal);
+
+    });
+    AppState.jarChanged.value++;
+
+  }
 
    Future<List<Saving>> getSaving() async {
      final userId = await SessionService.getUserId();

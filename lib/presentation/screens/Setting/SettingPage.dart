@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/presentation/screens/Setting/ExportPage.dart';
 import 'package:flutter_application_jars/repositories/SyncService.dart';
 import 'package:intl/intl.dart'; // Nhớ thêm intl: ^0.19.0 vào pubspec.yaml
 import 'package:flutter_application_jars/presentation/screens/Setting/profile.dart';
@@ -275,6 +276,14 @@ class _SettingPageState extends State<SettingPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const PeriodicTransactionAddPage(),
+                ),
+              );
+            }
+            if (item["label"] == "Xuất dữ liệu") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ExportPage(),
                 ),
               );
             }

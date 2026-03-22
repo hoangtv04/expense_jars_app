@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_jars/controllers/JarController.dart';
 
 import '../../../controllers/TransactionController.dart';
 import '../../../models/Category.dart';
@@ -19,11 +20,12 @@ class JarHistoryPage extends StatefulWidget {
 
 class _JarHistoryPageState extends State<JarHistoryPage> {
   final _controller = TransactionController();
+  final _controllerJar = JarController();
 
-  // Đổi sang cho phép null để tránh lỗi LateInitialization
   Future<double>? _incomeFuture;
   Future<double>? _expenseFuture;
   Future<List<TransactionWithCategory>>? _transactionFuture;
+  Future<double>? _balanceFuture; // Đổi tên cho rõ nghĩa
 
   @override
   void initState() {
@@ -32,39 +34,36 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   }
 
   Future<void> _initData() async {
-    // 1. Chạy giao dịch định kỳ trước (nếu có)
     await _controller.runRecurringTransactions();
 
-    // 2. Gán các Future và gọi setState để build lại UI
     if (mounted) {
       setState(() {
         _incomeFuture = _controller.getTransactionsTotalIncome(widget.jarId ?? '');
         _expenseFuture = _controller.getTransactionsTotalExpense(widget.jarId ?? '');
         _transactionFuture = _controller.getTransactionsWithCategory(widget.jarId ?? '');
+        // Lấy số dư thật từ hũ
+        _balanceFuture = _controllerJar.getJarBalance(widget.jarId ?? '');
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Nếu dữ liệu chưa được khởi tạo, hiện vòng quay chờ toàn màn hình
-    if (_incomeFuture == null || _expenseFuture == null || _transactionFuture == null) {
+    // Check thêm _balanceFuture ở đây
+    if (_incomeFuture == null || _expenseFuture == null || _transactionFuture == null || _balanceFuture == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lịch sử giao dịch'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Lịch sử giao dịch'), elevation: 0),
       body: Column(
         children: [
           /// ===== TỔNG QUAN (THU - CHI - DƯ) =====
-          FutureBuilder<List<double>>(
-            // Dùng dấu ! vì ta đã check null ở trên đầu hàm build
-            future: Future.wait([_incomeFuture!, _expenseFuture!]),
+          FutureBuilder<List<dynamic>>(
+            // Đưa cả 3 Future vào đây để đợi cùng lúc
+            future: Future.wait([_incomeFuture!, _expenseFuture!, _balanceFuture!]),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
                 return const SizedBox(
@@ -73,9 +72,9 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                 );
               }
 
-              final income = snapshot.data![0];
-              final expense = snapshot.data![1];
-              final balance = income - expense;
+              final income = snapshot.data![0] as double;
+              final expense = snapshot.data![1] as double;
+              final currentJarBalance = snapshot.data![2] as double; // Đây là số dư thật từ hũ
 
               return Container(
                 padding: const EdgeInsets.all(16),
@@ -96,16 +95,8 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _SummaryItem(
-                          label: 'Tổng thu',
-                          value: income,
-                          color: Colors.green,
-                        ),
-                        _SummaryItem(
-                          label: 'Tổng chi',
-                          value: expense,
-                          color: Colors.red,
-                        ),
+                        _SummaryItem(label: 'Tổng thu', value: income, color: Colors.green),
+                        _SummaryItem(label: 'Tổng chi', value: expense, color: Colors.red),
                       ],
                     ),
                     const Divider(height: 24),
@@ -113,18 +104,15 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Số dư hũ',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          'Số dư hũ hiện tại',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         Text(
-                          '${balance.toStringAsFixed(0)} đ',
+                          '${currentJarBalance.toStringAsFixed(0)} đ',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: balance >= 0 ? Colors.green : Colors.red,
+                            color: currentJarBalance >= 0 ? Colors.green : Colors.red,
                           ),
                         ),
                       ],

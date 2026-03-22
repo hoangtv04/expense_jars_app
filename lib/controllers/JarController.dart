@@ -92,7 +92,9 @@ class  JarController{
     final jars = await _repo.getAll();
     return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
   }
-
+  Future<double> getJarBalance(String id) async {
+    return  await _repo.getJarBalanceById(id);
+  }
 
   Future<void> settingJar(String id, double amount) async {
     final jar = await _repo.getJarById(id);
@@ -105,6 +107,7 @@ class  JarController{
 
     await _repo.updateJar(id,updatedJar);
   }
+
   Future<void> updateJarAmount(String id, double amount) async {
     final jar = await _repo.getJarById(id);
 
