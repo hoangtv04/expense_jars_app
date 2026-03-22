@@ -6,7 +6,6 @@ import '../../../../models/SpendingLimit.dart';
 import '../../../../models/Category.dart';
 import '../../../../repositories/SpendingLimitRepository.dart';
 import '../../../../repositories/CategoryRepository.dart';
-import '../../../../services/session_services.dart';
 
 class SpendingLimitPage extends StatefulWidget {
   const SpendingLimitPage({super.key});
@@ -49,8 +48,7 @@ class _SpendingLimitPageState extends State<SpendingLimitPage> {
 
     // Chỉ có 1 hạng mục - lấy category từ database theo tên
     final categoryName = trimmedCategories;
-    final userId = await SessionService.getUserId();
-    final allCategories = await _categoryRepository.getAll(userId: userId);
+    final allCategories = await _categoryRepository.getAll();
     final category = allCategories.firstWhere(
       (c) => c.name == categoryName,
       orElse: () => throw Exception('Category not found'),
