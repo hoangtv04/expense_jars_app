@@ -28,7 +28,7 @@ class TransactionController {
     return await _repo.getAllTransactions();
   }
 
-  Future<void> delete(Transaction transaction) async {
+  Future<Transaction> delete(Transaction transaction) async {
     final jar = await _jarRepo.getJarById(transaction.jarId);
     if(jar == null) {
       throw Exception("Hũ không tồn tại");
@@ -42,6 +42,7 @@ class TransactionController {
     await _repo.deleteTransactions(transaction);
     AppState.jarChanged.value++;
 
+    return transaction;
   }
   Future<void> update(Transaction updated) async {
     // 1. Lấy dữ liệu cũ từ DB (bắt buộc để biết trạng thái trước đó)
@@ -259,8 +260,10 @@ Future<Map<String, dynamic>> getYearlyReport(
     return _repo.getTotalExpense(jarId);
   }
 
-  Future<void> runRecurringTransactions() async {
+  Future<List<Transaction>> runRecurringTransactions() async {
     final list = await _repo.getRecurringDueTransactions();
+
+    List<Transaction> newTransactions = [];
 
     for (var old in list) {
 
@@ -271,7 +274,9 @@ Future<Map<String, dynamic>> getYearlyReport(
         createdAt: DateTime.now().toIso8601String(),
       );
 
-      await add(newTransaction); // dùng lại logic add
+      await add(newTransaction);
+
+      newTransactions.add(newTransaction); //  lưu lại để trả về
 
       // 2. tính ngày tiếp theo
       DateTime nextDate = DateTime.parse(old.nextRunDate!);
@@ -293,8 +298,13 @@ Future<Map<String, dynamic>> getYearlyReport(
       }
 
       // 3. update next_run_date
-      await _repo.updateNextRunDate(old.id!, nextDate.toIso8601String());
+      await _repo.updateNextRunDate(
+        old.id!,
+        nextDate.toIso8601String(),
+      );
     }
+
+    return newTransactions;
   }
   Future<void> exportTransactionsToExcel(List<Transaction> transactions) async {
     // 1. Khởi tạo file Excel

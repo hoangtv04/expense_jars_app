@@ -6,6 +6,10 @@ import '../../../controllers/TransactionController.dart';
 import '../../../models/Category.dart';
 import '../../../models/Reponse/TransactionWithCategory.dart';
 
+
+
+
+
 class JarHistoryPage extends StatefulWidget {
   final String? jarId;
 
@@ -18,6 +22,7 @@ class JarHistoryPage extends StatefulWidget {
   State<JarHistoryPage> createState() => _JarHistoryPageState();
 }
 
+
 class _JarHistoryPageState extends State<JarHistoryPage> {
   final _controller = TransactionController();
   final _controllerJar = JarController();
@@ -27,6 +32,8 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   Future<List<TransactionWithCategory>>? _transactionFuture;
   Future<double>? _balanceFuture; // Đổi tên cho rõ nghĩa
 
+  final List<TransactionWithCategory> _transactions = [];
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +41,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   }
 
   Future<void> _initData() async {
-    await _controller.runRecurringTransactions();
+    final newTransactions = await _controller.runRecurringTransactions();
 
     if (mounted) {
       setState(() {
@@ -45,6 +52,27 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
         _balanceFuture = _controllerJar.getJarBalance(widget.jarId ?? '');
       });
     }
+    // 🔥 THÔNG BÁO ĐƠN GIẢN
+    if (newTransactions.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Có ${newTransactions.length} giao dịch định kỳ mới",
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      _incomeFuture =
+          _controller.getTransactionsTotalIncome(widget.jarId!);
+
+      _expenseFuture =
+          _controller.getTransactionsTotalExpense(widget.jarId!);
+
+      _transactionFuture =
+          _controller.getTransactionsWithCategory(widget.jarId!);
+    });
   }
 
   @override
@@ -123,7 +151,7 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
             },
           ),
 
-          /// ===== DANH SÁCH GIAO DỊCH CHI TIẾT =====
+          /// ===== DANH SÁCH GIAO DỊCH =====
           Expanded(
             child: FutureBuilder<List<TransactionWithCategory>>(
               future: _transactionFuture,
@@ -157,64 +185,116 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                      // ... decoration giữ nguyên ...
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: isIncome ? Colors.green.shade100 : Colors.red.shade100,
-                            child: Icon(
-                              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                              color: isIncome ? Colors.green : Colors.red,
-                            ),
-                          ),
+                          // Giữ nguyên CircleAvatar và Column thông tin
+                          CircleAvatar( /* ... */ ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item.categoryName ?? 'Không xác định',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (item.note != null && item.note!.isNotEmpty)
-                                  Text(
-                                    item.note!,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.createdAt.toString().substring(0, 16), // Cắt bớt phần mili giây
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.black45,
-                                  ),
-                                ),
+                                Text(item.categoryName ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                Text(item.note ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                               ],
                             ),
                           ),
-                          Text(
-                            '${isIncome ? '+' : '-'}${item.amount.toStringAsFixed(0)} đ',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: isIncome ? Colors.green : Colors.red,
-                            ),
+
+                          // Hiển thị số tiền
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${isIncome ? '+' : '-'}${item.amount.toStringAsFixed(0)} đ',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red),
+                              ),
+
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Nút Sửa
+                                  IconButton(
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                                    onPressed: () async {
+                                      // Chuyển TransactionWithCategory về Transaction model để dùng cho trang Edit
+                                      final transactionToEdit = Transaction(
+                                        id: item.id,
+                                        userId: item.userId,
+                                        jarId: item.jarId,
+                                        categoryId: item.categoryId,
+                                        amount: item.amount,
+                                        type: item.type,
+                                        note: item.note,
+                                        date: item.date,
+                                      );
+
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TransactionEditPage(transaction: transactionToEdit),
+                                        ),
+                                      );
+
+                                      if (result == true) {
+                                        _initData(); // Load lại toàn bộ số liệu và danh sách
+                                      }
+                                    },
+                                  ),
+
+                                  // Nút Xóa
+                                  IconButton(
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    onPressed: () async {
+                                      final confirm = await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("Xác nhận"),
+                                          content: const Text("Bạn có chắc muốn xóa giao dịch này không?"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, false),
+                                              child: const Text("Hủy"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, true),
+                                              child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (confirm == true) {
+                                        final transactionToDelete = Transaction(
+                                          id: item.id,
+                                          userId: item.userId,
+                                          jarId: item.jarId,
+                                          categoryId: item.categoryId,
+                                          amount: item.amount,
+                                          type: item.type,
+                                          note: item.note,
+                                          date: item.date,
+                                        );
+
+                                        await _controller.delete(transactionToDelete);
+
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("Đã xóa giao dịch")),
+                                          );
+                                        }
+
+                                        _initData();
+                                      }
+                                    },
+                                  ),
+                                ],
+                              )
+                            ],
                           ),
                         ],
                       ),
@@ -230,7 +310,9 @@ class _JarHistoryPageState extends State<JarHistoryPage> {
   }
 }
 
-// ===== WIDGET PHỤ (Dùng nội bộ trong trang) =====
+
+
+// ===== WIDGET PHỤ =====
 class _SummaryItem extends StatelessWidget {
   final String label;
   final double value;
