@@ -8,17 +8,11 @@ class Information extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // ===== AppBar mở rộng với hero header =====
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
             backgroundColor: const Color(0xFF2E86DE),
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Ứng Dụng quản lý chi tiêu',
-                style: TextStyle(fontSize: 16, color: Colors.red),
-              ),
-              centerTitle: true,
               background: Container(
                 color: const Color.fromARGB(255, 1, 49, 131),
                 alignment: Alignment.center,
@@ -31,13 +25,17 @@ class Information extends StatelessWidget {
                   ),
                 ),
               ),
+              title: const Text(
+                'Ứng Dụng quản lý chi tiêu',
+                style: TextStyle(fontSize: 16, color: Colors.red),
+              ),
+              centerTitle: true,
             ),
           ),
 
-          // ===== Nội dung chính =====
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(35),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -50,7 +48,7 @@ class Information extends StatelessWidget {
                     'Các tính năng chính:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 20),
                   Text('- Báo cáo chi tiêu trực quan'),
                   Text('- Hạn mức chi tiêu'),
                   Text('- Xuất dữ liệu'),
@@ -71,24 +69,24 @@ class Information extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Divider(thickness: 1.0, color: Colors.grey),
+                  Divider(thickness: 5.0, color: Colors.lightGreen),
                   SizedBox(height: 10),
                   Text(
                     'Mọi thắc mắc hoặc góp ý vui lòng liên hệ:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.normal, color: Colors.amber),
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: 8),
                   Text(
                     '📧 Email: support@moneyjar.app',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: Colors.teal),
                   ),
                   Text(
                     '🌐 Website: www.moneyjar.app',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: Colors.teal),
                   ),
                   Text(
                     '📞 Hotline: 1800-1234',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: Colors.teal),
                   ),
                   SizedBox(height: 30),
                 ],

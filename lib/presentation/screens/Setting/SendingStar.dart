@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // thư viện để tạo rating bar, cần thêm vào pubspec.yaml
 
 
 class SendingStar extends StatelessWidget {
@@ -24,16 +24,17 @@ class SendingStar extends StatelessWidget {
               initialRating: 0,
               minRating: 1,
               direction: Axis.horizontal,
-              allowHalfRating: true,
+              allowHalfRating: true,    
               itemCount: 5,
-              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+              itemPadding: const EdgeInsets.symmetric(horizontal: 5.0),
               itemBuilder: (context, _) => const Icon(
                 Icons.star,
                 color: Colors.amber,
               ),
               onRatingUpdate: (rating) {
-                // Handle rating update
-                print('Rating is: $rating');
+                // Xử lý khi người dùng chọn số sao
+                print('User rated: $rating');
+                // Có thể gửi rating này lên server hoặc lưu lại để cải thiện app
               },
             ),
           ],

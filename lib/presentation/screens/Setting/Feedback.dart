@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart'; // thư viên mở link ngoài
 
 class Feedback extends StatelessWidget {
   const Feedback({super.key});
