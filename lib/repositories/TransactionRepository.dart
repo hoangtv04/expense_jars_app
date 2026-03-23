@@ -264,7 +264,32 @@ Future<List<Map<String, dynamic>>> getWeeklyReport(
   Future<Map<String, dynamic>> getYearlyReport(String userId, int year) {
     return _db.getYearlyTotal(userId, year);
   }
+Future<Map<String, double>> getSummary(String userId) async {
+  try {
+    final results = await Future.wait([
+      _db.getTotalIncome(userId),
+      _db.getTotalExpense(userId),
+      _db.getCurrentBalance(userId),
+    ]);
 
+    final income = results[0];
+    final expense = results[1];
+    final balance = results[2];
+
+    return {
+      'income': income,
+      'expense': expense,
+      'balance': balance,
+    };
+  } catch (e) {
+    print("❌ Error getting summary: $e");
+    return {
+      'income': 0,
+      'expense': 0,
+      'balance': 0,
+    };
+  }
+}
 
   Future<double> getTotalIncome(String jarId) async {
     final db = await AppDatabase.instance.database;

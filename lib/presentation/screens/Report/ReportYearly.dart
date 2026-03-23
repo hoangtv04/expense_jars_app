@@ -79,8 +79,10 @@ class _ReportYearlyState extends State<ReportYearly> {
               barRods: [
                 BarChartRodData(
                     toY: yearlyTotal['total_income'] ?? 0,
-                    width: 30,
-                    color: Colors.green)
+                    width: 10,
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(2))
+
               ],
             ),
             BarChartGroupData(
@@ -88,8 +90,9 @@ class _ReportYearlyState extends State<ReportYearly> {
               barRods: [
                 BarChartRodData(
                     toY: yearlyTotal['total_expense'] ?? 0,
-                    width: 20,
-                    color: Colors.red)
+                    width: 10,
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(2))
               ],
             ),
           ],

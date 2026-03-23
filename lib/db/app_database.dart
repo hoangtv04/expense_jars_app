@@ -515,7 +515,7 @@ class AppDatabase {
     return await db.rawQuery(
       '''
   SELECT 
-    'Q' || CAST((? - 1) / 3 + 1 AS INTEGER) || '-' || ? as period,
+    'Quarter ' || CAST((? - 1) / 3 + 1 AS INTEGER) || '-' || ? as period,
     COALESCE(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END), 0) as total_income,
     COALESCE(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) as total_expense
   FROM transactions t

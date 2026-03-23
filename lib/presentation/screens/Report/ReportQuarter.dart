@@ -54,7 +54,7 @@ class _ReportQuarterState extends State<ReportQuarter> {
           onPressed: () => changeQuarter(-1),
         ),
         Text(
-          "Q$currentQuarter/${currentDate.year}",
+          "Quarter $currentQuarter/${currentDate.year}",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         IconButton(
@@ -67,14 +67,19 @@ class _ReportQuarterState extends State<ReportQuarter> {
 
   @override
   Widget build(BuildContext context) {
+    bool hasValidData = quarterData.any(
+      (item) =>
+          (item['total_income'] != null && item['total_income'] > 0) ||
+          (item['total_expense'] != null && item['total_expense'] > 0),
+    );
     return Column(
       children: [
         const SizedBox(height: 10),
         buildQuarterSelector(),
         const SizedBox(height: 10),
-        if (quarterData.isNotEmpty) buildQuarterChart(),
+        if (hasValidData) buildQuarterChart(),
         Expanded(
-          child: quarterData.isEmpty
+          child: !hasValidData
               ? const Center(child: Text("Không có dữ liệu trong Quý này"))
               : ListView.builder(
                   itemCount: quarterData.length,
@@ -111,9 +116,7 @@ class _ReportQuarterState extends State<ReportQuarter> {
           maxY: maxY,
           alignment: BarChartAlignment.center,
           titlesData: const FlTitlesData(
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           barGroups: [
             BarChartGroupData(
@@ -122,7 +125,7 @@ class _ReportQuarterState extends State<ReportQuarter> {
               barRods: [
                 BarChartRodData(
                   toY: income,
-                  width: 20,
+                  width: 10,
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(2),
                 ),

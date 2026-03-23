@@ -27,7 +27,7 @@ class _ThongkeState extends State<Thongke> {
     final id = await SessionService.getUserId();
 
     if (id == null) {
-      debugPrint("❌ Không có userId, redirect sang Login");
+      debugPrint("Không có userId, redirect sang Login");
       // Nếu chưa login thì push sang Login
       if (mounted) {
         Navigator.pushReplacement(

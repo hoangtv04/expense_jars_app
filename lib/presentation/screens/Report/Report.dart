@@ -18,7 +18,7 @@ class _ReportScreenState extends State<ReportScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  String? userId; // ✅ FIX: nullable
+  String? userId; // 
   final TransactionController controller = TransactionController();
 
   List<Map<String, dynamic>> monthlyData = [];
@@ -38,10 +38,10 @@ class _ReportScreenState extends State<ReportScreen>
   Future<void> initUser() async {
     final id = await SessionService.getUserId();
 
-    print("🔥 GET USER ID: $id");
+    print("GET USER ID: $id");
 
     if (id == null) {
-      print("❌ Không có userId → cần login lại");
+      print("Không có userId → cần login lại");
       return;
     }
 
@@ -65,7 +65,7 @@ class _ReportScreenState extends State<ReportScreen>
       monthlyData = data;
     });
 
-    print("📊 Monthly Data: $monthlyData");
+    print("Monthly Data: $monthlyData");
   }
 
   @override
@@ -203,8 +203,8 @@ class _ReportScreenState extends State<ReportScreen>
               x: index,
               barsSpace: 6,
               barRods: [
-                BarChartRodData(toY: income, width: 10, color: Colors.green),
-                BarChartRodData(toY: expense, width: 10, color: Colors.red),
+                BarChartRodData(toY: income,borderRadius: BorderRadius.circular(2),width: 10, color: Colors.green),
+                BarChartRodData(toY: expense, borderRadius: BorderRadius.circular(2), width: 10, color: Colors.red),
               ],
             );
           }).toList(),
@@ -219,11 +219,7 @@ class _ReportScreenState extends State<ReportScreen>
   Widget build(BuildContext context) {
     // ✅ FIX: loading trước khi có userId
     if (userId == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
