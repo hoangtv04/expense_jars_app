@@ -10,8 +10,7 @@ class Saving {
   final String status;
   final String? note;
   final String? createdAt;
-  final int is_synced;       // THÊM: 0 = Chưa sync, 1 = Đã sync
-  final int is_deleted;      // THÊM: 0 = Bình thường, 1 = Đã xóa (Soft delete)
+  final int is_synced; // Giữ lại cái này để sau này biết cái nào đã đẩy lên Supabase
 
   Saving({
     this.id,
@@ -25,8 +24,7 @@ class Saving {
     this.status = 'active',
     this.note,
     this.createdAt,
-    this.is_synced = 0,      // Mặc định là 0 khi tạo mới tại local
-    this.is_deleted = 0,     // Mặc định là 0
+    this.is_synced = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,14 +41,14 @@ class Saving {
       'note': note,
       'created_at': createdAt,
       'is_synced': is_synced,
-      'is_deleted': is_deleted,
+      // 🔥 ĐÃ XÓA DÒNG 'is_deleted' Ở ĐÂY
     };
   }
 
   factory Saving.fromMap(Map<String, dynamic> map) {
     return Saving(
       id: map['id']?.toString(),
-      userId: map['user_id'].toString(),
+      userId: map['user_id']?.toString() ?? '',
       jarId: map['jar_id']?.toString(),
       name: map['name'] ?? '',
       principal: (map['principal'] as num?)?.toDouble() ?? 0.0,
@@ -61,11 +59,10 @@ class Saving {
       note: map['note'],
       createdAt: map['created_at'],
       is_synced: map['is_synced'] ?? 0,
-      is_deleted: map['is_deleted'] ?? 0,
+      // 🔥 ĐÃ XÓA DÒNG 'is_deleted' Ở ĐÂY
     );
   }
 
-  // Hàm copyWith cực kỳ quan trọng để cập nhật trạng thái sau khi Sync
   Saving copyWith({
     String? id,
     String? userId,
@@ -79,7 +76,6 @@ class Saving {
     String? note,
     String? createdAt,
     int? isSynced,
-    int? isDeleted,
   }) {
     return Saving(
       id: id ?? this.id,
@@ -94,7 +90,6 @@ class Saving {
       note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,
       is_synced: isSynced ?? this.is_synced,
-      is_deleted: isDeleted ?? this.is_deleted,
     );
   }
 }

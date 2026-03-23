@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/Category.dart';
 import '../repositories/CategoryRepository.dart';
+import '../services/session_services.dart';
 
 class CategoryController {
   final CategoryRepository _repo = CategoryRepository();
@@ -14,10 +15,18 @@ class CategoryController {
     double? limitAmount,
     String? description,
   }) async {
+
+    final userId = await SessionService.getUserId();
+
+    if (userId == null) {
+
+      return;
+    }
+
     final category = Category(
       id: _uuid.v4(),
       icon_id: iconId,
-      user_id: "aaa", // 🔥 Đổi sang "aaa"
+      user_id: userId,
       parent_id: parentId, // Bây giờ là String UUID
       name: name,
       type: type,

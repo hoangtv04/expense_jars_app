@@ -9,6 +9,7 @@ import '../db/app_state.dart';
 import '../models/Jar.dart';
 import '../models/Reponse/AddJarRespone.dart';
 import '../repositories/JarRepository.dart';
+import '../services/session_services.dart';
 
 class  JarController{
   final JarRepository _repo = JarRepository();
@@ -19,12 +20,20 @@ class  JarController{
           (e) => e.name == value,
     );
   }
+
+
   Future<void> addJar(AddJarRespone res) async {
     final JarType jarName = jarTypeFromString(res.name);
 
+    String? userId = await SessionService.getUserId();
+
+    if (userId == null) {
+
+      return;
+    }
     final jar = Jar(
         id: _uuid.v4(),
-      user_id: "aaa",
+      user_id: userId,
       name: jarName,
       nameJar: res.nameJar,
       balance: res.balance,
@@ -83,7 +92,9 @@ class  JarController{
     final jars = await _repo.getAll();
     return jars.fold<double>(0, (sum, jar) => sum + jar.balance);
   }
-
+  Future<double> getJarBalance(String id) async {
+    return  await _repo.getJarBalanceById(id);
+  }
 
   Future<void> settingJar(String id, double amount) async {
     final jar = await _repo.getJarById(id);
@@ -96,6 +107,7 @@ class  JarController{
 
     await _repo.updateJar(id,updatedJar);
   }
+
   Future<void> updateJarAmount(String id, double amount) async {
     final jar = await _repo.getJarById(id);
 

@@ -1,27 +1,30 @@
 class SavingLog {
   final String? id;
+  final String userId;       // 🔥 THÊM: Để quản lý theo người dùng
   final String savingId;
   final String? transactionId;
   final double changeAmount;
   final String type;
   final String? note;
   final String? createdAt;
-  final int is_synced; // THÊM: 0 = chưa sync, 1 = đã sync
+  final int is_synced;
 
   SavingLog({
     this.id,
+    required this.userId,    // 🔥 Bắt buộc khi tạo Log
     required this.savingId,
     this.transactionId,
     required this.changeAmount,
     required this.type,
     this.note,
     this.createdAt,
-    this.is_synced = 0, // Mặc định là 0 khi tạo mới tại máy
+    this.is_synced = 0,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'user_id': userId,     // 🔥 Lưu vào DB
       'saving_id': savingId,
       'transaction_id': transactionId,
       'change_amount': changeAmount,
@@ -35,6 +38,7 @@ class SavingLog {
   factory SavingLog.fromMap(Map<String, dynamic> map) {
     return SavingLog(
       id: map['id']?.toString(),
+      userId: map['user_id']?.toString() ?? "", // 🔥 Đọc từ DB
       savingId: map['saving_id'].toString(),
       transactionId: map['transaction_id']?.toString(),
       changeAmount: (map['change_amount'] as num?)?.toDouble() ?? 0.0,
@@ -45,9 +49,9 @@ class SavingLog {
     );
   }
 
-  // Hàm copyWith để cập nhật trạng thái sau khi Sync
   SavingLog copyWith({
     String? id,
+    String? userId,         // 🔥 Thêm vào copyWith
     String? savingId,
     String? transactionId,
     double? changeAmount,
@@ -58,6 +62,7 @@ class SavingLog {
   }) {
     return SavingLog(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       savingId: savingId ?? this.savingId,
       transactionId: transactionId ?? this.transactionId,
       changeAmount: changeAmount ?? this.changeAmount,

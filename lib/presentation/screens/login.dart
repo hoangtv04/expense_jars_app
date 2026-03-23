@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_jars/controllers/user_controller.dart';
-import 'package:flutter_application_jars/models/user.dart';
+// import 'package:flutter_application_jars/models/user.dart'; // Đã dùng trong controller
 import 'package:flutter_application_jars/presentation/MainPage.dart';
 import 'package:flutter_application_jars/presentation/screens/signup.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_input.dart';
 import 'package:flutter_application_jars/presentation/widgets/auth_button.dart';
-import 'package:flutter_application_jars/presentation/screens/home.dart';
+// import 'package:flutter_application_jars/presentation/screens/home.dart';
 import 'package:flutter_application_jars/presentation/screens/forgot_password.dart';
 import 'package:flutter_application_jars/services/session_services.dart';
 
@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       hint: 'Email',
                       icon: Icons.email,
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter email' : null,
+                      v == null || v.isEmpty ? 'Enter email' : null,
                     ),
 
                     AuthInput(
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icons.lock,
                       obscure: !isVisible,
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter password' : null,
+                      v == null || v.isEmpty ? 'Enter password' : null,
                       suffix: IconButton(
                         icon: Icon(
                           isVisible ? Icons.visibility : Icons.visibility_off,
@@ -121,35 +121,50 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // --- PHẦN LOGIC ĐÃ ĐƯỢC CẬP NHẬT ---
   Future<void> _handleLogin() async {
     if (!formkey.currentState!.validate()) return;
 
-    final user = await _userController.login(
-      email.text.trim(),
-      password.text.trim(),
+    // 1. Hiện Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    if (!mounted) return;
+    try {
+      // 2. Gọi signIn và NHẬN KẾT QUẢ trả về (Cần sửa hàm này ở UserController)
+      bool isSuccess = await _userController.signIn(
+        email.text.trim(),
+        password.text.trim(),
+      );
 
-    if (user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Wrong email or password')));
-      return;
+      if (!mounted) return;
+      Navigator.pop(context); // Tắt loading
+
+      if (isSuccess) {
+        // 3. Lấy ID để debug xem UUID có chuẩn không
+        final currentId = await SessionService.getUserId();
+        debugPrint("✅ LOGIN SUCCESS WITH UUID: $currentId");
+
+        // 4. Mở cổng vào MainPage
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainPage()),
+              (route) => false,
+        );
+      } else {
+        // Sai pass hoặc lỗi gì đó mà logic trả về false
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sai Email hoặc Mật khẩu!')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi hệ thống: $e')),
+      );
     }
-
-    await SessionService.saveUserId(user.id.toString());
-
-    final id = await SessionService.getUserId();
-    debugPrint("CURRENT USER ID: $id");
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Login success')));
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const MainPage()),
-      (route) => false,
-    );
   }
 }

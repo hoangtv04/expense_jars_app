@@ -91,23 +91,7 @@ class _EditCategoryDetailPageState extends State<EditCategoryDetailPage> {
     }
   }
 
-  String _getCategoryEmoji(String name) {
-    final emojiMap = {
-      'Ăn uống': '🍎',
-      'Dịch vụ sinh hoạt': '🏠',
-      'Đi lại': '📍',
-      'Con cái': '👶',
-      'Trang phục': '👔',
-      'Hiếu hỉ': '🌾',
-      'Sức khỏe': '❤️',
-      'Nhà cửa': '🏠',
-      'Hưởng thụ': '🎁',
-      'Phát triển bản thân': '👨',
-      'Ngân hàng': '🏦',
-      'Tiền ra': '💸',
-    };
-    return emojiMap[name] ?? '📁';
-  }
+ 
 
   @override
   void dispose() {
